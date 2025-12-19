@@ -33,6 +33,6 @@ ENV PYTHONUNBUFFERED=1
 
 # Use start script (handles cookies and starts app)
 # Works on: Railway, Render, Fly.io, DigitalOcean, etc.
-# Use shell form to ensure proper environment variable expansion
-CMD ["./start_render.sh"]
+# Use explicit bash call for Railway compatibility
+CMD ["/bin/bash", "./start_render.sh"]
 
