@@ -37,12 +37,15 @@ Railway non supporta docker-compose direttamente, ma puoi deployare i due serviz
 **Configurazione Frontend:**
 - **Dockerfile**: `Dockerfile.frontend`
 - **Porta**: Railway imposta automaticamente `PORT` (nginx usa 80 internamente)
+- **Genera un dominio pubblico per il backend** (necessario per la comunicazione):
+  1. Vai al servizio backend → Settings → Generate Domain
+  2. Railway genererà un URL tipo: `https://backend-production-xxxx.up.railway.app`
 - **Variabili d'Ambiente** (da aggiungere):
-  - `BACKEND_SERVICE_NAME=backend` (nome del servizio backend su Railway)
+  - `BACKEND_URL=https://backend-production-xxxx.up.railway.app` (usa l'URL generato per il backend)
   - `PORT=80`
 
-**IMPORTANTE**: Railway usa il nome del servizio per la risoluzione DNS interna. 
-Se il servizio backend si chiama `backend`, il frontend può raggiungerlo via `http://backend:5000`.
+**IMPORTANTE**: Su Railway, il modo più affidabile per far comunicare i servizi è usare gli URL pubblici.
+Genera un dominio pubblico per il backend e usalo nella variabile `BACKEND_URL` del frontend.
 
 ### 4. Configura il Dominio Pubblico
 
@@ -73,7 +76,7 @@ Aggiungi queste variabili nel servizio frontend:
 
 | Key | Value |
 |-----|-------|
-| `BACKEND_SERVICE_NAME` | `backend` (deve corrispondere al nome del servizio backend) |
+| `BACKEND_URL` | `https://backend-production-xxxx.up.railway.app` (URL pubblico del backend - vedi sopra) |
 | `PORT` | `80` |
 
 ## 🚀 Deploy
@@ -93,9 +96,9 @@ Dopo il deploy:
 
 ## 📝 Note Importanti
 
-- **Nome Servizi**: I nomi dei servizi su Railway devono corrispondere alla variabile `BACKEND_SERVICE_NAME` nel frontend
-- **Rete Interna**: Railway mette automaticamente i servizi nella stessa rete interna
-- **DNS Interno**: I servizi possono comunicare usando `http://<nome-servizio>:<porta>`
+- **BACKEND_URL**: Devi generare un dominio pubblico per il backend e usarlo come `BACKEND_URL` nel frontend
+- **Rete Interna**: Railway supporta la comunicazione tra servizi tramite URL pubblici (consigliato) o tramite nome servizio
+- **DNS Interno**: Se preferisci usare il nome del servizio, imposta `BACKEND_SERVICE_NAME=backend` invece di `BACKEND_URL`
 - **Cookie**: Assicurati di aver aggiunto `COOKIES_BASE64` nel servizio backend
 
 ## 🔍 Troubleshooting
@@ -103,16 +106,18 @@ Dopo il deploy:
 ### Problema: Frontend non riesce a raggiungere il backend
 
 **Soluzione**: 
-1. Verifica che il nome del servizio backend corrisponda a `BACKEND_SERVICE_NAME`
-2. Controlla i log del frontend per errori di connessione
-3. Verifica che il backend sia in esecuzione (controlla i log)
+1. Verifica che `BACKEND_URL` sia impostato correttamente con l'URL pubblico del backend
+2. Assicurati di aver generato un dominio pubblico per il backend
+3. Controlla i log del frontend per errori di connessione
+4. Verifica che il backend sia in esecuzione e risponda alle richieste (controlla i log)
 
-### Problema: 502 Bad Gateway
+### Problema: 502 Bad Gateway o Timeout
 
 **Soluzione**:
-1. Verifica che il backend sia attivo
-2. Controlla che il backend ascolti sulla porta corretta (5000)
-3. Verifica la variabile `BACKEND_SERVICE_NAME` nel frontend
+1. Verifica che il backend sia attivo e risponda a `https://backend-production-xxxx.up.railway.app/health`
+2. Controlla che `BACKEND_URL` sia impostato correttamente nel frontend
+3. Verifica che il backend ascolti sulla porta corretta (5000 internamente)
+4. Assicurati che entrambi i servizi siano nello stesso progetto Railway
 
 ### Problema: Cookie non funzionano
 
