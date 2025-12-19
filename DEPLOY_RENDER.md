@@ -124,6 +124,24 @@ Server starting on http://0.0.0.0:XXXX
 
 ## 🔧 Troubleshooting
 
+### Errore: "exec /bin/bash: argument list too long"
+**Causa**: Il file `COOKIES_BASE64` è troppo grande (supera i limiti del sistema).
+
+**Soluzioni**:
+1. **Riduci i cookie**: Estrai solo i cookie necessari per YouTube:
+   ```bash
+   yt-dlp --cookies-from-browser firefox --cookies cookies.txt --extract-flat
+   # Poi rimuovi i cookie non necessari manualmente
+   ```
+2. **Usa cookie più piccoli**: I cookie di 473KB+ sono insolitamente grandi. Considera di:
+   - Estrarre solo i cookie di YouTube (non tutti i cookie del browser)
+   - Rimuovere cookie scaduti o non necessari
+   - Usare un browser con meno cookie salvati
+3. **Alternativa senza cookie**: Il sistema funziona anche senza cookie usando client iOS/Android
+4. **Verifica il file**: Controlla che `cookies_base64.txt` non sia nel repository Git
+
+**Nota**: Il file `cookies_base64.txt` dovrebbe essere < 100KB. Se è più grande, probabilmente contiene cookie non necessari.
+
 ### Errore: "ffmpeg not found"
 - Verifica che il build command includa: `apt-get install -y ffmpeg`
 - Controlla i log di build su Render
@@ -131,6 +149,7 @@ Server starting on http://0.0.0.0:XXXX
 ### Errore: "YouTube is blocking the request"
 - Aggiungi/aggiorna `COOKIES_BASE64`
 - I cookie potrebbero essere scaduti
+- Prova senza cookie (il sistema userà client iOS/Android)
 
 ### Errore: "Task timeout"
 - Aumenta `TASK_TIMEOUT` (es: 3600 per 1 ora)

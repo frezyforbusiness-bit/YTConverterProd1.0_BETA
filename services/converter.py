@@ -42,9 +42,26 @@ class YouTubeAudioConverter:
             import base64
             import tempfile
             try:
-                cookies_data = base64.b64decode(cookies_base64_env)
+                # Strip whitespace and newlines from base64 string
+                cookies_base64_clean = cookies_base64_env.strip().replace('\n', '').replace('\r', '').replace(' ', '')
+                
+                # Decode base64
+                cookies_data = base64.b64decode(cookies_base64_clean, validate=True)
+                
+                # Normalize line endings (CRLF -> LF) to avoid encoding issues
+                # Convert bytes to string, normalize, then back to bytes
+                try:
+                    cookies_text = cookies_data.decode('utf-8', errors='replace')
+                    cookies_text = cookies_text.replace('\r\n', '\n').replace('\r', '\n')
+                    cookies_data = cookies_text.encode('utf-8')
+                except (UnicodeDecodeError, AttributeError):
+                    # If it's not valid UTF-8, try to normalize line endings in binary
+                    cookies_data = cookies_data.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+                
+                # Write as binary to preserve exact bytes
                 temp_cookies = tempfile.NamedTemporaryFile(mode='wb', delete=False, suffix='.txt')
                 temp_cookies.write(cookies_data)
+                temp_cookies.flush()
                 temp_cookies.close()
                 self.cookies_path = temp_cookies.name
                 logger.info(f"Cookies loaded from COOKIES_BASE64 environment variable")

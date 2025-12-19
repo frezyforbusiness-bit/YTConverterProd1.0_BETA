@@ -6,7 +6,7 @@ services:
     buildCommand: |
       apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
       pip install -r requirements.txt
-    startCommand: python app.py
+    startCommand: chmod +x start_render.sh && ./start_render.sh
     envVars:
       - key: PORT
         sync: false
