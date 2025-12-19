@@ -1,0 +1,14 @@
+# Nixpacks configuration for Railway (alternative to Dockerfile)
+# Railway userà questo se non trova Dockerfile
+
+[phases.setup]
+nixPkgs = ["python311", "ffmpeg"]
+
+[phases.install]
+cmds = [
+  "pip install --no-cache-dir -r requirements.txt"
+]
+
+[start]
+cmd = "chmod +x start_render.sh && ./start_render.sh"
+

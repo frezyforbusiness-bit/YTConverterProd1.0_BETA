@@ -1,16 +1,20 @@
 FROM python:3.11-slim
 
-# Install system dependencies
+# Install system dependencies (ffmpeg required for audio conversion)
 RUN apt-get update && \
-    apt-get install -y ffmpeg && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+        ffmpeg \
+        && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install Python dependencies
+# Copy requirements first (for better Docker layer caching)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
@@ -18,10 +22,13 @@ COPY . .
 # Make start script executable
 RUN chmod +x start_render.sh
 
-# Expose port (will be set by platform)
+# Create temp directory
+RUN mkdir -p /app/temp
+
+# Expose port (Railway will set PORT environment variable)
 EXPOSE ${PORT:-5000}
 
 # Use start script (handles cookies and starts app)
-# Note: start_render.sh works on all platforms (Render, Railway, Fly.io, etc.)
+# Works on: Railway, Render, Fly.io, DigitalOcean, etc.
 CMD ["./start_render.sh"]
 
