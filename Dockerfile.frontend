@@ -1,0 +1,14 @@
+FROM nginx:alpine
+
+# Copy frontend files
+COPY frontend /usr/share/nginx/html
+
+# Copy nginx configuration template
+# Nginx automatically processes .template files in /etc/nginx/templates/
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+
+# Expose port 80
+EXPOSE 80
+
+# Nginx entrypoint.sh automatically runs envsubst on .template files
+# No additional setup needed
