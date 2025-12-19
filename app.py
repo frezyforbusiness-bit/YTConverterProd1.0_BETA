@@ -204,6 +204,10 @@ def serve_static(filename):
     """
     Serve static files from frontend directory
     """
+    # Handle favicon.ico
+    if filename == 'favicon.ico':
+        return '', 204  # No Content
+    
     return send_from_directory(FRONTEND_DIR, filename)
 
 

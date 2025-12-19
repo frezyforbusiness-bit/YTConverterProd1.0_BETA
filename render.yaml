@@ -1,6 +1,7 @@
 services:
+  # Backend API Service
   - type: web
-    name: ytconverter
+    name: ytconverter-api
     env: python
     buildCommand: |
       apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
@@ -20,4 +21,14 @@ services:
       # Opzionale: aggiungi COOKIES_BASE64 se hai i cookie
       # - key: COOKIES_BASE64
       #   value: <your-base64-encoded-cookies>
+  
+  # Frontend Static Site (Opzionale - solo se vuoi servirlo separatamente)
+  # - type: web
+  #   name: ytconverter-frontend
+  #   env: static
+  #   buildCommand: echo "No build needed"
+  #   staticPublishPath: frontend
+  #   envVars:
+  #     - key: API_URL
+  #       value: https://ytconverter-api.onrender.com
 

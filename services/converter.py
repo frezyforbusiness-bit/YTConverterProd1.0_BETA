@@ -164,11 +164,13 @@ class YouTubeAudioConverter:
             else:
                 all_clients = player_clients_without_cookies
         else:
-            # Local: try with cookies first if available
+            # Local: try with cookies first if available, otherwise try all clients
+            # (web/mweb can use cookiesfrombrowser even without cookie file)
             if has_cookies_file:
                 all_clients = player_clients_with_cookies + player_clients_without_cookies
             else:
-                all_clients = player_clients_without_cookies
+                # Try web/mweb first (can use browser cookies), then fallback to ios/android
+                all_clients = player_clients_with_cookies + player_clients_without_cookies
         
         # Try each client until one works
         last_error = None
