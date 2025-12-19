@@ -7,8 +7,13 @@ COPY frontend /usr/share/nginx/html
 # Nginx automatically processes .template files in /etc/nginx/templates/
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint-custom.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-custom.sh
+
 # Expose port 80
 EXPOSE 80
 
-# Nginx entrypoint.sh automatically runs envsubst on .template files
-# No additional setup needed
+# Use custom entrypoint that sets default for BACKEND_SERVICE_NAME
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-custom.sh"]
+CMD ["nginx", "-g", "daemon off;"]
