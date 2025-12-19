@@ -77,9 +77,13 @@ class YouTubeAudioConverter:
         # Log cookies file status
         if self.cookies_path and os.path.exists(self.cookies_path):
             file_size = os.path.getsize(self.cookies_path)
-            logger.info(f"Cookies file found: {self.cookies_path} ({file_size} bytes)")
+            is_cloud_env = os.environ.get('RENDER') or os.environ.get('DYNO') or os.environ.get('HEROKU')
+            env_type = "cloud" if is_cloud_env else "local"
+            logger.info(f"Cookies file found ({env_type}): {self.cookies_path} ({file_size} bytes)")
         else:
-            logger.debug(f"No cookies file available (optional - will use clients that don't require cookies)")
+            is_cloud_env = os.environ.get('RENDER') or os.environ.get('DYNO') or os.environ.get('HEROKU')
+            env_type = "cloud" if is_cloud_env else "local"
+            logger.warning(f"No cookies file available ({env_type}) - will use clients that don't require cookies (may fail with bot detection)")
     
     def ensure_temp_dir(self):
         """Ensures the temporary directory exists"""
@@ -176,12 +180,13 @@ class YouTubeAudioConverter:
         
         # Always prioritize clients that don't need cookies (ios/android) first
         # They're more reliable and don't require authentication
-        # Only try web/mweb as fallback if ios/android fail
-        if has_cookies_file and not is_cloud:
-            # Local with cookies: try ios/android first (most reliable), then web/mweb with cookies
+        # But if cookies are available, also try web/mweb as they work better with cookies
+        if has_cookies_file:
+            # With cookies: try ios/android first (most reliable), then web/mweb with cookies
+            # This works both locally and on cloud
             all_clients = player_clients_without_cookies + player_clients_with_cookies
         else:
-            # Cloud or no cookies: use only clients that don't need cookies
+            # No cookies: use only clients that don't need cookies
             all_clients = player_clients_without_cookies
         
         # Try each client until one works
@@ -245,9 +250,9 @@ class YouTubeAudioConverter:
                     # Always try cookie file if it exists (works in cloud too)
                     if self.cookies_path and os.path.exists(self.cookies_path):
                         ydl_opts['cookiefile'] = self.cookies_path
-                        logger.info(f"Using cookie file: {self.cookies_path}")
+                        logger.info(f"Using cookie file with {client} client: {self.cookies_path}")
                     else:
-                        logger.debug("No cookie file found, proceeding without cookies")
+                        logger.debug(f"No cookie file found for {client} client, proceeding without cookies")
                 
                 # Extract info first (validates URL and checks for playlists)
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
