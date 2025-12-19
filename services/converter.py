@@ -223,6 +223,10 @@ class YouTubeAudioConverter:
                     ydl_opts['format'] = 'bestaudio[protocol!=https_dash]/best[protocol!=https_dash]/bestaudio/best'
                     logger.debug("Android client: avoiding HTTPS formats that require GVS PO Token")
                 
+                # For iOS client, use best available format (most reliable)
+                if client == 'ios':
+                    logger.debug("iOS client: using best available format")
+                
                 # Add cookies for clients that support them
                 if client in ['web', 'mweb']:
                     # Only try browser cookies if not in cloud environment
@@ -308,6 +312,10 @@ class YouTubeAudioConverter:
                 # Check for specific HTTP errors
                 if '502' in error_msg or 'Bad Gateway' in error_msg:
                     logger.warning(f"Client {client} failed with 502 Bad Gateway (YouTube bot detection or rate limiting). Trying next client...")
+                elif 'Sign in to confirm' in error_msg or 'not a bot' in error_msg:
+                    logger.warning(f"Client {client} failed: YouTube bot detection (requires authentication). Trying next client...")
+                elif 'GVS PO Token' in error_msg:
+                    logger.warning(f"Client {client} failed: GVS PO Token required. Trying next client...")
                 else:
                     logger.warning(f"Client {client} failed: {error_msg[:200]}")
                 last_error = e
