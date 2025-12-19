@@ -30,39 +30,64 @@ def extract_cookies(browser='firefox', output_file='cookies_raw.txt'):
         # Prova con Python
         try:
             import yt_dlp
-            yt_dlp_cmd = [sys.executable, '-m', 'yt_dlp']
+            yt_dlp_cmd = None  # Useremo Python module
         except ImportError:
             print("❌ ERRORE: yt-dlp non trovato!")
             print("   Installa con: pip install yt-dlp")
             return False
     
-    if isinstance(yt_dlp_cmd, str):
-        cmd = [yt_dlp_cmd, '--cookies-from-browser', browser, '--cookies', output_file]
+    # Costruisci comando
+    # NOTA: yt-dlp richiede un URL anche quando si estraggono solo i cookie
+    # Usiamo un URL YouTube valido come placeholder (non verrà scaricato)
+    if yt_dlp_cmd:
+        # yt-dlp eseguibile trovato
+        cmd = [
+            yt_dlp_cmd,
+            '--cookies-from-browser', browser,
+            '--cookies', output_file,
+            '--no-download',  # Non scaricare, solo estrai cookie
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ'  # URL dummy
+        ]
     else:
-        cmd = yt_dlp_cmd + ['--cookies-from-browser', browser, '--cookies', output_file]
+        # Usa Python module
+        cmd = [
+            sys.executable, '-m', 'yt_dlp',
+            '--cookies-from-browser', browser,
+            '--cookies', output_file,
+            '--no-download',  # Non scaricare, solo estrai cookie
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ'  # URL dummy
+        ]
     
     try:
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=60  # Aumentato timeout
         )
         
-        if result.returncode == 0 and os.path.exists(output_file):
+        # yt-dlp può restituire exit code != 0 anche se i cookie sono stati estratti
+        # Controlla se il file è stato creato
+        if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
             file_size = os.path.getsize(output_file)
             print(f"✅ Cookie estratti: {output_file} ({file_size:,} bytes)")
             return True
         else:
             print(f"❌ ERRORE durante estrazione:")
+            if result.stdout:
+                print(f"   STDOUT: {result.stdout[:500]}")
             if result.stderr:
-                print(f"   {result.stderr}")
+                print(f"   STDERR: {result.stderr[:500]}")
+            if result.returncode != 0:
+                print(f"   Exit code: {result.returncode}")
             return False
     except subprocess.TimeoutExpired:
         print("❌ ERRORE: Timeout durante estrazione")
         return False
     except Exception as e:
         print(f"❌ ERRORE: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def optimize_cookies(input_file='cookies_raw.txt', output_file='cookies.txt'):
