@@ -446,17 +446,100 @@ class YouTubeAudioConverter:
                 last_error = e
                 continue
         
-        # If all clients failed, raise the last error
+        # If all yt-dlp clients failed, try pytube as fallback
         if last_error:
             error_msg = str(last_error)
-            logger.error(f"All clients failed. Last error: {error_msg[:200]}...")
+            logger.warning(f"All yt-dlp clients failed. Last error: {error_msg[:200]}...")
+            logger.info("Trying pytube as fallback downloader...")
             
             # Don't retry on playlist errors (user error)
             if 'playlist' in error_msg.lower():
                 raise ValueError("Playlists are not supported. Use a single video URL.")
             
-            # Raise error with clear message
-            self._raise_download_error(error_msg)
+            # Try pytube as last resort
+            try:
+                return self._download_with_pytube(youtube_url, get_info_only)
+            except Exception as pytube_error:
+                logger.error(f"pytube fallback also failed: {str(pytube_error)[:200]}")
+                # Raise original error if pytube also fails
+                self._raise_download_error(error_msg)
+    
+    def _download_with_pytube(self, youtube_url: str, get_info_only: bool = False):
+        """
+        Fallback downloader using pytube when yt-dlp fails
+        
+        Args:
+            youtube_url: YouTube video URL
+            get_info_only: If True, only extracts metadata without downloading
+            
+        Returns:
+            tuple: (video_path, video_info) or (None, video_info) if get_info_only=True
+        """
+        try:
+            from pytube import YouTube
+        except ImportError:
+            raise Exception("pytube not available. Please install: pip install pytube")
+        
+        logger.info("Using pytube fallback downloader...")
+        
+        try:
+            # Create YouTube object
+            yt = YouTube(youtube_url)
+            
+            # Extract video info
+            video_info = {
+                'id': yt.video_id,
+                'title': yt.title,
+                'duration': yt.length,
+                'uploader': yt.author,
+                'upload_date': None,  # pytube doesn't provide this easily
+                'description': yt.description,
+                'thumbnail': yt.thumbnail_url,
+                'view_count': yt.views,
+            }
+            
+            if get_info_only:
+                return None, video_info
+            
+            # Get audio stream (prefer best audio quality)
+            try:
+                audio_stream = yt.streams.filter(only_audio=True, file_extension='mp4').order_by('abr').desc().first()
+                if not audio_stream:
+                    audio_stream = yt.streams.filter(only_audio=True).order_by('abr').desc().first()
+            except:
+                # Fallback to any audio stream
+                audio_stream = yt.streams.filter(only_audio=True).first()
+            
+            if not audio_stream:
+                # If no audio-only stream, get best quality video and we'll extract audio
+                video_stream = yt.streams.filter(progressive=False, adaptive=True).order_by('resolution').desc().first()
+                if not video_stream:
+                    video_stream = yt.streams.get_highest_resolution()
+                audio_stream = video_stream
+            
+            # Download to temp directory
+            output_path = os.path.join(self.temp_dir, f"{yt.video_id}.{audio_stream.subtype}")
+            logger.info(f"Downloading with pytube: {audio_stream.subtype} format...")
+            
+            # Download
+            downloaded_file = audio_stream.download(output_path=self.temp_dir, filename=f"{yt.video_id}.{audio_stream.subtype}")
+            
+            # Rename if needed
+            if downloaded_file != output_path:
+                if os.path.exists(output_path):
+                    os.remove(output_path)
+                os.rename(downloaded_file, output_path)
+            
+            # Verify file exists
+            if not os.path.exists(output_path):
+                raise FileNotFoundError("Video file not found after pytube download")
+            
+            logger.info(f"Successfully downloaded with pytube: {output_path}")
+            return output_path, video_info
+            
+        except Exception as e:
+            logger.error(f"pytube download failed: {str(e)}")
+            raise Exception(f"pytube download failed: {str(e)}")
     
     def _raise_download_error(self, error_msg: str):
         """
