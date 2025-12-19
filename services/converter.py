@@ -81,7 +81,16 @@ class YouTubeAudioConverter:
             self.cookies_path = os.path.join(project_root, 'cookies.txt')
         
         # Log cookies file status with detailed info
-        is_cloud_env = os.environ.get('RENDER') or os.environ.get('DYNO') or os.environ.get('HEROKU')
+        # Check for cloud environment indicators
+        is_cloud_env = (
+            os.environ.get('RENDER') or 
+            os.environ.get('DYNO') or 
+            os.environ.get('HEROKU') or
+            os.environ.get('RAILWAY_ENVIRONMENT') or
+            os.environ.get('RAILWAY_PROJECT_ID') or
+            os.environ.get('FLY_APP_NAME') or
+            os.environ.get('VERCEL')
+        )
         env_type = "cloud" if is_cloud_env else "local"
         
         # Debug: log environment variables
@@ -232,7 +241,18 @@ class YouTubeAudioConverter:
         player_clients_without_cookies = ['ios', 'android']
         
         # Check if we're in a cloud environment (no browser available)
-        is_cloud = os.environ.get('RENDER') or os.environ.get('DYNO') or os.environ.get('HEROKU')
+        # Railway, Render, Heroku, Fly.io, DigitalOcean, etc. don't have browsers
+        is_cloud = (
+            os.environ.get('RENDER') or 
+            os.environ.get('DYNO') or 
+            os.environ.get('HEROKU') or
+            os.environ.get('RAILWAY_ENVIRONMENT') or
+            os.environ.get('RAILWAY_PROJECT_ID') or
+            os.environ.get('FLY_APP_NAME') or
+            os.environ.get('VERCEL') or
+            # Also check if PORT is set (common in cloud platforms)
+            (os.environ.get('PORT') and not os.environ.get('HOME', '').endswith('/home'))
+        )
         
         # Try with cookies first (if available), then without
         # On cloud platforms, skip browser-based cookie extraction
@@ -305,8 +325,8 @@ class YouTubeAudioConverter:
                 
                 # Add cookies for clients that support them
                 if client in ['web', 'mweb']:
-                    # Only try browser cookies if not in cloud environment
-                    # (cloud platforms don't have browsers installed)
+                    # NEVER use browser cookie extraction in cloud environments
+                    # Cloud platforms don't have browsers installed
                     if not is_cloud:
                         try:
                             browsers_to_try = ['chrome', 'firefox', 'edge', 'safari', 'opera', 'brave']
@@ -317,10 +337,17 @@ class YouTubeAudioConverter:
                             logger.debug(f"Using --cookies-from-browser {browsers_to_try[0]}")
                         except Exception as e:
                             logger.debug(f"Browser cookie extraction not available: {e}")
+                    else:
+                        logger.debug(f"Cloud environment detected - skipping browser cookie extraction")
                     
                     # Always try cookie file if it exists (works in cloud too)
                     if self.cookies_path and os.path.exists(self.cookies_path):
                         ydl_opts['cookiefile'] = self.cookies_path
+                        # IMPORTANT: Explicitly disable browser cookie extraction when using cookie file
+                        # This prevents yt-dlp from trying to extract from Chrome when it fails
+                        if 'cookiesfrombrowser' in ydl_opts:
+                            del ydl_opts['cookiesfrombrowser']
+                        
                         file_size = os.path.getsize(self.cookies_path)
                         logger.info(f"Using cookie file with {client} client: {self.cookies_path} ({file_size} bytes)")
                         
