@@ -375,7 +375,20 @@ if __name__ == '__main__':
     logger.info("Ready to accept requests...")
     
     try:
-        app.run(debug=debug, host='0.0.0.0', port=port)
+        # Use threaded mode for better concurrency
+        # Use_reloader=False is important in Docker/container environments
+        app.run(
+            debug=debug, 
+            host='0.0.0.0', 
+            port=port,
+            threaded=True,
+            use_reloader=False  # Disable reloader in production/containers
+        )
+    except Exception as e:
+        logger.error(f"Failed to start Flask server: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
     finally:
         # Stop cleanup scheduler on shutdown
         cleanup_scheduler.stop()

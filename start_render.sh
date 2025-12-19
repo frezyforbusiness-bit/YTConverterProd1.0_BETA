@@ -118,11 +118,28 @@ echo ""
 # Verifica che tutto sia pronto
 if [ ! -f "app.py" ]; then
     echo "❌ FATAL ERROR: app.py not found in $(pwd)"
+    echo "   Current directory contents:"
     ls -la
     exit 1
 fi
 
+# Verifica che Python possa importare le dipendenze
+echo "🔍 Verifying Python environment..."
+if ! python -c "import flask; import yt_dlp; print('✅ All imports OK')" 2>&1; then
+    echo "❌ ERROR: Python dependencies not available"
+    echo "   Trying to install requirements..."
+    pip install -r requirements.txt || {
+        echo "❌ Failed to install requirements"
+        exit 1
+    }
+fi
+
+echo ""
+echo "✅ All checks passed, starting Flask application..."
+echo ""
+
 # Avvia Python con output non buffered
 # Usa exec per sostituire il processo shell con Python
+# Questo mantiene il processo attivo e Railway può vedere i log
 exec python -u app.py
 
