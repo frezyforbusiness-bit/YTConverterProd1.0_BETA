@@ -31,10 +31,16 @@ class YouTubeAudioConverter:
         self.temp_dir = temp_dir or tempfile.gettempdir()
         self.ensure_temp_dir()
         
+        # Log initialization
+        logger.info("=" * 70)
+        logger.info("Initializing YouTubeAudioConverter...")
+        
         # Cookies file path (optional, via environment variable)
         # Support for both direct file path and Base64 encoded cookies (for cloud platforms)
         cookies_file_env = os.environ.get('COOKIES_FILE')
         cookies_base64_env = os.environ.get('COOKIES_BASE64')
+        
+        logger.info(f"Cookie initialization: COOKIES_FILE={cookies_file_env}, COOKIES_BASE64={'SET' if cookies_base64_env else 'NOT SET'}")
         
         if cookies_file_env:
             self.cookies_path = cookies_file_env
@@ -273,6 +279,17 @@ class YouTubeAudioConverter:
                     },
                     # Better error handling for HTTP errors
                     'http_chunk_size': 10485760,  # 10MB chunks
+                    # User-Agent and headers to appear more like a real browser
+                    'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'referer': 'https://www.youtube.com/',
+                    'http_headers': {
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                        'Accept-Encoding': 'gzip, deflate, br',
+                        'DNT': '1',
+                        'Connection': 'keep-alive',
+                        'Upgrade-Insecure-Requests': '1',
+                    }
                 }
                 
                 # For Android client, avoid HTTPS formats that require GVS PO Token
@@ -304,7 +321,20 @@ class YouTubeAudioConverter:
                     # Always try cookie file if it exists (works in cloud too)
                     if self.cookies_path and os.path.exists(self.cookies_path):
                         ydl_opts['cookiefile'] = self.cookies_path
-                        logger.info(f"Using cookie file with {client} client: {self.cookies_path}")
+                        file_size = os.path.getsize(self.cookies_path)
+                        logger.info(f"Using cookie file with {client} client: {self.cookies_path} ({file_size} bytes)")
+                        
+                        # Verifica che il file contenga cookie YouTube
+                        try:
+                            with open(self.cookies_path, 'r') as f:
+                                content = f.read()
+                                youtube_cookie_count = content.count('youtube.com') + content.count('google.com')
+                                if youtube_cookie_count == 0:
+                                    logger.warning(f"⚠️  WARNING: Cookie file for {client} contains NO YouTube/Google cookies!")
+                                else:
+                                    logger.debug(f"✅ Cookie file for {client} contains {youtube_cookie_count} YouTube/Google references")
+                        except Exception as e:
+                            logger.warning(f"⚠️  Could not verify cookie file content: {e}")
                     else:
                         logger.debug(f"No cookie file found for {client} client, proceeding without cookies")
                 
