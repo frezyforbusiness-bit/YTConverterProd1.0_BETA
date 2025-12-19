@@ -8,6 +8,7 @@ import subprocess
 import yt_dlp
 import tempfile
 import re
+import time
 import librosa
 import numpy as np
 from utils.logger import setup_logger
@@ -191,7 +192,10 @@ class YouTubeAudioConverter:
         
         # Try each client until one works
         last_error = None
-        for client in all_clients:
+        for idx, client in enumerate(all_clients):
+            # Add small delay between client attempts to avoid rate limiting
+            if idx > 0:
+                time.sleep(2)
             try:
                 logger.debug(f"Trying YouTube client: {client}...")
                 
@@ -204,14 +208,18 @@ class YouTubeAudioConverter:
                     'no_warnings': False,
                     'cachedir': False,
                     'force_ipv4': True,  # Critical for Render
-                    'retries': 3,
+                    'retries': 10,  # Increased retries for 502 errors
+                    'fragment_retries': 10,  # Retry fragments on 502
+                    'skip_unavailable_fragments': True,  # Skip unavailable fragments
                     'socket_timeout': 30,
                     'ignoreerrors': False,
                     'extractor_args': {
                         'youtube': {
                             'player_client': [client],
                         }
-                    }
+                    },
+                    # Better error handling for HTTP errors
+                    'http_chunk_size': 10485760,  # 10MB chunks
                 }
                 
                 # Add cookies for clients that support them
@@ -296,7 +304,11 @@ class YouTubeAudioConverter:
                 
             except Exception as e:
                 error_msg = str(e)
-                logger.warning(f"Client {client} failed: {error_msg[:200]}")
+                # Check for specific HTTP errors
+                if '502' in error_msg or 'Bad Gateway' in error_msg:
+                    logger.warning(f"Client {client} failed with 502 Bad Gateway (YouTube bot detection or rate limiting). Trying next client...")
+                else:
+                    logger.warning(f"Client {client} failed: {error_msg[:200]}")
                 last_error = e
                 continue
         
