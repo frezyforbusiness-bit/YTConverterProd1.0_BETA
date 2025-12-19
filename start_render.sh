@@ -1,5 +1,6 @@
 #!/bin/bash
-# Script di startup per Render.com
+# Script di startup universale per hosting cloud
+# Supporta: Render.com, Railway.app, Fly.io, DigitalOcean, Heroku, etc.
 # Gestisce completamente i cookie e avvia l'applicazione Python
 
 set -e  # Exit on error (ma non per i cookie che sono opzionali)

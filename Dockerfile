@@ -22,5 +22,6 @@ RUN chmod +x start_render.sh
 EXPOSE ${PORT:-5000}
 
 # Use start script (handles cookies and starts app)
+# Note: start_render.sh works on all platforms (Render, Railway, Fly.io, etc.)
 CMD ["./start_render.sh"]
 
