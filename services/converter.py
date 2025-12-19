@@ -234,6 +234,15 @@ class YouTubeAudioConverter:
         # Validate URL first
         self.validate_youtube_url(youtube_url)
         
+        # TESTING: Use pytube as primary method instead of yt-dlp
+        logger.info("Using pytube as primary downloader (testing mode)...")
+        try:
+            return self._download_with_pytube(youtube_url, get_info_only)
+        except Exception as pytube_error:
+            logger.warning(f"pytube failed: {str(pytube_error)[:200]}")
+            logger.info("Falling back to yt-dlp...")
+            # Continue with yt-dlp as fallback
+        
         # List of clients to try in order (fallback if one fails)
         # web and mweb support cookies, ios and android don't
         # Prioritize clients that don't require cookies (ios/android) as they're more reliable
@@ -466,7 +475,7 @@ class YouTubeAudioConverter:
     
     def _download_with_pytube(self, youtube_url: str, get_info_only: bool = False):
         """
-        Fallback downloader using pytube when yt-dlp fails
+        Primary downloader using pytube
         
         Args:
             youtube_url: YouTube video URL
@@ -476,15 +485,22 @@ class YouTubeAudioConverter:
             tuple: (video_path, video_info) or (None, video_info) if get_info_only=True
         """
         try:
-            from pytube import YouTube
+            # Try pytubefix first (more updated fork)
+            try:
+                from pytubefix import YouTube
+                logger.debug("Using pytubefix (updated fork)")
+            except ImportError:
+                # Fallback to regular pytube
+                from pytube import YouTube
+                logger.debug("Using pytube (standard)")
         except ImportError:
-            raise Exception("pytube not available. Please install: pip install pytube")
+            raise Exception("pytube not available. Please install: pip install pytubefix")
         
-        logger.info("Using pytube fallback downloader...")
+        logger.info("Using pytube downloader...")
         
         try:
-            # Create YouTube object
-            yt = YouTube(youtube_url)
+            # Create YouTube object with bypass_age_gate=True for age-restricted videos
+            yt = YouTube(youtube_url, use_oauth=False, allow_oauth_cache=True)
             
             # Extract video info
             video_info = {
