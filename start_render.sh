@@ -3,7 +3,10 @@
 # Supporta: Render.com, Railway.app, Fly.io, DigitalOcean, Heroku, etc.
 # Gestisce completamente i cookie e avvia l'applicazione Python
 
-set -e  # Exit on error (ma non per i cookie che sono opzionali)
+# Disabilita buffering per vedere output in tempo reale
+export PYTHONUNBUFFERED=1
+
+# Non usare set -e perché i cookie sono opzionali e non devono bloccare l'avvio
 
 echo "============================================================"
 echo "🚀 Render Startup Script"
@@ -112,5 +115,14 @@ echo ""
 echo "🚀 Launching application..."
 echo ""
 
-exec python app.py
+# Verifica che tutto sia pronto
+if [ ! -f "app.py" ]; then
+    echo "❌ FATAL ERROR: app.py not found in $(pwd)"
+    ls -la
+    exit 1
+fi
+
+# Avvia Python con output non buffered
+# Usa exec per sostituire il processo shell con Python
+exec python -u app.py
 

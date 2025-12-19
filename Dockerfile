@@ -28,7 +28,11 @@ RUN mkdir -p /app/temp
 # Expose port (Railway will set PORT environment variable)
 EXPOSE ${PORT:-5000}
 
+# Set Python to unbuffered mode for real-time logs
+ENV PYTHONUNBUFFERED=1
+
 # Use start script (handles cookies and starts app)
 # Works on: Railway, Render, Fly.io, DigitalOcean, etc.
+# Use shell form to ensure proper environment variable expansion
 CMD ["./start_render.sh"]
 
