@@ -163,7 +163,7 @@ class YouTubeAudioConverter:
         
         # List of clients to try in order (fallback if one fails)
         # web and mweb support cookies, ios and android don't
-        # On cloud platforms (Render, etc.), prefer clients that don't need cookies
+        # Prioritize clients that don't require cookies (ios/android) as they're more reliable
         player_clients_with_cookies = ['web', 'mweb']
         player_clients_without_cookies = ['ios', 'android']
         
@@ -174,21 +174,15 @@ class YouTubeAudioConverter:
         # On cloud platforms, skip browser-based cookie extraction
         has_cookies_file = self.cookies_path and os.path.exists(self.cookies_path)
         
-        # Prioritize clients based on environment
-        if is_cloud:
-            # On cloud: prefer clients that don't need cookies, but try with cookie file if available
-            if has_cookies_file:
-                all_clients = player_clients_without_cookies + player_clients_with_cookies
-            else:
-                all_clients = player_clients_without_cookies
+        # Always prioritize clients that don't need cookies (ios/android) first
+        # They're more reliable and don't require authentication
+        # Only try web/mweb as fallback if ios/android fail
+        if has_cookies_file and not is_cloud:
+            # Local with cookies: try ios/android first (most reliable), then web/mweb with cookies
+            all_clients = player_clients_without_cookies + player_clients_with_cookies
         else:
-            # Local: try with cookies first if available, otherwise try all clients
-            # (web/mweb can use cookiesfrombrowser even without cookie file)
-            if has_cookies_file:
-                all_clients = player_clients_with_cookies + player_clients_without_cookies
-            else:
-                # Try web/mweb first (can use browser cookies), then fallback to ios/android
-                all_clients = player_clients_with_cookies + player_clients_without_cookies
+            # Cloud or no cookies: use only clients that don't need cookies
+            all_clients = player_clients_without_cookies
         
         # Try each client until one works
         last_error = None
