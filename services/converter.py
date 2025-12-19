@@ -286,30 +286,39 @@ class YouTubeAudioConverter:
                     'quiet': False,
                     'no_warnings': False,
                     'cachedir': False,
-                    'force_ipv4': True,  # Critical for Render
+                    'force_ipv4': True,  # Critical for cloud platforms
                     'retries': 10,  # Increased retries for 502 errors
                     'fragment_retries': 10,  # Retry fragments on 502
                     'skip_unavailable_fragments': True,  # Skip unavailable fragments
-                    'socket_timeout': 30,
+                    'socket_timeout': 60,  # Increased timeout for slow connections
                     'ignoreerrors': False,
                     'extractor_args': {
                         'youtube': {
                             'player_client': [client],
+                            'player_skip': ['webpage'],  # Skip webpage extraction if player fails
                         }
                     },
                     # Better error handling for HTTP errors
                     'http_chunk_size': 10485760,  # 10MB chunks
-                    # User-Agent and headers to appear more like a real browser
-                    'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    # User-Agent and headers to appear more like a real browser (updated)
+                    'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
                     'referer': 'https://www.youtube.com/',
                     'http_headers': {
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
                         'Accept-Language': 'en-US,en;q=0.9',
-                        'Accept-Encoding': 'gzip, deflate, br',
+                        'Accept-Encoding': 'gzip, deflate, br, zstd',
                         'DNT': '1',
                         'Connection': 'keep-alive',
                         'Upgrade-Insecure-Requests': '1',
-                    }
+                        'Sec-Fetch-Dest': 'document',
+                        'Sec-Fetch-Mode': 'navigate',
+                        'Sec-Fetch-Site': 'none',
+                        'Sec-Fetch-User': '?1',
+                    },
+                    # Additional options for better compatibility
+                    'extractor_retries': 3,  # Retry extractor on failure
+                    'sleep_interval': 1,  # Sleep between requests
+                    'sleep_interval_requests': 1,  # Sleep between multiple requests
                 }
                 
                 # For Android client, avoid HTTPS formats that require GVS PO Token

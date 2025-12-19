@@ -134,6 +134,17 @@ if ! python -c "import flask; import yt_dlp; print('✅ All imports OK')" 2>&1; 
     }
 fi
 
+# Aggiorna yt-dlp all'ultima versione (critico per compatibilità con YouTube)
+echo ""
+echo "🔄 Updating yt-dlp to latest version..."
+echo "   Current version:"
+python -c "import yt_dlp; print(f'   {yt_dlp.version.__version__}')" 2>/dev/null || echo "   Unknown"
+echo "   Updating..."
+pip install --upgrade --no-cache-dir yt-dlp 2>&1 | grep -E "(Successfully|Requirement already|up-to-date|ERROR)" || true
+echo "   ✅ yt-dlp update check complete"
+echo "   Latest version:"
+python -c "import yt_dlp; print(f'   {yt_dlp.version.__version__}')" 2>/dev/null || echo "   Unknown"
+
 echo ""
 echo "✅ All checks passed, starting Flask application..."
 echo ""
