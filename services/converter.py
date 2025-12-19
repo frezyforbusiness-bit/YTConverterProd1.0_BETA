@@ -86,14 +86,50 @@ class YouTubeAudioConverter:
         if self.cookies_path and os.path.exists(self.cookies_path):
             file_size = os.path.getsize(self.cookies_path)
             logger.info(f"✅ Cookies file found ({env_type}): {self.cookies_path} ({file_size} bytes)")
-            # Verify file is readable
+            # Verify file is readable and check cookie count
             try:
                 with open(self.cookies_path, 'r') as f:
-                    first_line = f.readline()
+                    lines = f.readlines()
+                    first_line = lines[0] if lines else ""
                     if first_line.startswith('# Netscape'):
                         logger.debug(f"✅ Cookie file format verified (Netscape format)")
                     else:
                         logger.warning(f"⚠️  Cookie file may not be in Netscape format")
+                    
+                    # Count YouTube/Google cookies and check expiration
+                    import time
+                    current_time = int(time.time())
+                    youtube_cookies = 0
+                    expired_cookies = 0
+                    valid_cookies = 0
+                    
+                    for line in lines:
+                        if 'youtube.com' in line or 'google.com' in line:
+                            youtube_cookies += 1
+                            # Parse expiration (Netscape format: domain, flag, path, secure, expiration, name, value)
+                            parts = line.strip().split('\t')
+                            if len(parts) >= 5:
+                                try:
+                                    expiration = int(parts[4])
+                                    if expiration > 0:  # 0 means session cookie
+                                        if expiration < current_time:
+                                            expired_cookies += 1
+                                        else:
+                                            valid_cookies += 1
+                                except (ValueError, IndexError):
+                                    pass
+                    
+                    total_cookies = sum(1 for line in lines if line.strip() and not line.startswith('#'))
+                    logger.info(f"📊 Cookie stats: {youtube_cookies} YouTube/Google cookies out of {total_cookies} total")
+                    if youtube_cookies > 0:
+                        logger.info(f"   Valid: {valid_cookies}, Expired: {expired_cookies}, Session: {youtube_cookies - valid_cookies - expired_cookies}")
+                    
+                    if youtube_cookies == 0:
+                        logger.warning(f"⚠️  WARNING: No YouTube/Google cookies found! Cookie file may be invalid.")
+                    elif youtube_cookies < 5:
+                        logger.warning(f"⚠️  WARNING: Very few YouTube/Google cookies ({youtube_cookies}). Cookie file may be incomplete.")
+                    elif expired_cookies > valid_cookies:
+                        logger.warning(f"⚠️  WARNING: Most cookies are expired ({expired_cookies} expired vs {valid_cookies} valid). Please update cookies!")
             except Exception as e:
                 logger.error(f"❌ Cannot read cookie file: {e}")
         else:
