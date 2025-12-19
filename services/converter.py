@@ -216,6 +216,13 @@ class YouTubeAudioConverter:
                     'http_chunk_size': 10485760,  # 10MB chunks
                 }
                 
+                # For Android client, avoid HTTPS formats that require GVS PO Token
+                if client == 'android':
+                    # Prefer formats that don't require GVS PO Token
+                    # This will skip HTTPS formats that may yield 403 errors
+                    ydl_opts['format'] = 'bestaudio[protocol!=https_dash]/best[protocol!=https_dash]/bestaudio/best'
+                    logger.debug("Android client: avoiding HTTPS formats that require GVS PO Token")
+                
                 # Add cookies for clients that support them
                 if client in ['web', 'mweb']:
                     # Only try browser cookies if not in cloud environment
