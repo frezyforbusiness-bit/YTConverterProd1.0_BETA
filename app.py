@@ -43,7 +43,7 @@ converter = YouTubeAudioConverter(TEMP_DIR)
 task_manager = TaskManager(TASK_TIMEOUT)
 
 # Initialize cleanup scheduler
-cleanup_scheduler = CleanupScheduler(TEMP_DIR, CLEANUP_INTERVAL)
+cleanup_scheduler = CleanupScheduler(TEMP_DIR, CLEANUP_INTERVAL, task_manager=task_manager)
 
 
 def convert_task(task_id: str, youtube_url: str, audio_format: str):
@@ -288,6 +288,8 @@ def get_status(task_id):
     status = task_manager.get_status(task_id)
     
     if status is None:
+        # Log for debugging - task might have been cleaned up or never created
+        logger.warning(f"Task {task_id} not found. Current active tasks: {task_manager.get_task_count()}")
         return jsonify({"error": "Task not found"}), 404
     
     # Return status without internal fields

@@ -95,7 +95,7 @@ class CleanupScheduler:
     Background thread scheduler for automatic cleanup
     """
     
-    def __init__(self, temp_dir: str, interval_seconds: int = 3600, max_age_hours: int = 24):
+    def __init__(self, temp_dir: str, interval_seconds: int = 3600, max_age_hours: int = 24, task_manager=None):
         """
         Initialize cleanup scheduler
         
@@ -103,10 +103,12 @@ class CleanupScheduler:
             temp_dir: Directory to clean
             interval_seconds: Cleanup interval in seconds (default: 3600 = 1 hour)
             max_age_hours: Maximum age of files in hours (default: 24)
+            task_manager: Optional TaskManager instance for cleaning up old tasks
         """
         self.temp_dir = temp_dir
         self.interval_seconds = interval_seconds
         self.max_age_hours = max_age_hours
+        self.task_manager = task_manager
         self.running = False
         self.thread: Optional[threading.Thread] = None
     
@@ -132,6 +134,10 @@ class CleanupScheduler:
         while self.running:
             try:
                 cleanup_old_files(self.temp_dir, self.max_age_hours)
+                
+                # Also cleanup old tasks if task_manager is provided
+                if self.task_manager:
+                    self.task_manager.cleanup_old_tasks()
             except Exception as e:
                 logger.error(f"Error in cleanup scheduler: {e}")
             
