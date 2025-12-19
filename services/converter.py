@@ -74,16 +74,34 @@ class YouTubeAudioConverter:
             project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             self.cookies_path = os.path.join(project_root, 'cookies.txt')
         
-        # Log cookies file status
+        # Log cookies file status with detailed info
+        is_cloud_env = os.environ.get('RENDER') or os.environ.get('DYNO') or os.environ.get('HEROKU')
+        env_type = "cloud" if is_cloud_env else "local"
+        
+        # Debug: log environment variables
+        cookies_file_env = os.environ.get('COOKIES_FILE')
+        cookies_base64_env = os.environ.get('COOKIES_BASE64')
+        logger.debug(f"Environment check ({env_type}): COOKIES_FILE={cookies_file_env}, COOKIES_BASE64={'SET' if cookies_base64_env else 'NOT SET'}")
+        
         if self.cookies_path and os.path.exists(self.cookies_path):
             file_size = os.path.getsize(self.cookies_path)
-            is_cloud_env = os.environ.get('RENDER') or os.environ.get('DYNO') or os.environ.get('HEROKU')
-            env_type = "cloud" if is_cloud_env else "local"
-            logger.info(f"Cookies file found ({env_type}): {self.cookies_path} ({file_size} bytes)")
+            logger.info(f"✅ Cookies file found ({env_type}): {self.cookies_path} ({file_size} bytes)")
+            # Verify file is readable
+            try:
+                with open(self.cookies_path, 'r') as f:
+                    first_line = f.readline()
+                    if first_line.startswith('# Netscape'):
+                        logger.debug(f"✅ Cookie file format verified (Netscape format)")
+                    else:
+                        logger.warning(f"⚠️  Cookie file may not be in Netscape format")
+            except Exception as e:
+                logger.error(f"❌ Cannot read cookie file: {e}")
         else:
-            is_cloud_env = os.environ.get('RENDER') or os.environ.get('DYNO') or os.environ.get('HEROKU')
-            env_type = "cloud" if is_cloud_env else "local"
-            logger.warning(f"No cookies file available ({env_type}) - will use clients that don't require cookies (may fail with bot detection)")
+            logger.warning(f"❌ No cookies file available ({env_type}) - will use clients that don't require cookies (may fail with bot detection)")
+            if cookies_base64_env:
+                logger.warning(f"   COOKIES_BASE64 is set but decoding may have failed")
+            if cookies_file_env:
+                logger.warning(f"   COOKIES_FILE is set to '{cookies_file_env}' but file doesn't exist")
     
     def ensure_temp_dir(self):
         """Ensures the temporary directory exists"""
