@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ytconverter
+    env: python
+    buildCommand: |
+      apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+      pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PORT
+        sync: false
+      - key: FLASK_ENV
+        value: production
+      - key: TASK_TIMEOUT
+        value: 1800
+      - key: CLEANUP_INTERVAL
+        value: 3600
+      - key: LOG_LEVEL
+        value: INFO
+      # Opzionale: aggiungi COOKIES_BASE64 se hai i cookie
+      # - key: COOKIES_BASE64
+      #   value: <your-base64-encoded-cookies>
+
