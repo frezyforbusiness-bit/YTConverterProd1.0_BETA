@@ -155,6 +155,14 @@ echo "   Updating..."
 pip install --upgrade --no-cache-dir pytubefix 2>&1 | grep -E "(Successfully|Requirement already|up-to-date|ERROR)" || true
 echo "   ✅ pytubefix update check complete"
 
+# Initialize database if MySQL is configured
+if [ -n "$MYSQL_URL" ] || [ -n "$MYSQL_HOST" ]; then
+    echo ""
+    echo "🗄️  Initializing MySQL database..."
+    python scripts/init_database.py 2>&1 | grep -E "(successfully|failed|error|warning|✓|✓|Database)" || true
+    echo ""
+fi
+
 echo ""
 echo "✅ All checks passed, starting Flask application..."
 echo ""

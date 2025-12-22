@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Producer Tools</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <h1>🔐 Admin Login</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-login">Login</button>
+                <div id="loginError" class="error-message" style="display: none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboardScreen" class="dashboard-screen" style="display: none;">
+        <header class="admin-header">
+            <h1>📊 Admin Dashboard</h1>
+            <div class="admin-header-actions">
+                <span id="adminUsername" class="admin-username"></span>
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </header>
+
+        <main class="admin-main">
+            <!-- Overview Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Conversions</div>
+                        <div class="stat-value" id="statTotal">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Successful</div>
+                        <div class="stat-value" id="statSuccessful">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Today</div>
+                        <div class="stat-value" id="statToday">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">❌</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Errors Today</div>
+                        <div class="stat-value" id="statErrorsToday">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Success Rate</div>
+                        <div class="stat-value" id="statSuccessRate">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h2>Conversions by Format</h2>
+                    <canvas id="formatChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2>Conversions Over Time</h2>
+                    <div class="chart-controls">
+                        <button class="btn-period active" data-days="7">7 Days</button>
+                        <button class="btn-period" data-days="30">30 Days</button>
+                    </div>
+                    <canvas id="timeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tables Section -->
+            <div class="tables-section">
+                <div class="table-container">
+                    <h2>Recent Conversions</h2>
+                    <div class="table-wrapper">
+                        <table id="conversionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Video Title</th>
+                                    <th>Format</th>
+                                    <th>Status</th>
+                                    <th>BPM</th>
+                                    <th>Key</th>
+                                </tr>
+                            </thead>
+                            <tbody id="conversionsTableBody">
+                                <tr><td colspan="6">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <h2>Recent Errors</h2>
+                    <div class="table-wrapper">
+                        <table id="errorsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Error Type</th>
+                                    <th>Message</th>
+                                    <th>URL</th>
+                                </tr>
+                            </thead>
+                            <tbody id="errorsTableBody">
+                                <tr><td colspan="4">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="profile-section">
+                <h2>Profile</h2>
+                <div class="profile-card">
+                    <div class="profile-info">
+                        <div class="profile-item">
+                            <span class="profile-label">Username:</span>
+                            <span class="profile-value" id="profileUsername">-</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Last Login:</span>
+                            <span class="profile-value" id="profileLastLogin">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
+

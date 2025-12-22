@@ -11,6 +11,9 @@ from flask_cors import CORS
 
 from services.task_manager import TaskManager
 from services.converter import YouTubeAudioConverter
+from services.database import DatabaseManager
+from services.statistics import StatisticsManager
+from services.auth import AuthManager, require_admin
 from utils.validators import validate_convert_request
 from utils.logger import setup_logger, log_error_with_traceback
 from utils.cleanup import CleanupScheduler
@@ -37,6 +40,23 @@ CLEANUP_INTERVAL = int(os.environ.get('CLEANUP_INTERVAL', 3600))  # 1 hour defau
 
 # Ensure temp directory exists
 os.makedirs(TEMP_DIR, exist_ok=True)
+
+# Initialize database and statistics (with error handling for optional MySQL)
+try:
+    db_manager = DatabaseManager()
+    if db_manager.test_connection():
+        db_manager.init_schema()
+        statistics_manager = StatisticsManager(db_manager)
+        logger.info("✓ MySQL database and statistics initialized")
+    else:
+        logger.warning("MySQL connection failed. Statistics will not be recorded.")
+        statistics_manager = None
+except Exception as e:
+    logger.warning(f"Failed to initialize MySQL: {e}. Statistics will not be available.")
+    statistics_manager = None
+
+# Initialize authentication manager
+auth_manager = AuthManager()
 
 # Initialize services
 converter = YouTubeAudioConverter(TEMP_DIR)
@@ -141,6 +161,24 @@ def convert_task(task_id: str, youtube_url: str, audio_format: str):
             file_path=final_output_path
         )
         
+        # Record statistics
+        if statistics_manager:
+            try:
+                video_id = video_info.get('id', '')
+                video_title = video_info.get('title', 'Unknown')
+                duration = video_info.get('duration')
+                statistics_manager.record_conversion(
+                    video_id=video_id,
+                    video_title=video_title,
+                    audio_format=audio_format,
+                    status='done',
+                    duration=duration,
+                    bpm=bpm,
+                    key=scale
+                )
+            except Exception as e:
+                logger.warning(f"Failed to record statistics: {e}")
+        
         logger.info(f"Conversion completed for task {task_id}: {final_output_path}")
     
     except Exception as e:
@@ -168,6 +206,37 @@ def convert_task(task_id: str, youtube_url: str, audio_format: str):
             message='Error during conversion',
             error=error_msg
         )
+        
+        # Record error in statistics
+        if statistics_manager:
+            try:
+                # Try to extract video_id from URL if possible
+                video_id = None
+                try:
+                    import re
+                    match = re.search(r'(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})', youtube_url)
+                    if match:
+                        video_id = match.group(1)
+                except:
+                    pass
+                
+                statistics_manager.record_error(
+                    error_type='ConversionError',
+                    error_message=error_msg,
+                    youtube_url=youtube_url
+                )
+                
+                # Also record as failed conversion if we have video info
+                if video_id:
+                    statistics_manager.record_conversion(
+                        video_id=video_id,
+                        video_title='Unknown',
+                        audio_format=audio_format,
+                        status='error',
+                        error_message=error_msg
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to record error statistics: {e}")
 
 
 # Frontend directory
@@ -194,9 +263,23 @@ def api_info():
             "health": "/health",
             "convert": "/convert (POST)",
             "status": "/status/<task_id> (GET)",
-            "download": "/download/<task_id> (GET)"
+            "download": "/download/<task_id> (GET)",
+            "admin_login": "/api/admin/login (POST)",
+            "admin_dashboard": "/api/admin/dashboard (GET)",
+            "admin_recent": "/api/admin/recent-conversions (GET)",
+            "admin_errors": "/api/admin/errors (GET)",
+            "admin_stats_date": "/api/admin/stats-by-date (GET)",
+            "admin_profile": "/api/admin/profile (GET)"
         }
     })
+
+
+@app.route('/admin', methods=['GET'])
+def admin_page():
+    """
+    Serve admin page
+    """
+    return send_from_directory(FRONTEND_DIR, 'admin.html')
 
 
 @app.route('/<path:filename>')
@@ -351,6 +434,318 @@ def internal_error(error):
     """Handle 500 errors"""
     logger.error(f"Internal server error: {error}")
     return jsonify({"error": "Internal server error"}), 500
+
+
+# ============================================================================
+# ADMIN ENDPOINTS
+# ============================================================================
+
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    """
+    Admin login endpoint
+    
+    Expected JSON body:
+    {
+        "username": "admin",
+        "password": "password"
+    }
+    
+    Returns:
+    {
+        "token": "jwt_token_here",
+        "username": "admin"
+    }
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            return jsonify({"error": "Username and password required"}), 400
+        
+        # Verify credentials
+        if not statistics_manager:
+            return jsonify({"error": "Database not available"}), 503
+        
+        try:
+            admin = statistics_manager.db.execute_one(
+                "SELECT id, username, password_hash FROM admins WHERE username = %s",
+                (username,)
+            )
+            
+            if not admin:
+                return jsonify({"error": "Invalid credentials"}), 401
+            
+            # Verify password
+            if not auth_manager.verify_password(password, admin['password_hash']):
+                return jsonify({"error": "Invalid credentials"}), 401
+            
+            # Update last login
+            statistics_manager.db.execute(
+                "UPDATE admins SET last_login = NOW() WHERE id = %s",
+                (admin['id'],),
+                commit=True
+            )
+            
+            # Generate token
+            token = auth_manager.create_token(username)
+            
+            return jsonify({
+                "token": token,
+                "username": username
+            }), 200
+            
+        except Exception as e:
+            logger.error(f"Login error: {e}")
+            return jsonify({"error": "Login failed"}), 500
+            
+    except Exception as e:
+        logger.error(f"Error in admin login: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route('/api/admin/dashboard', methods=['GET'])
+def admin_dashboard():
+    """
+    Get dashboard statistics (protected endpoint)
+    
+    Returns:
+    {
+        "total_conversions": 123,
+        "successful_conversions": 100,
+        "failed_conversions": 23,
+        "conversions_today": 5,
+        "errors_today": 1,
+        "success_rate": 81.3,
+        "by_format": {...}
+    }
+    """
+    if not statistics_manager:
+        return jsonify({"error": "Statistics not available"}), 503
+    
+    # Manual authentication check
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return jsonify({"error": "No authorization token provided"}), 401
+    
+    try:
+        token = auth_header.split(' ')[1] if ' ' in auth_header else auth_header
+    except IndexError:
+        return jsonify({"error": "Invalid authorization header format"}), 401
+    
+    payload = auth_manager.verify_token(token)
+    if not payload:
+        return jsonify({"error": "Invalid or expired token"}), 401
+    
+    username = payload.get('username')
+    if not username:
+        return jsonify({"error": "Invalid token payload"}), 401
+    
+    # Verify user exists
+    try:
+        admin = statistics_manager.db.execute_one(
+            "SELECT id, username FROM admins WHERE username = %s",
+            (username,)
+        )
+        if not admin:
+            return jsonify({"error": "Admin user not found"}), 401
+    except Exception as e:
+        logger.error(f"Error verifying admin user: {e}")
+        return jsonify({"error": "Authentication verification failed"}), 500
+    
+    # Get statistics
+    try:
+        stats = statistics_manager.get_statistics()
+        return jsonify(stats), 200
+    except Exception as e:
+        logger.error(f"Error getting dashboard stats: {e}")
+        return jsonify({"error": "Failed to retrieve statistics"}), 500
+
+
+@app.route('/api/admin/recent-conversions', methods=['GET'])
+def admin_recent_conversions():
+    """
+    Get recent conversions (protected endpoint)
+    
+    Query params:
+    - limit: Number of conversions to return (default: 20)
+    
+    Returns:
+    {
+        "conversions": [...]
+    }
+    """
+    if not statistics_manager:
+        return jsonify({"error": "Statistics not available"}), 503
+    
+    # Authentication check (same as dashboard)
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return jsonify({"error": "No authorization token provided"}), 401
+    
+    try:
+        token = auth_header.split(' ')[1] if ' ' in auth_header else auth_header
+    except IndexError:
+        return jsonify({"error": "Invalid authorization header format"}), 401
+    
+    payload = auth_manager.verify_token(token)
+    if not payload:
+        return jsonify({"error": "Invalid or expired token"}), 401
+    
+    try:
+        limit = int(request.args.get('limit', 20))
+        conversions = statistics_manager.get_recent_conversions(limit=limit)
+        return jsonify({"conversions": conversions}), 200
+    except Exception as e:
+        logger.error(f"Error getting recent conversions: {e}")
+        return jsonify({"error": "Failed to retrieve conversions"}), 500
+
+
+@app.route('/api/admin/errors', methods=['GET'])
+def admin_errors():
+    """
+    Get error logs (protected endpoint)
+    
+    Query params:
+    - limit: Number of errors to return (default: 20)
+    
+    Returns:
+    {
+        "errors": [...]
+    }
+    """
+    if not statistics_manager:
+        return jsonify({"error": "Statistics not available"}), 503
+    
+    # Authentication check
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return jsonify({"error": "No authorization token provided"}), 401
+    
+    try:
+        token = auth_header.split(' ')[1] if ' ' in auth_header else auth_header
+    except IndexError:
+        return jsonify({"error": "Invalid authorization header format"}), 401
+    
+    payload = auth_manager.verify_token(token)
+    if not payload:
+        return jsonify({"error": "Invalid or expired token"}), 401
+    
+    try:
+        limit = int(request.args.get('limit', 20))
+        errors = statistics_manager.get_error_logs(limit=limit)
+        return jsonify({"errors": errors}), 200
+    except Exception as e:
+        logger.error(f"Error getting error logs: {e}")
+        return jsonify({"error": "Failed to retrieve errors"}), 500
+
+
+@app.route('/api/admin/stats-by-date', methods=['GET'])
+def admin_stats_by_date():
+    """
+    Get statistics grouped by date (protected endpoint)
+    
+    Query params:
+    - days: Number of days to include (default: 7)
+    
+    Returns:
+    {
+        "dates": ["2025-12-13", ...],
+        "totals": [10, 15, ...],
+        "successful": [8, 12, ...],
+        "failed": [2, 3, ...]
+    }
+    """
+    if not statistics_manager:
+        return jsonify({"error": "Statistics not available"}), 503
+    
+    # Authentication check
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return jsonify({"error": "No authorization token provided"}), 401
+    
+    try:
+        token = auth_header.split(' ')[1] if ' ' in auth_header else auth_header
+    except IndexError:
+        return jsonify({"error": "Invalid authorization header format"}), 401
+    
+    payload = auth_manager.verify_token(token)
+    if not payload:
+        return jsonify({"error": "Invalid or expired token"}), 401
+    
+    try:
+        days = int(request.args.get('days', 7))
+        stats = statistics_manager.get_statistics_by_date(days=days)
+        return jsonify(stats), 200
+    except Exception as e:
+        logger.error(f"Error getting stats by date: {e}")
+        return jsonify({"error": "Failed to retrieve statistics"}), 500
+
+
+@app.route('/api/admin/profile', methods=['GET'])
+def admin_profile():
+    """
+    Get admin profile (protected endpoint)
+    
+    Returns:
+    {
+        "id": 1,
+        "username": "admin",
+        "last_login": "2025-12-19T10:00:00"
+    }
+    """
+    if not statistics_manager:
+        return jsonify({"error": "Database not available"}), 503
+    
+    # Authentication check
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return jsonify({"error": "No authorization token provided"}), 401
+    
+    try:
+        token = auth_header.split(' ')[1] if ' ' in auth_header else auth_header
+    except IndexError:
+        return jsonify({"error": "Invalid authorization header format"}), 401
+    
+    payload = auth_manager.verify_token(token)
+    if not payload:
+        return jsonify({"error": "Invalid or expired token"}), 401
+    
+    username = payload.get('username')
+    if not username:
+        return jsonify({"error": "Invalid token payload"}), 401
+    
+    try:
+        admin = statistics_manager.db.execute_one(
+            "SELECT id, username, created_at, last_login FROM admins WHERE username = %s",
+            (username,)
+        )
+        
+        if not admin:
+            return jsonify({"error": "Admin not found"}), 404
+        
+        return jsonify({
+            "id": admin['id'],
+            "username": admin['username'],
+            "created_at": admin['created_at'].isoformat() if admin['created_at'] else None,
+            "last_login": admin['last_login'].isoformat() if admin['last_login'] else None
+        }), 200
+    except Exception as e:
+        logger.error(f"Error getting admin profile: {e}")
+        return jsonify({"error": "Failed to retrieve profile"}), 500
+
+
+@app.route('/admin', methods=['GET'])
+def admin_page():
+    """
+    Serve admin page
+    """
+    return send_from_directory(FRONTEND_DIR, 'admin.html')
 
 
 if __name__ == '__main__':
