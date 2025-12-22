@@ -1,6 +1,5 @@
 Flask==3.0.0
 flask-cors==4.0.0
-yt-dlp>=2024.12.13
 pytubefix>=6.0.0
 librosa>=0.10.0
 numpy>=1.24.0

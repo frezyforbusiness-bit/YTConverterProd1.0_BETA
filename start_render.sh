@@ -125,25 +125,35 @@ fi
 
 # Verifica che Python possa importare le dipendenze
 echo "🔍 Verifying Python environment..."
-if ! python -c "import flask; import yt_dlp; print('✅ All imports OK')" 2>&1; then
-    echo "❌ ERROR: Python dependencies not available"
-    echo "   Trying to install requirements..."
-    pip install -r requirements.txt || {
-        echo "❌ Failed to install requirements"
-        exit 1
-    }
+if ! python -c "import flask; import pytubefix; print('✅ All imports OK')" 2>&1; then
+    # Fallback check for pytube standard
+    if ! python -c "import flask; import pytube; print('✅ All imports OK (pytube standard)')" 2>&1; then
+        echo "❌ ERROR: Python dependencies not available"
+        echo "   Trying to install requirements..."
+        pip install -r requirements.txt || {
+            echo "❌ Failed to install requirements"
+            exit 1
+        }
+    fi
 fi
 
-# Aggiorna yt-dlp all'ultima versione (critico per compatibilità con YouTube)
+# Aggiorna pytubefix all'ultima versione (per compatibilità con YouTube)
 echo ""
-echo "🔄 Updating yt-dlp to latest version..."
+echo "🔄 Updating pytubefix to latest version..."
 echo "   Current version:"
-python -c "import yt_dlp; print(f'   {yt_dlp.version.__version__}')" 2>/dev/null || echo "   Unknown"
+python -c "try:
+    import pytubefix
+    print(f'   {pytubefix.__version__}')
+except:
+    try:
+        import pytube
+        print(f'   {pytube.__version__} (pytube standard)')
+    except:
+        print('   Unknown')
+" 2>/dev/null || echo "   Unknown"
 echo "   Updating..."
-pip install --upgrade --no-cache-dir yt-dlp 2>&1 | grep -E "(Successfully|Requirement already|up-to-date|ERROR)" || true
-echo "   ✅ yt-dlp update check complete"
-echo "   Latest version:"
-python -c "import yt_dlp; print(f'   {yt_dlp.version.__version__}')" 2>/dev/null || echo "   Unknown"
+pip install --upgrade --no-cache-dir pytubefix 2>&1 | grep -E "(Successfully|Requirement already|up-to-date|ERROR)" || true
+echo "   ✅ pytubefix update check complete"
 
 echo ""
 echo "✅ All checks passed, starting Flask application..."

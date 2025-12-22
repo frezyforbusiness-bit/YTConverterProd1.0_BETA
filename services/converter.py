@@ -5,7 +5,6 @@ Handles YouTube video download, audio conversion, and BPM/key detection
 
 import os
 import subprocess
-import yt_dlp
 import tempfile
 import re
 import time
@@ -213,9 +212,9 @@ class YouTubeAudioConverter:
         """
         Downloads YouTube video as temporary file or extracts info only
         
-        Production-ready implementation:
-        - Headless operation (no browser dependencies)
-        - Robust retry logic with multiple player clients
+        Optimized implementation using pytube:
+        - Fast and lightweight
+        - No complex fallback logic
         - Clear error messages for REST API
         
         Args:
@@ -229,249 +228,14 @@ class YouTubeAudioConverter:
         Raises:
             ValueError: Invalid URL or playlist detected
             FileNotFoundError: Video file not found after download
-            Exception: Download failed after trying all clients
+            Exception: Download failed
         """
         # Validate URL first
         self.validate_youtube_url(youtube_url)
         
-        # TESTING: Use pytube as primary method instead of yt-dlp
-        logger.info("Using pytube as primary downloader (testing mode)...")
-        try:
-            return self._download_with_pytube(youtube_url, get_info_only)
-        except Exception as pytube_error:
-            logger.warning(f"pytube failed: {str(pytube_error)[:200]}")
-            logger.info("Falling back to yt-dlp...")
-            # Continue with yt-dlp as fallback
-        
-        # List of clients to try in order (fallback if one fails)
-        # web and mweb support cookies, ios and android don't
-        # Prioritize clients that don't require cookies (ios/android) as they're more reliable
-        player_clients_with_cookies = ['web', 'mweb']
-        player_clients_without_cookies = ['ios', 'android']
-        
-        # Check if we're in a cloud environment (no browser available)
-        # Railway, Render, Heroku, Fly.io, DigitalOcean, etc. don't have browsers
-        is_cloud = (
-            os.environ.get('RENDER') or 
-            os.environ.get('DYNO') or 
-            os.environ.get('HEROKU') or
-            os.environ.get('RAILWAY_ENVIRONMENT') or
-            os.environ.get('RAILWAY_PROJECT_ID') or
-            os.environ.get('FLY_APP_NAME') or
-            os.environ.get('VERCEL') or
-            # Also check if PORT is set (common in cloud platforms)
-            (os.environ.get('PORT') and not os.environ.get('HOME', '').endswith('/home'))
-        )
-        
-        # Try with cookies first (if available), then without
-        # On cloud platforms, skip browser-based cookie extraction
-        has_cookies_file = self.cookies_path and os.path.exists(self.cookies_path)
-        
-        # Always prioritize clients that don't need cookies (ios/android) first
-        # They're more reliable and don't require authentication
-        # But if cookies are available, also try web/mweb as they work better with cookies
-        if has_cookies_file:
-            # With cookies: try ios/android first (most reliable), then web/mweb with cookies
-            # This works both locally and on cloud
-            all_clients = player_clients_without_cookies + player_clients_with_cookies
-        else:
-            # No cookies: use only clients that don't need cookies
-            all_clients = player_clients_without_cookies
-        
-        # Try each client until one works
-        last_error = None
-        for idx, client in enumerate(all_clients):
-            # Add small delay between client attempts to avoid rate limiting
-            if idx > 0:
-                time.sleep(2)
-            try:
-                logger.debug(f"Trying YouTube client: {client}...")
-                
-                # Optimized yt-dlp configuration for cloud environments
-                ydl_opts = {
-                    'format': 'bestaudio/best',
-                    'outtmpl': os.path.join(self.temp_dir, '%(title)s.%(ext)s'),
-                    'noplaylist': True,
-                    'quiet': False,
-                    'no_warnings': False,
-                    'cachedir': False,
-                    'force_ipv4': True,  # Critical for cloud platforms
-                    'retries': 10,  # Increased retries for 502 errors
-                    'fragment_retries': 10,  # Retry fragments on 502
-                    'skip_unavailable_fragments': True,  # Skip unavailable fragments
-                    'socket_timeout': 60,  # Increased timeout for slow connections
-                    'ignoreerrors': False,
-                    'extractor_args': {
-                        'youtube': {
-                            'player_client': [client],
-                            'player_skip': ['webpage'],  # Skip webpage extraction if player fails
-                        }
-                    },
-                    # Better error handling for HTTP errors
-                    'http_chunk_size': 10485760,  # 10MB chunks
-                    # User-Agent and headers to appear more like a real browser (updated)
-                    'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-                    'referer': 'https://www.youtube.com/',
-                    'http_headers': {
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                        'Accept-Language': 'en-US,en;q=0.9',
-                        'Accept-Encoding': 'gzip, deflate, br, zstd',
-                        'DNT': '1',
-                        'Connection': 'keep-alive',
-                        'Upgrade-Insecure-Requests': '1',
-                        'Sec-Fetch-Dest': 'document',
-                        'Sec-Fetch-Mode': 'navigate',
-                        'Sec-Fetch-Site': 'none',
-                        'Sec-Fetch-User': '?1',
-                    },
-                    # Additional options for better compatibility
-                    'extractor_retries': 3,  # Retry extractor on failure
-                    'sleep_interval': 1,  # Sleep between requests
-                    'sleep_interval_requests': 1,  # Sleep between multiple requests
-                }
-                
-                # For Android client, avoid HTTPS formats that require GVS PO Token
-                if client == 'android':
-                    # Prefer formats that don't require GVS PO Token
-                    # This will skip HTTPS formats that may yield 403 errors
-                    ydl_opts['format'] = 'bestaudio[protocol!=https_dash]/best[protocol!=https_dash]/bestaudio/best'
-                    logger.debug("Android client: avoiding HTTPS formats that require GVS PO Token")
-                
-                # For iOS client, use best available format (most reliable)
-                if client == 'ios':
-                    logger.debug("iOS client: using best available format")
-                
-                # Add cookies for clients that support them
-                if client in ['web', 'mweb']:
-                    # NEVER use browser cookie extraction in cloud environments
-                    # Cloud platforms don't have browsers installed
-                    if not is_cloud:
-                        try:
-                            browsers_to_try = ['chrome', 'firefox', 'edge', 'safari', 'opera', 'brave']
-                            if os.name != 'nt':
-                                browsers_to_try.insert(1, 'chrome:~/.var/app/com.google.Chrome/')
-                            
-                            ydl_opts['cookiesfrombrowser'] = (browsers_to_try[0],)
-                            logger.debug(f"Using --cookies-from-browser {browsers_to_try[0]}")
-                        except Exception as e:
-                            logger.debug(f"Browser cookie extraction not available: {e}")
-                    else:
-                        logger.debug(f"Cloud environment detected - skipping browser cookie extraction")
-                    
-                    # Always try cookie file if it exists (works in cloud too)
-                    if self.cookies_path and os.path.exists(self.cookies_path):
-                        ydl_opts['cookiefile'] = self.cookies_path
-                        # IMPORTANT: Explicitly disable browser cookie extraction when using cookie file
-                        # This prevents yt-dlp from trying to extract from Chrome when it fails
-                        if 'cookiesfrombrowser' in ydl_opts:
-                            del ydl_opts['cookiesfrombrowser']
-                        
-                        file_size = os.path.getsize(self.cookies_path)
-                        logger.info(f"Using cookie file with {client} client: {self.cookies_path} ({file_size} bytes)")
-                        
-                        # Verifica che il file contenga cookie YouTube
-                        try:
-                            with open(self.cookies_path, 'r') as f:
-                                content = f.read()
-                                youtube_cookie_count = content.count('youtube.com') + content.count('google.com')
-                                if youtube_cookie_count == 0:
-                                    logger.warning(f"⚠️  WARNING: Cookie file for {client} contains NO YouTube/Google cookies!")
-                                else:
-                                    logger.debug(f"✅ Cookie file for {client} contains {youtube_cookie_count} YouTube/Google references")
-                        except Exception as e:
-                            logger.warning(f"⚠️  Could not verify cookie file content: {e}")
-                    else:
-                        logger.debug(f"No cookie file found for {client} client, proceeding without cookies")
-                
-                # Extract info first (validates URL and checks for playlists)
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(youtube_url, download=False)
-                
-                # Validate: reject playlists
-                if info.get('_type') == 'playlist':
-                    raise ValueError("Playlists are not supported. Use a single video URL.")
-                
-                # Handle single-entry playlists
-                if 'entries' in info and info['entries']:
-                    entries = list(info['entries'])
-                    if len(entries) > 1:
-                        raise ValueError("Playlists are not supported. Use a single video URL.")
-                    if len(entries) == 1:
-                        info = entries[0]
-                
-                # Validate video ID
-                if not info.get('id'):
-                    raise ValueError("Unable to extract video information. Check that the URL is correct.")
-                
-                # Check if audio or video formats are available
-                formats = info.get('formats', [])
-                audio_formats = [f for f in formats if f.get('acodec') != 'none' and f.get('vcodec') == 'none']
-                video_formats = [f for f in formats if f.get('vcodec') != 'none']
-                
-                if not audio_formats and not get_info_only:
-                    if video_formats:
-                        logger.warning("No pure audio formats found, will download video and extract audio")
-                    else:
-                        raise Exception("No downloadable formats available for this client")
-                
-                # If only info is needed, return now
-                if get_info_only:
-                    return None, info
-                
-                # Download the video
-                logger.info(f"Downloading with {client} client...")
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(youtube_url, download=True)
-                    video_path = ydl.prepare_filename(info)
-                
-                # Handle different file extensions
-                if not os.path.exists(video_path):
-                    base_name = os.path.splitext(video_path)[0]
-                    for ext in ['.webm', '.m4a', '.mp4', '.opus', '.ogg']:
-                        potential_path = base_name + ext
-                        if os.path.exists(potential_path):
-                            video_path = potential_path
-                            break
-                
-                # Final validation
-                if not os.path.exists(video_path):
-                    raise FileNotFoundError("Video file not found after download")
-                
-                # Success!
-                logger.info(f"Successfully downloaded video using {client} client")
-                return video_path, info
-                
-            except Exception as e:
-                error_msg = str(e)
-                # Check for specific HTTP errors
-                if '502' in error_msg or 'Bad Gateway' in error_msg:
-                    logger.warning(f"Client {client} failed with 502 Bad Gateway (YouTube bot detection or rate limiting). Trying next client...")
-                elif 'Sign in to confirm' in error_msg or 'not a bot' in error_msg:
-                    logger.warning(f"Client {client} failed: YouTube bot detection (requires authentication). Trying next client...")
-                elif 'GVS PO Token' in error_msg:
-                    logger.warning(f"Client {client} failed: GVS PO Token required. Trying next client...")
-                else:
-                    logger.warning(f"Client {client} failed: {error_msg[:200]}")
-                last_error = e
-                continue
-        
-        # If all yt-dlp clients failed, try pytube as fallback
-        if last_error:
-            error_msg = str(last_error)
-            logger.warning(f"All yt-dlp clients failed. Last error: {error_msg[:200]}...")
-            logger.info("Trying pytube as fallback downloader...")
-            
-            # Don't retry on playlist errors (user error)
-            if 'playlist' in error_msg.lower():
-                raise ValueError("Playlists are not supported. Use a single video URL.")
-            
-            # Try pytube as last resort
-            try:
-                return self._download_with_pytube(youtube_url, get_info_only)
-            except Exception as pytube_error:
-                logger.error(f"pytube fallback also failed: {str(pytube_error)[:200]}")
-                # Raise original error if pytube also fails
-                self._raise_download_error(error_msg)
+        # Use pytube as the only downloader (optimized and faster)
+        logger.info("Using pytube downloader...")
+        return self._download_with_pytube(youtube_url, get_info_only)
     
     def _download_with_pytube(self, youtube_url: str, get_info_only: bool = False):
         """
@@ -557,43 +321,6 @@ class YouTubeAudioConverter:
             logger.error(f"pytube download failed: {str(e)}")
             raise Exception(f"pytube download failed: {str(e)}")
     
-    def _raise_download_error(self, error_msg: str):
-        """
-        Raises appropriate exception with clear error message based on error type
-        
-        Args:
-            error_msg: Original error message from yt-dlp
-        """
-        error_lower = error_msg.lower()
-        
-        # Only images available - usually means video is restricted or cookies invalid
-        if 'only images' in error_lower or 'requested format is not available' in error_lower:
-            raise Exception(
-                "This video is not available for download. It may be private, restricted, "
-                "or require special authentication. The cookies may also be expired or invalid. "
-                "Please try a different video or update your cookies."
-            )
-        
-        # Bot detection / authentication required
-        elif 'bot' in error_lower or 'sign in' in error_lower:
-            raise Exception(
-                "YouTube is blocking the request. This video may require authentication or "
-                "the service is temporarily unavailable. Please try again later or use a different video."
-            )
-        
-        # Player response extraction failed (most common error)
-        elif ('player response' in error_lower or 
-              'failed to extract' in error_lower or 
-              'failed to parse json' in error_lower or
-              'unable to extract player version' in error_lower):
-            raise Exception(
-                "Failed to extract player response from YouTube. This might be due to YouTube "
-                "restrictions or the video being unavailable. Please try again later or use a different video."
-            )
-        
-        # Generic error
-        else:
-            raise Exception(f"YouTube download failed: {error_msg}. Please try again later or use a different video.")
     
     def convert_to_audio(self, video_path: str, audio_format: str, output_path: str = None) -> str:
         """
