@@ -740,14 +740,6 @@ def admin_profile():
         return jsonify({"error": "Failed to retrieve profile"}), 500
 
 
-@app.route('/admin', methods=['GET'])
-def admin_page():
-    """
-    Serve admin page
-    """
-    return send_from_directory(FRONTEND_DIR, 'admin.html')
-
-
 if __name__ == '__main__':
     # Check if ffmpeg is available
     logger.info("Checking for ffmpeg...")
