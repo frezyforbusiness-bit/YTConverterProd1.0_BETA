@@ -53,9 +53,14 @@ Write-Host ""
 Write-Host "Eseguo script Python..." -ForegroundColor Cyan
 Write-Host ""
 
+# Cambia directory alla root del progetto per trovare i file cookie
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$projectRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
+Set-Location $projectRoot
+
 # Esegui lo script
 try {
-    & $pythonCmd extract_and_optimize_cookies.py
+    & $pythonCmd scripts\windows\extract_and_optimize_cookies.py
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host ""

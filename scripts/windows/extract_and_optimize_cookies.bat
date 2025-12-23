@@ -55,10 +55,13 @@ echo.
 echo Eseguo script Python...
 echo.
 
+REM Cambia directory alla root del progetto per trovare i file cookie
+cd /d "%~dp0\..\.."
+
 if defined PYTHON_CMD (
-    %PYTHON_CMD% extract_and_optimize_cookies.py
+    %PYTHON_CMD% scripts\windows\extract_and_optimize_cookies.py
 ) else (
-    python extract_and_optimize_cookies.py
+    python scripts\windows\extract_and_optimize_cookies.py
 )
 
 if %ERRORLEVEL% EQU 0 (

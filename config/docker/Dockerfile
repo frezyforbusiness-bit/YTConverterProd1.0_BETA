@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY . .
 
 # Make start script executable
-RUN chmod +x start_render.sh
+RUN chmod +x scripts/shell/start_render.sh
 
 # Create temp directory
 RUN mkdir -p /app/temp
@@ -34,5 +34,5 @@ ENV PYTHONUNBUFFERED=1
 # Use start script (handles cookies and starts app)
 # Works on: Railway, Render, Fly.io, DigitalOcean, etc.
 # Use explicit bash call for Railway compatibility
-CMD ["/bin/bash", "./start_render.sh"]
+CMD ["/bin/bash", "scripts/shell/start_render.sh"]
 

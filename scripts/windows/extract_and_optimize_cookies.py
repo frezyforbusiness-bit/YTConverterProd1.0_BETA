@@ -217,9 +217,10 @@ def main():
         print("   Installa con: pip install yt-dlp")
         sys.exit(1)
     
-    # Directory di lavoro
+    # Directory di lavoro (root del progetto)
     script_dir = Path(__file__).parent
-    os.chdir(script_dir)
+    project_root = script_dir.parent.parent
+    os.chdir(project_root)
     
     # File temporanei e finali
     cookies_raw = 'cookies_raw.txt'

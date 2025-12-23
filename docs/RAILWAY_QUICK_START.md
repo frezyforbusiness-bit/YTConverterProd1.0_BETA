@@ -30,7 +30,7 @@ Vai su **Variables** e aggiungi:
 
 ### Come ottenere COOKIES_BASE64:
 
-1. Esegui localmente: `python extract_and_optimize_cookies.py`
+1. Esegui localmente: `python scripts/windows/extract_and_optimize_cookies.py`
 2. Apri `cookies_base64.txt`
 3. Copia tutto il contenuto (una lunga stringa Base64)
 4. Incolla in Railway → Variables → `COOKIES_BASE64`
