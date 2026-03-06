@@ -14,15 +14,15 @@ ENV VITE_API_URL=${VITE_API_URL}
 
 # Build frontend and verify build succeeded
 RUN echo "🔨 Starting frontend build..." && \
-    echo "Node version: $(node --version)" && \
-    echo "NPM version: $(npm --version)" && \
-    echo "Current directory: $(pwd)" && \
-    echo "Files in current directory:" && \
-    ls -la && \
-    echo "" && \
-    echo "Running npm run build..." && \
-    npm run build 2>&1 | tee /tmp/build.log || (echo "❌ Frontend build failed! Build log:" && cat /tmp/build.log && exit 1) && \
-    echo "✅ Frontend build completed"
+  echo "Node version: $(node --version)" && \
+  echo "NPM version: $(npm --version)" && \
+  echo "Current directory: $(pwd)" && \
+  echo "Files in current directory:" && \
+  ls -la && \
+  echo "" && \
+  echo "Running npm run build..." && \
+  npm run build 2>&1 | tee /tmp/build.log || (echo "❌ Frontend build failed! Build log:" && cat /tmp/build.log && exit 1) && \
+  echo "✅ Frontend build completed"
 
 RUN echo "🔍 Verifying build output..." && \
   echo "Current directory: $(pwd)" && \
@@ -62,18 +62,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
   pip install --no-cache-dir -r requirements.txt
 
-# Copy built frontend from builder stage FIRST (before copying app code)
-# This copies from /app/frontend-react/dist (in builder stage) to ./frontend-react-dist (in final stage)
-RUN echo "🔍 About to copy frontend from builder stage..." && \
-    echo "Source: /app/frontend-react/dist (in builder stage)" && \
-    echo "Destination: ./frontend-react-dist (in final stage)" && \
-    echo "Current directory before copy: $(pwd)" && \
-    ls -la . || echo "Cannot list current directory"
+# Try to copy built frontend from builder stage FIRST
+# If this fails, we'll build it directly in Python stage as fallback
+RUN echo "🔍 Attempting to copy frontend from builder stage..." && \
+  echo "Source: /app/frontend-react/dist (in builder stage)" && \
+  echo "Destination: ./frontend-react-dist (in final stage)"
 
-# Try to verify source exists in builder stage (this will fail silently if not found, but COPY will fail)
-RUN echo "🔍 Verifying source exists in builder stage..." || true
-
-COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
+COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist || \
+  (echo "⚠️  COPY --from failed, will build frontend in Python stage" && mkdir -p ./frontend-react-dist)
 
 # Immediately verify the copy worked
 RUN echo "🔍 Immediately after COPY --from:" && \
@@ -93,15 +89,35 @@ RUN echo "🔍 Immediately after COPY --from:" && \
   ls -la . | grep -E "^d" && \
   exit 1)
 
-# Copy application code (this will NOT overwrite frontend-react-dist because it's already there)
+# Copy application code
 COPY . .
 
-# Verify again after copying app code
-RUN echo "🔍 After COPY . .:" && \
-  echo "Checking if frontend-react-dist still exists:" && \
-  test -d ./frontend-react-dist && echo "✅ frontend-react-dist STILL EXISTS" || echo "❌ frontend-react-dist WAS REMOVED" && \
-  echo "Listing frontend-react-dist:" && \
-  ls -la ./frontend-react-dist/ 2>&1 || echo "Cannot list frontend-react-dist"
+# If frontend-react-dist is empty or doesn't exist, build frontend directly here
+RUN if [ ! -d "./frontend-react-dist" ] || [ -z "$(ls -A ./frontend-react-dist 2>/dev/null)" ]; then \
+    echo "🔨 Building frontend directly in Python stage (fallback)..." && \
+    echo "Installing Node.js..." && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    echo "Node version: $(node --version)" && \
+    echo "NPM version: $(npm --version)" && \
+    cd frontend-react && \
+    echo "Installing dependencies..." && \
+    npm ci --only=production=false && \
+    echo "Building frontend..." && \
+    npm run build && \
+    echo "Moving build to frontend-react-dist..." && \
+    cd .. && \
+    mv frontend-react/dist frontend-react-dist && \
+    echo "✅ Frontend built successfully in Python stage" && \
+    rm -rf frontend-react/node_modules frontend-react/.vite && \
+    apt-get purge -y curl && \
+    apt-get autoremove -y && \
+    apt-get clean; \
+  else \
+    echo "✅ Using frontend from builder stage"; \
+  fi
 
 # Verify frontend was copied correctly with detailed logging
 RUN echo "🔍 Verifying frontend-react-dist:" && \
