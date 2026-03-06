@@ -39,10 +39,27 @@ RUN pip install --no-cache-dir --upgrade pip && \
   pip install --no-cache-dir -r requirements.txt
 
 # Copy built frontend from builder stage FIRST (before copying app code)
+# Verify source exists in builder stage before copying
+RUN echo "🔍 Checking builder stage for frontend build..." || true
 COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
+
+# Immediately verify the copy worked
+RUN echo "🔍 Immediately after COPY --from:" && \
+    echo "Current directory: $(pwd)" && \
+    echo "Listing /app:" && \
+    ls -la /app/ | grep -E "(frontend|dist)" || echo "No frontend directories found" && \
+    echo "Checking if frontend-react-dist exists:" && \
+    test -d ./frontend-react-dist && echo "✅ frontend-react-dist EXISTS" || echo "❌ frontend-react-dist DOES NOT EXIST"
 
 # Copy application code (this will NOT overwrite frontend-react-dist because it's already there)
 COPY . .
+
+# Verify again after copying app code
+RUN echo "🔍 After COPY . .:" && \
+    echo "Checking if frontend-react-dist still exists:" && \
+    test -d ./frontend-react-dist && echo "✅ frontend-react-dist STILL EXISTS" || echo "❌ frontend-react-dist WAS REMOVED" && \
+    echo "Listing frontend-react-dist:" && \
+    ls -la ./frontend-react-dist/ 2>&1 || echo "Cannot list frontend-react-dist"
 
 # Verify frontend was copied correctly with detailed logging
 RUN echo "🔍 Verifying frontend-react-dist:" && \
