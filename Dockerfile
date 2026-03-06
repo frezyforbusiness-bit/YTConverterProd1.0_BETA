@@ -14,27 +14,34 @@ ENV VITE_API_URL=${VITE_API_URL}
 
 # Build frontend and verify build succeeded
 RUN echo "🔨 Starting frontend build..." && \
-    npm run build || (echo "❌ Frontend build failed!" && exit 1) && \
+    echo "Node version: $(node --version)" && \
+    echo "NPM version: $(npm --version)" && \
+    echo "Current directory: $(pwd)" && \
+    echo "Files in current directory:" && \
+    ls -la && \
+    echo "" && \
+    echo "Running npm run build..." && \
+    npm run build 2>&1 | tee /tmp/build.log || (echo "❌ Frontend build failed! Build log:" && cat /tmp/build.log && exit 1) && \
     echo "✅ Frontend build completed"
 
 RUN echo "🔍 Verifying build output..." && \
-    echo "Current directory: $(pwd)" && \
-    echo "Listing current directory:" && \
-    ls -la && \
-    echo "" && \
-    echo "Checking dist directory:" && \
-    test -d dist && echo "✓ dist directory EXISTS" || (echo "✗ dist directory DOES NOT EXIST!" && exit 1) && \
-    echo "dist directory contents:" && \
-    ls -la dist/ && \
-    echo "" && \
-    test -f dist/index.html && echo "✓ index.html found in dist" || (echo "✗ index.html NOT found in dist" && exit 1) && \
-    echo "index.html size:" && \
-    ls -lh dist/index.html && \
-    echo "" && \
-    echo "📊 Total files in dist:" && \
-    find dist -type f | wc -l && \
-    echo "" && \
-    echo "✅ Build verification complete - ready to copy to final stage"
+  echo "Current directory: $(pwd)" && \
+  echo "Listing current directory:" && \
+  ls -la && \
+  echo "" && \
+  echo "Checking dist directory:" && \
+  test -d dist && echo "✓ dist directory EXISTS" || (echo "✗ dist directory DOES NOT EXIST!" && exit 1) && \
+  echo "dist directory contents:" && \
+  ls -la dist/ && \
+  echo "" && \
+  test -f dist/index.html && echo "✓ index.html found in dist" || (echo "✗ index.html NOT found in dist" && exit 1) && \
+  echo "index.html size:" && \
+  ls -lh dist/index.html && \
+  echo "" && \
+  echo "📊 Total files in dist:" && \
+  find dist -type f | wc -l && \
+  echo "" && \
+  echo "✅ Build verification complete - ready to copy to final stage"
 
 # Python backend stage
 FROM python:3.11-slim
@@ -59,37 +66,42 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # This copies from /app/frontend-react/dist (in builder stage) to ./frontend-react-dist (in final stage)
 RUN echo "🔍 About to copy frontend from builder stage..." && \
     echo "Source: /app/frontend-react/dist (in builder stage)" && \
-    echo "Destination: ./frontend-react-dist (in final stage)"
+    echo "Destination: ./frontend-react-dist (in final stage)" && \
+    echo "Current directory before copy: $(pwd)" && \
+    ls -la . || echo "Cannot list current directory"
+
+# Try to verify source exists in builder stage (this will fail silently if not found, but COPY will fail)
+RUN echo "🔍 Verifying source exists in builder stage..." || true
 
 COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
 
 # Immediately verify the copy worked
 RUN echo "🔍 Immediately after COPY --from:" && \
-    echo "Current directory: $(pwd)" && \
-    echo "Working directory contents:" && \
-    ls -la . | head -20 && \
-    echo "" && \
-    echo "Checking if frontend-react-dist exists:" && \
-    test -d ./frontend-react-dist && \
-    (echo "✅ frontend-react-dist EXISTS!" && \
-     echo "Contents:" && \
-     ls -la ./frontend-react-dist/ && \
-     echo "index.html check:" && \
-     test -f ./frontend-react-dist/index.html && echo "✅ index.html found" || echo "❌ index.html missing") || \
-    (echo "❌ frontend-react-dist DOES NOT EXIST!" && \
-     echo "Available directories:" && \
-     ls -la . | grep -E "^d" && \
-     exit 1)
+  echo "Current directory: $(pwd)" && \
+  echo "Working directory contents:" && \
+  ls -la . | head -20 && \
+  echo "" && \
+  echo "Checking if frontend-react-dist exists:" && \
+  test -d ./frontend-react-dist && \
+  (echo "✅ frontend-react-dist EXISTS!" && \
+  echo "Contents:" && \
+  ls -la ./frontend-react-dist/ && \
+  echo "index.html check:" && \
+  test -f ./frontend-react-dist/index.html && echo "✅ index.html found" || echo "❌ index.html missing") || \
+  (echo "❌ frontend-react-dist DOES NOT EXIST!" && \
+  echo "Available directories:" && \
+  ls -la . | grep -E "^d" && \
+  exit 1)
 
 # Copy application code (this will NOT overwrite frontend-react-dist because it's already there)
 COPY . .
 
 # Verify again after copying app code
 RUN echo "🔍 After COPY . .:" && \
-    echo "Checking if frontend-react-dist still exists:" && \
-    test -d ./frontend-react-dist && echo "✅ frontend-react-dist STILL EXISTS" || echo "❌ frontend-react-dist WAS REMOVED" && \
-    echo "Listing frontend-react-dist:" && \
-    ls -la ./frontend-react-dist/ 2>&1 || echo "Cannot list frontend-react-dist"
+  echo "Checking if frontend-react-dist still exists:" && \
+  test -d ./frontend-react-dist && echo "✅ frontend-react-dist STILL EXISTS" || echo "❌ frontend-react-dist WAS REMOVED" && \
+  echo "Listing frontend-react-dist:" && \
+  ls -la ./frontend-react-dist/ 2>&1 || echo "Cannot list frontend-react-dist"
 
 # Verify frontend was copied correctly with detailed logging
 RUN echo "🔍 Verifying frontend-react-dist:" && \
