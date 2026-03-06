@@ -4,7 +4,7 @@ FROM node:20-alpine AS frontend-builder
 # Build React frontend
 WORKDIR /app/frontend-react
 COPY frontend-react/package*.json ./
-RUN npm ci --only=production=false
+RUN npm ci --only=production=false || (echo "npm ci failed" && exit 1)
 COPY frontend-react/ .
 
 # Set VITE_API_URL for build (can be overridden at build time)
@@ -12,7 +12,11 @@ COPY frontend-react/ .
 ARG VITE_API_URL
 ENV VITE_API_URL=${VITE_API_URL}
 
-RUN npm run build
+# Build frontend and verify build succeeded
+RUN npm run build || (echo "Frontend build failed!" && exit 1)
+RUN test -d dist && echo "✓ dist directory created" || (echo "✗ dist directory NOT created" && exit 1)
+RUN test -f dist/index.html && echo "✓ index.html found in dist" || (echo "✗ index.html NOT found in dist" && exit 1)
+RUN ls -la dist/ | head -10
 
 # Python backend stage
 FROM python:3.11-slim
