@@ -167,28 +167,5 @@ echo ""
 echo "✅ All checks passed, starting Flask application..."
 echo ""
 
-# Verify frontend-react-dist exists before starting Flask
-echo "🔍 Final check: Verifying frontend-react-dist exists..."
-if [ -d "/app/frontend-react-dist" ]; then
-    echo "✅ frontend-react-dist directory EXISTS"
-    echo "   Contents:"
-    ls -la /app/frontend-react-dist/ | head -10
-    if [ -f "/app/frontend-react-dist/index.html" ]; then
-        echo "✅ index.html found in frontend-react-dist"
-    else
-        echo "❌ index.html NOT found in frontend-react-dist"
-    fi
-else
-    echo "❌ frontend-react-dist directory DOES NOT EXIST!"
-    echo "   Checking what's in /app:"
-    ls -la /app/ | grep -E "(frontend|dist)" || echo "   No frontend directories found"
-    echo "   Checking legacy:"
-    ls -la /app/legacy/ 2>/dev/null | head -5 || echo "   Legacy directory check failed"
-fi
-echo ""
-
-# Avvia Python con output non buffered
-# Usa exec per sostituire il processo shell con Python
-# Questo mantiene il processo attivo e Railway può vedere i log
 exec python -u app.py
 
