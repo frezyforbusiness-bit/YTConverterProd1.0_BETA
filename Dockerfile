@@ -39,6 +39,10 @@ COPY . .
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
 
+# Verify frontend was copied correctly
+RUN ls -la frontend-react-dist/ || echo "WARNING: frontend-react-dist is empty or missing"
+RUN test -f frontend-react-dist/index.html && echo "✓ index.html found" || echo "✗ index.html NOT found"
+
 # Make start script executable
 RUN chmod +x scripts/shell/start_render.sh
 

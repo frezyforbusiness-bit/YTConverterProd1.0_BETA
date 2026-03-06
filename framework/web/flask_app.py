@@ -52,9 +52,41 @@ def create_app() -> Flask:
     TASK_TIMEOUT = int(os.environ.get('TASK_TIMEOUT', 1800))
     CLEANUP_INTERVAL = int(os.environ.get('CLEANUP_INTERVAL', 3600))
     # Check if React frontend is built (for production), otherwise use old frontend
-    REACT_FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '../../frontend-react-dist')
-    OLD_FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '../../frontend')
-    FRONTEND_DIR = REACT_FRONTEND_DIR if os.path.exists(REACT_FRONTEND_DIR) and os.listdir(REACT_FRONTEND_DIR) else OLD_FRONTEND_DIR
+    # Try multiple possible locations for the built frontend
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    REACT_FRONTEND_DIR = os.path.join(base_dir, 'frontend-react-dist')
+    OLD_FRONTEND_DIR = os.path.join(base_dir, 'frontend')
+    LEGACY_FRONTEND_DIR = os.path.join(base_dir, 'legacy', 'frontend')
+    
+    # Determine which frontend directory to use
+    if os.path.exists(REACT_FRONTEND_DIR) and os.path.isdir(REACT_FRONTEND_DIR):
+        try:
+            files = os.listdir(REACT_FRONTEND_DIR)
+            if files and 'index.html' in files:
+                FRONTEND_DIR = REACT_FRONTEND_DIR
+                logger.info(f"✓ Using React frontend from: {FRONTEND_DIR}")
+            else:
+                raise FileNotFoundError("React frontend directory is empty")
+        except Exception as e:
+            logger.warning(f"React frontend directory exists but is invalid: {e}")
+            FRONTEND_DIR = None
+    else:
+        FRONTEND_DIR = None
+    
+    # Fallback to old frontend locations
+    if not FRONTEND_DIR:
+        if os.path.exists(OLD_FRONTEND_DIR) and os.path.isdir(OLD_FRONTEND_DIR):
+            FRONTEND_DIR = OLD_FRONTEND_DIR
+            logger.info(f"✓ Using old frontend from: {FRONTEND_DIR}")
+        elif os.path.exists(LEGACY_FRONTEND_DIR) and os.path.isdir(LEGACY_FRONTEND_DIR):
+            FRONTEND_DIR = LEGACY_FRONTEND_DIR
+            logger.info(f"✓ Using legacy frontend from: {FRONTEND_DIR}")
+        else:
+            FRONTEND_DIR = REACT_FRONTEND_DIR  # Use React dir even if empty, will log error
+            logger.error(f"⚠️  No frontend directory found! Tried: {REACT_FRONTEND_DIR}, {OLD_FRONTEND_DIR}, {LEGACY_FRONTEND_DIR}")
+            logger.error(f"   Current working directory: {os.getcwd()}")
+            logger.error(f"   Base directory: {base_dir}")
+            logger.error(f"   Files in base: {os.listdir(base_dir) if os.path.exists(base_dir) else 'N/A'}")
     
     # Ensure temp directory exists
     os.makedirs(TEMP_DIR, exist_ok=True)
