@@ -51,37 +51,19 @@ class FlaskController:
         self._register_routes()
     
     def _register_routes(self):
-        """Register all Flask routes"""
+        """Register all Flask routes - IMPORTANT: API routes must be defined BEFORE catch-all routes"""
         
-        # Frontend routes - Support React SPA routing
-        @self.app.route('/', methods=['GET'])
-        def index():
-            return send_from_directory(self.frontend_dir, 'index.html')
+        # Log frontend directory for debugging
+        logger.info(f"Frontend directory: {self.frontend_dir}")
+        logger.info(f"Frontend directory exists: {os.path.exists(self.frontend_dir)}")
+        if os.path.exists(self.frontend_dir):
+            files = os.listdir(self.frontend_dir)
+            logger.info(f"Frontend directory contents: {files[:10]}...")  # First 10 files
         
-        # React Router routes - serve index.html for all routes
-        @self.app.route('/converter', methods=['GET'])
-        @self.app.route('/mixmaster', methods=['GET'])
-        @self.app.route('/admin', methods=['GET'])
-        def react_routes():
-            return send_from_directory(self.frontend_dir, 'index.html')
+        # ============================================================
+        # API ROUTES (must be first to avoid being caught by catch-all)
+        # ============================================================
         
-        # Serve static assets (JS, CSS, images, etc.)
-        @self.app.route('/<path:filename>')
-        def serve_static(filename):
-            # Skip API routes
-            if filename.startswith('api'):
-                return '', 404
-            # Handle favicon
-            if filename == 'favicon.ico':
-                return '', 204
-            # Try to serve file, fallback to index.html for SPA routing
-            try:
-                return send_from_directory(self.frontend_dir, filename)
-            except:
-                # For React Router - serve index.html for any unknown route
-                return send_from_directory(self.frontend_dir, 'index.html')
-        
-        # API routes
         @self.app.route('/api', methods=['GET'])
         def api_info():
             return jsonify({
@@ -299,9 +281,67 @@ class FlaskController:
                 "last_login": None
             }), 200
         
+        # ============================================================
+        # FRONTEND ROUTES (must be after API routes)
+        # ============================================================
+        
+        @self.app.route('/', methods=['GET'])
+        def index():
+            if not os.path.exists(self.frontend_dir):
+                logger.error(f"Frontend directory does not exist: {self.frontend_dir}")
+                return jsonify({"error": "Frontend not found"}), 500
+            index_path = os.path.join(self.frontend_dir, 'index.html')
+            if not os.path.exists(index_path):
+                logger.error(f"index.html not found in: {self.frontend_dir}")
+                return jsonify({"error": "Frontend index.html not found"}), 500
+            return send_from_directory(self.frontend_dir, 'index.html')
+        
+        # React Router routes - serve index.html for all SPA routes
+        @self.app.route('/converter', methods=['GET'])
+        @self.app.route('/mixmaster', methods=['GET'])
+        @self.app.route('/admin', methods=['GET'])
+        def react_routes():
+            if not os.path.exists(self.frontend_dir):
+                return jsonify({"error": "Frontend not found"}), 500
+            return send_from_directory(self.frontend_dir, 'index.html')
+        
+        # Serve static assets (JS, CSS, images, etc.) - MUST BE LAST
+        @self.app.route('/<path:filename>')
+        def serve_static(filename):
+            # Skip backend routes that should return 404
+            if filename in ['health', 'convert'] or filename.startswith('api') or filename.startswith('status') or filename.startswith('download'):
+                return jsonify({"error": "Endpoint not found"}), 404
+            
+            # Handle favicon
+            if filename == 'favicon.ico':
+                return '', 204
+            
+            # Try to serve static file
+            if not os.path.exists(self.frontend_dir):
+                return jsonify({"error": "Frontend not found"}), 500
+            
+            file_path = os.path.join(self.frontend_dir, filename)
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                return send_from_directory(self.frontend_dir, filename)
+            
+            # For React Router - serve index.html for any unknown route
+            index_path = os.path.join(self.frontend_dir, 'index.html')
+            if os.path.exists(index_path):
+                return send_from_directory(self.frontend_dir, 'index.html')
+            
+            return jsonify({"error": "File not found"}), 404
+        
         # Error handlers
         @self.app.errorhandler(404)
         def not_found(error):
+            # Only return JSON for API-like requests, otherwise serve index.html for SPA
+            if request.path.startswith('/api') or request.path.startswith('/health') or request.path.startswith('/convert') or request.path.startswith('/status') or request.path.startswith('/download'):
+                return jsonify({"error": "Endpoint not found"}), 404
+            # For frontend routes, serve index.html
+            if os.path.exists(self.frontend_dir):
+                index_path = os.path.join(self.frontend_dir, 'index.html')
+                if os.path.exists(index_path):
+                    return send_from_directory(self.frontend_dir, 'index.html')
             return jsonify({"error": "Endpoint not found"}), 404
         
         @self.app.errorhandler(500)
