@@ -1,8 +1,26 @@
 /**
  * API Client Base
+ * 
+ * In production (same domain), use relative URLs
+ * In development, use absolute URL (localhost:5000)
  */
+const getApiUrl = (): string => {
+  // If VITE_API_URL is explicitly set, use it
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // In production (same domain), use relative URL
+  // This works because frontend and backend are served from the same domain
+  if (import.meta.env.PROD) {
+    return ''; // Relative URL - same domain
+  }
+  
+  // Development fallback
+  return 'http://localhost:5000';
+};
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = getApiUrl();
 
 class ApiError extends Error {
   status: number;

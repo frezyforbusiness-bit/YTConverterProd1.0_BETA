@@ -7,8 +7,9 @@ COPY frontend-react/package*.json ./
 RUN npm ci --only=production=false
 COPY frontend-react/ .
 
-# Set VITE_API_URL for build (can be overridden at build time)
-ARG VITE_API_URL
+# Set VITE_API_URL for build (empty = relative URLs, same domain)
+# In production, frontend and backend are on same domain, so use relative URLs
+ARG VITE_API_URL=
 ENV VITE_API_URL=${VITE_API_URL}
 
 # Build frontend
@@ -19,16 +20,16 @@ FROM python:3.11-slim
 
 # Install system dependencies
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+  apt-get install -y --no-install-recommends \
+  ffmpeg \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+  pip install --no-cache-dir -r requirements.txt
 
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
@@ -38,23 +39,23 @@ COPY . .
 
 # If frontend-react-dist is missing or empty, build frontend in Python stage
 RUN if [ ! -d "./frontend-react-dist" ] || [ -z "$(ls -A ./frontend-react-dist 2>/dev/null)" ]; then \
-    apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates gnupg && \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends nodejs && \
-    cd frontend-react && \
-    npm ci --only=production=false && \
-    npm run build && \
-    cd .. && \
-    mv frontend-react/dist frontend-react-dist && \
-    rm -rf frontend-react/node_modules frontend-react/.vite && \
-    apt-get purge -y curl ca-certificates gnupg && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*; \
-    fi
+  apt-get update && \
+  apt-get install -y --no-install-recommends curl ca-certificates gnupg && \
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends nodejs && \
+  cd frontend-react && \
+  npm ci --only=production=false && \
+  npm run build && \
+  cd .. && \
+  mv frontend-react/dist frontend-react-dist && \
+  rm -rf frontend-react/node_modules frontend-react/.vite && \
+  apt-get purge -y curl ca-certificates gnupg && \
+  apt-get autoremove -y && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*; \
+  fi
 
 # Make start script executable
 RUN chmod +x scripts/shell/start_render.sh
