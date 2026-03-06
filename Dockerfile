@@ -16,7 +16,8 @@ ENV VITE_API_URL=${VITE_API_URL}
 RUN npm run build || (echo "Frontend build failed!" && exit 1)
 RUN test -d dist && echo "✓ dist directory created" || (echo "✗ dist directory NOT created" && exit 1)
 RUN test -f dist/index.html && echo "✓ index.html found in dist" || (echo "✗ index.html NOT found in dist" && exit 1)
-RUN ls -la dist/ | head -10
+RUN echo "📦 Build contents:" && ls -la dist/ && echo "📄 index.html size:" && ls -lh dist/index.html
+RUN echo "📊 Total files in dist:" && find dist -type f | wc -l
 
 # Python backend stage
 FROM python:3.11-slim
@@ -43,9 +44,24 @@ COPY . .
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
 
-# Verify frontend was copied correctly
-RUN ls -la frontend-react-dist/ || echo "WARNING: frontend-react-dist is empty or missing"
-RUN test -f frontend-react-dist/index.html && echo "✓ index.html found" || echo "✗ index.html NOT found"
+# Verify frontend was copied correctly with detailed logging
+RUN echo "🔍 Verifying frontend-react-dist:" && \
+    echo "📁 Checking if directory exists:" && \
+    test -d frontend-react-dist && echo "✓ Directory exists" || (echo "✗ Directory does NOT exist!" && exit 1) && \
+    echo "" && \
+    echo "📋 Listing directory contents:" && \
+    ls -la frontend-react-dist/ && \
+    echo "" && \
+    echo "📄 Checking index.html:" && \
+    test -f frontend-react-dist/index.html && \
+    ls -lh frontend-react-dist/index.html && \
+    echo "✓ index.html found" || \
+    (echo "✗ index.html NOT found!" && exit 1) && \
+    echo "" && \
+    echo "📊 Directory structure (first 20 files):" && \
+    find frontend-react-dist -type f | head -20 && \
+    echo "" && \
+    echo "✅ Frontend React build verified successfully!"
 
 # Make start script executable
 RUN chmod +x scripts/shell/start_render.sh
