@@ -9,10 +9,10 @@ env/
 ENV/
 .venv
 
-# Frontend
+# Frontend - exclude source but keep dist will be copied separately
 frontend-react/node_modules/
-frontend-react/dist/
 frontend-react/.vite/
+# Note: frontend-react/dist/ is excluded but will be copied from builder stage as frontend-react-dist
 
 # Old frontend
 frontend/node_modules/

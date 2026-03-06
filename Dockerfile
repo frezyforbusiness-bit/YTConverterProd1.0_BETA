@@ -24,9 +24,9 @@ FROM python:3.11-slim
 
 # Install system dependencies (ffmpeg required for audio conversion)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ffmpeg \
-        && rm -rf /var/lib/apt/lists/*
+  apt-get install -y --no-install-recommends \
+  ffmpeg \
+  && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -36,32 +36,32 @@ COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+  pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
-
-# Copy built frontend from builder stage
+# Copy built frontend from builder stage FIRST (before copying app code)
 COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
+
+# Copy application code (this will NOT overwrite frontend-react-dist because it's already there)
+COPY . .
 
 # Verify frontend was copied correctly with detailed logging
 RUN echo "🔍 Verifying frontend-react-dist:" && \
-    echo "📁 Checking if directory exists:" && \
-    test -d frontend-react-dist && echo "✓ Directory exists" || (echo "✗ Directory does NOT exist!" && exit 1) && \
-    echo "" && \
-    echo "📋 Listing directory contents:" && \
-    ls -la frontend-react-dist/ && \
-    echo "" && \
-    echo "📄 Checking index.html:" && \
-    test -f frontend-react-dist/index.html && \
-    ls -lh frontend-react-dist/index.html && \
-    echo "✓ index.html found" || \
-    (echo "✗ index.html NOT found!" && exit 1) && \
-    echo "" && \
-    echo "📊 Directory structure (first 20 files):" && \
-    find frontend-react-dist -type f | head -20 && \
-    echo "" && \
-    echo "✅ Frontend React build verified successfully!"
+  echo "📁 Checking if directory exists:" && \
+  test -d frontend-react-dist && echo "✓ Directory exists" || (echo "✗ Directory does NOT exist!" && exit 1) && \
+  echo "" && \
+  echo "📋 Listing directory contents:" && \
+  ls -la frontend-react-dist/ && \
+  echo "" && \
+  echo "📄 Checking index.html:" && \
+  test -f frontend-react-dist/index.html && \
+  ls -lh frontend-react-dist/index.html && \
+  echo "✓ index.html found" || \
+  (echo "✗ index.html NOT found!" && exit 1) && \
+  echo "" && \
+  echo "📊 Directory structure (first 20 files):" && \
+  find frontend-react-dist -type f | head -20 && \
+  echo "" && \
+  echo "✅ Frontend React build verified successfully!"
 
 # Make start script executable
 RUN chmod +x scripts/shell/start_render.sh
