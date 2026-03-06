@@ -62,61 +62,54 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
   pip install --no-cache-dir -r requirements.txt
 
-# Try to copy built frontend from builder stage FIRST
-# If this fails, we'll build it directly in Python stage as fallback
+# Try to copy built frontend from builder stage
+# Note: If this fails, the build will continue and we'll build frontend in Python stage
 RUN echo "🔍 Attempting to copy frontend from builder stage..." && \
   echo "Source: /app/frontend-react/dist (in builder stage)" && \
   echo "Destination: ./frontend-react-dist (in final stage)"
 
-COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist || \
-  (echo "⚠️  COPY --from failed, will build frontend in Python stage" && mkdir -p ./frontend-react-dist)
-
-# Immediately verify the copy worked
-RUN echo "🔍 Immediately after COPY --from:" && \
-  echo "Current directory: $(pwd)" && \
-  echo "Working directory contents:" && \
-  ls -la . | head -20 && \
-  echo "" && \
-  echo "Checking if frontend-react-dist exists:" && \
-  test -d ./frontend-react-dist && \
-  (echo "✅ frontend-react-dist EXISTS!" && \
-  echo "Contents:" && \
-  ls -la ./frontend-react-dist/ && \
-  echo "index.html check:" && \
-  test -f ./frontend-react-dist/index.html && echo "✅ index.html found" || echo "❌ index.html missing") || \
-  (echo "❌ frontend-react-dist DOES NOT EXIST!" && \
-  echo "Available directories:" && \
-  ls -la . | grep -E "^d" && \
-  exit 1)
+# Copy built frontend - if this fails silently, we'll detect it after COPY . .
+COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
 
 # Copy application code
 COPY . .
 
-# If frontend-react-dist is empty or doesn't exist, build frontend directly here
-RUN if [ ! -d "./frontend-react-dist" ] || [ -z "$(ls -A ./frontend-react-dist 2>/dev/null)" ]; then \
-    echo "🔨 Building frontend directly in Python stage (fallback)..." && \
+# Check if frontend-react-dist exists and has content, if not build it here
+RUN echo "🔍 Checking frontend-react-dist after COPY operations..." && \
+  if [ ! -d "./frontend-react-dist" ] || [ -z "$(ls -A ./frontend-react-dist 2>/dev/null)" ]; then \
+    echo "⚠️  frontend-react-dist is missing or empty - building frontend in Python stage..." && \
     echo "Installing Node.js..." && \
     apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y --no-install-recommends curl ca-certificates gnupg && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
     apt-get install -y --no-install-recommends nodejs && \
     echo "Node version: $(node --version)" && \
     echo "NPM version: $(npm --version)" && \
+    echo "Checking frontend-react directory..." && \
+    ls -la frontend-react/ | head -10 && \
     cd frontend-react && \
     echo "Installing dependencies..." && \
     npm ci --only=production=false && \
     echo "Building frontend..." && \
     npm run build && \
-    echo "Moving build to frontend-react-dist..." && \
+    echo "Verifying build..." && \
+    ls -la dist/ && \
+    test -f dist/index.html && echo "✅ Build successful!" || (echo "❌ Build failed - index.html missing" && exit 1) && \
     cd .. && \
+    echo "Moving build to frontend-react-dist..." && \
     mv frontend-react/dist frontend-react-dist && \
     echo "✅ Frontend built successfully in Python stage" && \
     rm -rf frontend-react/node_modules frontend-react/.vite && \
-    apt-get purge -y curl && \
+    apt-get purge -y curl ca-certificates gnupg && \
     apt-get autoremove -y && \
-    apt-get clean; \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*; \
   else \
-    echo "✅ Using frontend from builder stage"; \
+    echo "✅ Using frontend from builder stage" && \
+    echo "Contents of frontend-react-dist:" && \
+    ls -la ./frontend-react-dist/ | head -10; \
   fi
 
 # Verify frontend was copied correctly with detailed logging
