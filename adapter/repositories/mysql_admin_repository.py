@@ -53,3 +53,4 @@ class MySQLAdminRepository(AdminRepository):
             logger.error(f"Failed to update last login: {e}")
             return False
 
+

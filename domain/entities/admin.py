@@ -17,3 +17,4 @@ class Admin:
     created_at: Optional[datetime] = None
     last_login: Optional[datetime] = None
 
+

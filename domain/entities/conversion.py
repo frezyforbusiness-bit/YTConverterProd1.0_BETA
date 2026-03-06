@@ -23,3 +23,4 @@ class Conversion:
     bpm: Optional[int] = None
     key: Optional[str] = None
 
+

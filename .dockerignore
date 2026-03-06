@@ -1,41 +1,21 @@
-# Git
-.git
-.gitignore
-.gitattributes
-
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual Environment
 venv/
 env/
 ENV/
-env.bak/
-venv.bak/
+.venv
 
-# Environment variables
-.env
-.env.local
-.env.*.local
+# Frontend
+frontend-react/node_modules/
+frontend-react/dist/
+frontend-react/.vite/
+
+# Old frontend
+frontend/node_modules/
 
 # IDE
 .vscode/
@@ -43,48 +23,30 @@ venv.bak/
 *.swp
 *.swo
 *~
-.DS_Store
-
-# Logs
-logs/
-*.log
-
-# Temporary files (keep temp/ directory structure but ignore contents)
-temp/*
-tmp/*
-*.tmp
-
-# Cookies (sensitive - should be passed via env vars)
-cookies.txt
-cookies_base64.txt
-*.cookies
-
-# Audio/Video files (temporary)
-*.mp3
-*.wav
-*.flac
-*.ogg
-*.m4a
-*.opus
-*.mp4
-*.webm
 
 # OS
-Thumbs.db
 .DS_Store
+Thumbs.db
 
-# Railway/Render
-.railway/
-.railwayignore
+# Git
+.git/
+.gitignore
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
+# Docs
+docs/
+*.md
+!README.md
 
-# Jupyter
-.ipynb_checkpoints/
+# Config
+.env
+.env.local
+.env.*.local
 
-# Documentation (optional - can be included if needed)
-# *.md
+# Temp
+temp/
+*.log
 
+# Build artifacts
+*.egg-info/
+dist/
+build/

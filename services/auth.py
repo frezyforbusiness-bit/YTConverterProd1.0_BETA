@@ -165,3 +165,4 @@ def require_admin(auth_manager: AuthManager, db_manager):
         return decorated_function
     return decorator
 
+

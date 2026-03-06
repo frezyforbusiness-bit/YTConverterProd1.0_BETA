@@ -222,3 +222,4 @@ class DatabaseManager:
             logger.error(f"Database connection test failed: {e}")
             return False
 
+

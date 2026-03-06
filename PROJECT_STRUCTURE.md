@@ -115,3 +115,4 @@ Se stai migrando da una versione precedente:
 - I file Docker sono in `config/docker/` invece della root
 - I file di configurazione deployment sono in `config/deployment/`
 
+

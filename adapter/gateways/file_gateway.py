@@ -97,3 +97,4 @@ class FileGateway:
         """
         return os.path.exists(file_path) if file_path else False
 
+

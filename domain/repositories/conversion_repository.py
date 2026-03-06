@@ -26,3 +26,4 @@ class ConversionRepository(ABC):
         """Get recent conversions"""
         pass
 
+

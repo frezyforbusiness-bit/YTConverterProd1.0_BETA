@@ -25,3 +25,4 @@ class GetStatusUseCase:
         """
         return self.task_gateway.get_status(task_id)
 
+

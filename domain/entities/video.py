@@ -20,3 +20,4 @@ class Video:
     thumbnail: Optional[str] = None
     view_count: Optional[int] = None
 
+

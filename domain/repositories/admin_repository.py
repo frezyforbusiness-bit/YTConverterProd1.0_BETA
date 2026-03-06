@@ -21,3 +21,4 @@ class AdminRepository(ABC):
         """Update admin's last login timestamp"""
         pass
 
+

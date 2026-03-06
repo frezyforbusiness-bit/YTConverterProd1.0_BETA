@@ -53,20 +53,33 @@ class FlaskController:
     def _register_routes(self):
         """Register all Flask routes"""
         
-        # Frontend routes
+        # Frontend routes - Support React SPA routing
         @self.app.route('/', methods=['GET'])
         def index():
             return send_from_directory(self.frontend_dir, 'index.html')
         
+        # React Router routes - serve index.html for all routes
+        @self.app.route('/converter', methods=['GET'])
+        @self.app.route('/mixmaster', methods=['GET'])
         @self.app.route('/admin', methods=['GET'])
-        def admin_page():
-            return send_from_directory(self.frontend_dir, 'admin.html')
+        def react_routes():
+            return send_from_directory(self.frontend_dir, 'index.html')
         
+        # Serve static assets (JS, CSS, images, etc.)
         @self.app.route('/<path:filename>')
         def serve_static(filename):
+            # Skip API routes
+            if filename.startswith('api'):
+                return '', 404
+            # Handle favicon
             if filename == 'favicon.ico':
                 return '', 204
-            return send_from_directory(self.frontend_dir, filename)
+            # Try to serve file, fallback to index.html for SPA routing
+            try:
+                return send_from_directory(self.frontend_dir, filename)
+            except:
+                # For React Router - serve index.html for any unknown route
+                return send_from_directory(self.frontend_dir, 'index.html')
         
         # API routes
         @self.app.route('/api', methods=['GET'])

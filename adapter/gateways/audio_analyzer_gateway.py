@@ -28,3 +28,4 @@ class AudioAnalyzerGateway:
         """
         return self.converter.analyze_audio(audio_path)
 
+

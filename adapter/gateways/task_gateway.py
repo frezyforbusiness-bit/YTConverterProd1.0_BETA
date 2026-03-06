@@ -69,3 +69,4 @@ class TaskGateway:
             task_id, status, progress, message, file_path, error
         )
 
+

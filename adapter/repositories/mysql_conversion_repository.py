@@ -121,3 +121,4 @@ class MySQLConversionRepository(ConversionRepository):
             logger.error(f"Failed to get recent conversions: {e}")
             return []
 
+

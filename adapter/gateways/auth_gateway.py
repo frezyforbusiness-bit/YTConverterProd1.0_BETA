@@ -32,3 +32,4 @@ class AuthGateway:
         """Verify JWT token"""
         return self.auth_manager.verify_token(token)
 
+

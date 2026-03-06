@@ -51,7 +51,10 @@ def create_app() -> Flask:
     TEMP_DIR = os.environ.get('TEMP_DIR') or os.path.join(os.path.dirname(__file__), '../../temp')
     TASK_TIMEOUT = int(os.environ.get('TASK_TIMEOUT', 1800))
     CLEANUP_INTERVAL = int(os.environ.get('CLEANUP_INTERVAL', 3600))
-    FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '../../frontend')
+    # Check if React frontend is built (for production), otherwise use old frontend
+    REACT_FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '../../frontend-react-dist')
+    OLD_FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '../../frontend')
+    FRONTEND_DIR = REACT_FRONTEND_DIR if os.path.exists(REACT_FRONTEND_DIR) and os.listdir(REACT_FRONTEND_DIR) else OLD_FRONTEND_DIR
     
     # Ensure temp directory exists
     os.makedirs(TEMP_DIR, exist_ok=True)
