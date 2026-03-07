@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 import { PageTransition } from '../../components/common/PageTransition';
@@ -9,6 +9,15 @@ import { ProgressBar } from '../../components/UI/ProgressBar';
 import { converterService, type TaskStatus } from '../../services/converter.service';
 import { usePolling } from '../../hooks/usePolling';
 
+function statusChanged(prev: TaskStatus | null, next: TaskStatus): boolean {
+  if (!prev) return true;
+  return (
+    prev.status !== next.status ||
+    prev.progress !== next.progress ||
+    (prev.message ?? '') !== (next.message ?? '')
+  );
+}
+
 const ConverterContainer = styled.div`
   max-width: 800px;
   margin: 0 auto;
@@ -17,6 +26,7 @@ const ConverterContainer = styled.div`
 
 const ConverterCard = styled(Card)`
   margin-bottom: ${({ theme }) => theme.spacing.xl};
+  contain: layout;
 `;
 
 const FormGroup = styled.div`
@@ -95,6 +105,7 @@ export const Converter: React.FC = () => {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [status, setStatus] = useState<TaskStatus | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const lastStatusRef = useRef<TaskStatus | null>(null);
 
   const handleConvert = useCallback(async () => {
     if (!youtubeUrl.trim()) {
@@ -106,6 +117,7 @@ export const Converter: React.FC = () => {
       setLoading(true);
       setMessage(null);
       setStatus(null);
+      lastStatusRef.current = null;
       const response = await converterService.startConversion({
         youtube_url: youtubeUrl,
         format,
@@ -122,12 +134,15 @@ export const Converter: React.FC = () => {
 
   usePolling({
     enabled: !!taskId && status?.status !== 'done' && status?.status !== 'error',
-    interval: 1500,
+    interval: 2000,
     onPoll: async () => {
       if (!taskId) return;
       try {
         const currentStatus = await converterService.getStatus(taskId);
-        setStatus(currentStatus);
+        if (statusChanged(lastStatusRef.current, currentStatus)) {
+          lastStatusRef.current = currentStatus;
+          setStatus(currentStatus);
+        }
 
         if (currentStatus.status === 'done') {
           setLoading(false);
@@ -145,6 +160,7 @@ export const Converter: React.FC = () => {
             setMessage({ type: 'success', text: `Downloaded! Your ${format.toUpperCase()} file is ready! 🎵` });
             setTaskId(null);
             setStatus(null);
+            lastStatusRef.current = null;
             setTimeout(() => {
               setMessage(null);
               setYoutubeUrl('');
@@ -157,6 +173,7 @@ export const Converter: React.FC = () => {
           setMessage({ type: 'error', text: currentStatus.error || 'Conversion failed' });
           setTaskId(null);
           setStatus(null);
+          lastStatusRef.current = null;
         }
       } catch (error: any) {
         console.error('Polling error:', error);
@@ -216,8 +233,8 @@ export const Converter: React.FC = () => {
                 <ProgressBar
                   progress={status.progress}
                   label={status.message || 'Processing...'}
-                  pulsing={status.status === 'processing'}
-                  shimmer={status.status === 'processing'}
+                  pulsing={false}
+                  shimmer={false}
                 />
               ) : (
                 <ProgressBar progress={0} label="Starting..." showPercentage={true} />
