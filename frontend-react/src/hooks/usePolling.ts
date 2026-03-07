@@ -14,20 +14,25 @@ export const usePolling = ({
   onStop,
 }: UsePollingOptions) => {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const onPollRef = useRef(onPoll);
+  const onStopRef = useRef(onStop);
+
+  onPollRef.current = onPoll;
+  onStopRef.current = onStop;
 
   useEffect(() => {
     if (!enabled) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
-        onStop?.();
+        onStopRef.current?.();
       }
       return;
     }
 
     const poll = async () => {
       try {
-        await onPoll();
+        await onPollRef.current();
       } catch (error) {
         console.error('Polling error:', error);
       }
@@ -45,6 +50,6 @@ export const usePolling = ({
         intervalRef.current = null;
       }
     };
-  }, [enabled, interval, onPoll, onStop]);
+  }, [enabled, interval]);
 };
 
