@@ -1,7 +1,10 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import styled from 'styled-components';
-import { useTheme } from '../../../context/ThemeContext';
+import styled, { keyframes } from 'styled-components';
+
+const shimmerMove = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
 
 interface ProgressBarProps {
   progress: number; // 0-100
@@ -22,7 +25,6 @@ const ProgressInfo = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.sm};
-  min-height: 28px;
 `;
 
 const ProgressLabel = styled.span`
@@ -30,8 +32,6 @@ const ProgressLabel = styled.span`
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
   font-size: ${({ theme }) => theme.typography.sizes.body};
   font-family: ${({ theme }) => theme.typography.fonts.body};
-  flex: 1;
-  min-width: 0;
 `;
 
 const ProgressPercent = styled.span`
@@ -45,9 +45,6 @@ const ProgressPercent = styled.span`
   box-shadow: ${({ theme }) => theme.shadows.sm};
   border: 1px solid ${({ theme }) => theme.colors.accent.border};
   letter-spacing: 1px;
-  flex-shrink: 0;
-  min-width: 44px;
-  text-align: center;
 `;
 
 const ProgressBarWrapper = styled.div<{ $status: string }>`
@@ -61,8 +58,14 @@ const ProgressBarWrapper = styled.div<{ $status: string }>`
   border: 1px solid ${({ theme }) => theme.colors.accent.border};
 `;
 
-const ProgressFillBase = styled.div<{ $status: string; $pulsing: boolean }>`
+const ProgressFill = styled.div<{
+  $status: string;
+  $width: number;
+  $shimmer: boolean;
+}>`
   height: 100%;
+  width: ${({ $width }) => $width}%;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   background: ${({ $status, theme }) => {
     switch ($status) {
       case 'success':
@@ -78,9 +81,9 @@ const ProgressFillBase = styled.div<{ $status: string; $pulsing: boolean }>`
   border-radius: ${({ theme }) => theme.borderRadius.full};
   position: relative;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-  
-  ${({ $pulsing }) =>
-    $pulsing
+
+  ${({ $shimmer }) =>
+    $shimmer
       ? `
     &::after {
       content: '';
@@ -95,30 +98,11 @@ const ProgressFillBase = styled.div<{ $status: string; $pulsing: boolean }>`
         rgba(255, 255, 255, 0.4),
         transparent
       );
-      animation: shimmer 2s infinite;
+      animation: ${shimmerMove} 2s infinite;
     }
   `
       : ''}
 `;
-
-const ProgressFill = motion(ProgressFillBase);
-
-const ShimmerOverlayBase = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  background-size: 200% 100%;
-`;
-
-const ShimmerOverlay = motion(ShimmerOverlayBase);
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   progress,
@@ -129,8 +113,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   shimmer = false,
   className,
 }) => {
-  const { theme } = useTheme();
   const clampedProgress = Math.max(0, Math.min(100, progress));
+  const showShimmer = shimmer || pulsing;
 
   return (
     <ProgressContainer className={className}>
@@ -145,52 +129,10 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
       <ProgressBarWrapper $status={status}>
         <ProgressFill
           $status={status}
-          $pulsing={pulsing}
-          initial={false}
-          animate={{ width: `${clampedProgress}%` }}
-          transition={{
-            duration: 0.25,
-            ease: [0.4, 0, 0.2, 1],
-          }}
-        >
-          {shimmer && (
-            <ShimmerOverlay
-              animate={{
-                backgroundPosition: ['0% 0%', '200% 0%'],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-            />
-          )}
-        </ProgressFill>
-        {pulsing && (
-          <motion.div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              borderRadius: theme.borderRadius.full,
-            }}
-            animate={{
-              boxShadow: [
-                '0 0 0 0 rgba(154, 154, 154, 0.4)',
-                '0 0 0 8px rgba(154, 154, 154, 0)',
-              ],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: 'easeOut',
-            }}
-          />
-        )}
+          $width={clampedProgress}
+          $shimmer={showShimmer}
+        />
       </ProgressBarWrapper>
     </ProgressContainer>
   );
 };
-
