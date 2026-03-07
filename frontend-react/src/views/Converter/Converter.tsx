@@ -84,6 +84,8 @@ const Message = motion(MessageBase);
 
 const ProgressWrapper = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xl};
+  min-height: 72px;
+  contain: layout;
 `;
 
 export const Converter: React.FC = () => {
@@ -120,7 +122,7 @@ export const Converter: React.FC = () => {
 
   usePolling({
     enabled: !!taskId && status?.status !== 'done' && status?.status !== 'error',
-    interval: 500,
+    interval: 1500,
     onPoll: async () => {
       if (!taskId) return;
       try {
@@ -208,14 +210,18 @@ export const Converter: React.FC = () => {
             🚀 Convert & Analyze
           </Button>
 
-          {status && (
+          {(loading || status) && (
             <ProgressWrapper>
-              <ProgressBar
-                progress={status.progress}
-                label={status.message || 'Processing...'}
-                pulsing={status.status === 'processing'}
-                shimmer={status.status === 'processing'}
-              />
+              {status ? (
+                <ProgressBar
+                  progress={status.progress}
+                  label={status.message || 'Processing...'}
+                  pulsing={status.status === 'processing'}
+                  shimmer={status.status === 'processing'}
+                />
+              ) : (
+                <ProgressBar progress={0} label="Starting..." showPercentage={true} />
+              )}
             </ProgressWrapper>
           )}
 

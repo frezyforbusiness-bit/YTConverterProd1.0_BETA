@@ -22,6 +22,7 @@ const ProgressInfo = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.sm};
+  min-height: 28px;
 `;
 
 const ProgressLabel = styled.span`
@@ -29,6 +30,8 @@ const ProgressLabel = styled.span`
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
   font-size: ${({ theme }) => theme.typography.sizes.body};
   font-family: ${({ theme }) => theme.typography.fonts.body};
+  flex: 1;
+  min-width: 0;
 `;
 
 const ProgressPercent = styled.span`
@@ -42,6 +45,9 @@ const ProgressPercent = styled.span`
   box-shadow: ${({ theme }) => theme.shadows.sm};
   border: 1px solid ${({ theme }) => theme.colors.accent.border};
   letter-spacing: 1px;
+  flex-shrink: 0;
+  min-width: 44px;
+  text-align: center;
 `;
 
 const ProgressBarWrapper = styled.div<{ $status: string }>`
@@ -140,10 +146,10 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         <ProgressFill
           $status={status}
           $pulsing={pulsing}
-          initial={{ width: 0 }}
+          initial={false}
           animate={{ width: `${clampedProgress}%` }}
           transition={{
-            duration: 0.4,
+            duration: 0.25,
             ease: [0.4, 0, 0.2, 1],
           }}
         >
