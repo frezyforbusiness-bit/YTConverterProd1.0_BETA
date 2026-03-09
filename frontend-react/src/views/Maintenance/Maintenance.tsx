@@ -20,6 +20,8 @@ const ContentCard = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius.large};
   border: 1px solid ${({ theme }) => theme.colors.accent.border};
   box-shadow: ${({ theme }) => theme.shadows.xl};
+  overflow: hidden;
+  word-wrap: break-word;
 `;
 
 const Icon = styled.div`
@@ -48,6 +50,9 @@ const Title = styled.h1`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
   text-transform: uppercase;
   letter-spacing: 2px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 `;
 
 const Subtitle = styled.h2`
