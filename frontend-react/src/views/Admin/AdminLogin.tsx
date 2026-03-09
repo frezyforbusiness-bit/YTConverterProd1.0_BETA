@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
@@ -55,7 +55,7 @@ export const AdminLogin: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
@@ -67,7 +67,7 @@ export const AdminLogin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [username, password, login]);
 
   return (
     <LoginScreen

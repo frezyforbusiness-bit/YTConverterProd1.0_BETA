@@ -11,6 +11,7 @@ interface ServiceCardProps {
   onClick: () => void;
   gradientBorder?: boolean;
   index?: number;
+  badge?: string;
 }
 
 const ServiceCardContainerBase = styled.div`
@@ -50,6 +51,26 @@ const StyledCard = styled(Card)`
   height: 100%;
   display: flex;
   flex-direction: column;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+`;
+
+const Badge = styled.span`
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  font-weight: ${({ theme }) => theme.typography.weights.semibold};
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: ${({ theme }) => theme.colors.accent.primary}22;
+  color: ${({ theme }) => theme.colors.accent.primary};
+  border: 1px solid ${({ theme }) => theme.colors.accent.primary}55;
 `;
 
 const IconContainerBase = styled.div`
@@ -134,6 +155,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   onClick,
   gradientBorder = false,
   index = 0,
+  badge,
 }) => {
   return (
     <ServiceCardContainer
@@ -147,7 +169,10 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
           <IconContainer variants={iconVariants} initial="rest" whileHover="hover">
             {icon}
           </IconContainer>
-          <Title>{title}</Title>
+          <HeaderRow>
+            <Title>{title}</Title>
+            {badge && <Badge>{badge}</Badge>}
+          </HeaderRow>
           <Description>{description}</Description>
           <CTAButton variant="secondary" size="md" fullWidth>
             Get Started

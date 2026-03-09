@@ -12,27 +12,29 @@ interface State {
   error: Error | null;
 }
 
+// Error boundary should be as robust as possibile and non dipendere dal tema
+// per evitare crash se il ThemeProvider non è inizializzato.
 const ErrorContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: 32px;
   text-align: center;
 `;
 
 const ErrorTitle = styled.h2`
-  font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-size: ${({ theme }) => theme.typography.sizes.h2};
-  color: ${({ theme }) => theme.colors.status.error};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.75rem;
+  color: #f87171;
+  margin-bottom: 16px;
 `;
 
 const ErrorMessage = styled.p`
-  font-family: ${({ theme }) => theme.typography.fonts.body};
-  color: ${({ theme }) => theme.colors.text.secondary};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #c0c0c0;
+  margin-bottom: 24px;
 `;
 
 class ErrorBoundaryClass extends Component<Props, State> {

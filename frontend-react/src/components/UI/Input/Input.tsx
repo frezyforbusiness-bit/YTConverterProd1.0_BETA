@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, type InputHTMLAttributes } from 'react';
+import React, { useState, useRef, useEffect, useCallback, type InputHTMLAttributes } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 
@@ -152,7 +152,7 @@ const SuccessIconBase = styled.div`
 
 const SuccessIcon = motion(SuccessIconBase);
 
-export const Input: React.FC<InputProps> = ({
+export const Input: React.FC<InputProps> = React.memo(({
   label,
   error,
   success,
@@ -167,34 +167,41 @@ export const Input: React.FC<InputProps> = ({
   onBlur,
   ...props
 }) => {
-  const [internalValue, setInternalValue] = useState(value || '');
   const inputRef = useRef<HTMLInputElement>(null);
+  const isControlled = value !== undefined;
+  const [internalValue, setInternalValue] = useState(isControlled ? '' : value || '');
 
-  const hasValue = Boolean(internalValue || value);
+  const currentValue = isControlled ? value : internalValue;
+  const hasValue = Boolean(currentValue);
   const hasIconLeft = Boolean(icon && iconPosition === 'left');
   const hasIconRight = Boolean((icon && iconPosition === 'right') || clearable || success);
 
+  // Only sync if controlled and value actually changed
   useEffect(() => {
-    if (value !== undefined) {
-      setInternalValue(value);
+    if (isControlled && value !== internalValue) {
+      setInternalValue(value || '');
     }
-  }, [value]);
+  }, [isControlled, value]); // Removed internalValue from deps to avoid loops
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInternalValue(e.target.value);
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isControlled) {
+      setInternalValue(e.target.value);
+    }
     onChange?.(e);
-  };
+  }, [isControlled, onChange]);
 
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     onFocus?.(e);
-  };
+  }, [onFocus]);
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     onBlur?.(e);
-  };
+  }, [onBlur]);
 
-  const handleClear = () => {
-    setInternalValue('');
+  const handleClear = useCallback(() => {
+    if (!isControlled) {
+      setInternalValue('');
+    }
     if (inputRef.current) {
       const syntheticEvent = {
         target: { value: '' },
@@ -204,7 +211,7 @@ export const Input: React.FC<InputProps> = ({
     }
     onClear?.();
     inputRef.current?.focus();
-  };
+  }, [isControlled, onChange, onClear]);
 
   return (
     <InputWrapper $fullWidth={fullWidth}>
@@ -228,7 +235,7 @@ export const Input: React.FC<InputProps> = ({
           $hasIconRight={hasIconRight}
           $error={!!error}
           $success={!!success}
-          value={value !== undefined ? value : internalValue}
+          value={currentValue}
           onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
@@ -281,5 +288,15 @@ export const Input: React.FC<InputProps> = ({
       </AnimatePresence>
     </InputWrapper>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison to prevent unnecessary re-renders
+  return (
+    prevProps.value === nextProps.value &&
+    prevProps.error === nextProps.error &&
+    prevProps.success === nextProps.success &&
+    prevProps.label === nextProps.label &&
+    prevProps.disabled === nextProps.disabled &&
+    prevProps.placeholder === nextProps.placeholder
+  );
+});
 

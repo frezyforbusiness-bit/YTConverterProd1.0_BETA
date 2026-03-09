@@ -71,9 +71,10 @@ const services = [
   {
     title: 'Mix & Master Analyzer',
     description:
-      'Professional audio analysis tool. Analyze your tracks for LUFS, dynamic range, frequency balance, and get detailed feedback.',
+      'Professional audio analysis tool. Analyze your tracks for LUFS, dynamic range, frequency balance, and get detailed feedback. Currently in beta.',
     icon: '🎚️',
     path: '/mixmaster',
+    badge: 'BETA',
   },
 ];
 
@@ -114,6 +115,7 @@ export const Home: React.FC = () => {
               onClick={() => navigate(service.path)}
               gradientBorder={index === 0}
               index={index}
+              badge={service.badge}
             />
           ))}
         </ServicesGrid>

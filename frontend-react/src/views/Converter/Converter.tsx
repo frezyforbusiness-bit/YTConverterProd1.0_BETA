@@ -86,7 +86,7 @@ const ProgressWrapper = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xl};
 `;
 
-export const Converter: React.FC = () => {
+export const Converter: React.FC = React.memo(() => {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [format, setFormat] = useState('mp3');
   const [loading, setLoading] = useState(false);
@@ -234,5 +234,5 @@ export const Converter: React.FC = () => {
       </ConverterContainer>
     </PageTransition>
   );
-};
+});
 
