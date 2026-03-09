@@ -177,8 +177,11 @@ export const Input: React.FC<InputProps> = React.memo(({
 
   // Only sync if controlled and value actually changed
   useEffect(() => {
-    if (isControlled && value !== internalValue) {
-      setInternalValue(value || '');
+    if (isControlled && value !== undefined) {
+      const stringValue = typeof value === 'string' ? value : String(value || '');
+      if (stringValue !== internalValue) {
+        setInternalValue(stringValue);
+      }
     }
   }, [isControlled, value]); // Removed internalValue from deps to avoid loops
 
