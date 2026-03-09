@@ -122,14 +122,14 @@ export const Maintenance: React.FC = () => {
         <ContentCard>
           <Icon>🔧</Icon>
           <VersionBadge>Version 2.0</VersionBadge>
-          <Title>In Lavorazione</Title>
-          <Subtitle>Stiamo migliorando il servizio</Subtitle>
+          <Title>Under Maintenance</Title>
+          <Subtitle>We're improving the service</Subtitle>
           <Description>
-            Producer Tools sta subendo importanti aggiornamenti per la versione 2.0.
-            Stiamo lavorando per offrirti un'esperienza ancora migliore con nuove funzionalità
-            e miglioramenti significativi.
+            Producer Tools is undergoing major updates for version 2.0.
+            We're working hard to provide you with an even better experience with new features
+            and significant improvements.
             <br /><br />
-            Torna presto per scoprire tutte le novità! 🎵
+            Check back soon to discover all the new features! 🎵
           </Description>
           <WaveformContainer>
             {Array.from({ length: 12 }).map((_, i) => (
