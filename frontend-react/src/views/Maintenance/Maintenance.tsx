@@ -12,7 +12,7 @@ const MaintenanceContainer = styled.div`
 `;
 
 const ContentCard = styled.div`
-  max-width: 600px;
+  max-width: 900px;
   width: 100%;
   text-align: center;
   background: ${({ theme }) => theme.colors.background.card};
@@ -22,6 +22,11 @@ const ContentCard = styled.div`
   box-shadow: ${({ theme }) => theme.shadows.xl};
   overflow: hidden;
   word-wrap: break-word;
+  
+  @media (max-width: 768px) {
+    max-width: 95%;
+    padding: ${({ theme }) => theme.spacing.xl};
+  }
 `;
 
 const Icon = styled.div`
@@ -41,7 +46,7 @@ const Icon = styled.div`
 
 const Title = styled.h1`
   font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-size: ${({ theme }) => theme.typography.sizes.h1};
+  font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: ${({ theme }) => theme.typography.weights.black};
   background: ${({ theme }) => theme.colors.text.gradient};
   -webkit-background-clip: text;
@@ -49,10 +54,15 @@ const Title = styled.h1`
   background-clip: text;
   margin-bottom: ${({ theme }) => theme.spacing.lg};
   text-transform: uppercase;
-  letter-spacing: 2px;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
+  letter-spacing: 3px;
+  white-space: nowrap;
+  overflow: visible;
+  
+  @media (max-width: 768px) {
+    white-space: normal;
+    letter-spacing: 2px;
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+  }
 `;
 
 const Subtitle = styled.h2`
