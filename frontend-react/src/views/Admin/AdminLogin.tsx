@@ -1,10 +1,12 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
 import { Input } from '../../components/UI/Input';
 import { Button } from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 
 const LoginScreenBase = styled.div`
   display: flex;
@@ -48,8 +50,17 @@ const ErrorMessage = styled(motion.div)`
   font-size: ${({ theme }) => theme.typography.sizes.body};
 `;
 
+const SpinnerContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: ${({ theme }) => theme.spacing.xl};
+  margin-top: ${({ theme }) => theme.spacing.lg};
+`;
+
 export const AdminLogin: React.FC = () => {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -70,12 +81,15 @@ export const AdminLogin: React.FC = () => {
 
     try {
       await login(username, password);
+      // Small delay to ensure state is updated, then redirect
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
-    } finally {
       setLoading(false);
     }
-  }, [username, password, login]);
+  }, [username, password, login, navigate]);
 
   return (
     <LoginScreen
@@ -115,12 +129,16 @@ export const AdminLogin: React.FC = () => {
             variant="primary"
             size="lg"
             fullWidth
-            loading={loading}
             disabled={loading || !username || !password}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
+        {loading && (
+          <SpinnerContainer>
+            <LoadingSpinner />
+          </SpinnerContainer>
+        )}
         {error && (
           <ErrorMessage
             initial={{ opacity: 0, y: -10 }}
