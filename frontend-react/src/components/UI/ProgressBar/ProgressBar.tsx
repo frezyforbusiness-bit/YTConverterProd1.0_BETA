@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 
 const shimmerMove = keyframes`
   0% { transform: translateX(-100%); }
@@ -84,7 +84,7 @@ const ProgressFill = styled.div<{
 
   ${({ $shimmer }) =>
     $shimmer
-      ? `
+      ? css`
     &::after {
       content: '';
       position: absolute;
