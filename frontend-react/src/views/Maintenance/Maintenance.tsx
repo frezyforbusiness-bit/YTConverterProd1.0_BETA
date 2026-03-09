@@ -130,16 +130,15 @@ export const Maintenance: React.FC = () => {
         transition={{ duration: 0.5 }}
       >
         <ContentCard>
-          <Icon>🔧</Icon>
-          <VersionBadge>Version 2.0</VersionBadge>
-          <Title>Under Maintenance</Title>
-          <Subtitle>We're improving the service</Subtitle>
+          <Icon>🚀</Icon>
+          <VersionBadge>Coming Soon</VersionBadge>
+          <Title>Version 2.0 is Coming</Title>
+          <Subtitle>Something amazing is on the way</Subtitle>
           <Description>
-            Producer Tools is undergoing major updates for version 2.0.
-            We're working hard to provide you with an even better experience with new features
-            and significant improvements.
+            We're building something incredible! Producer Tools 2.0 will bring you
+            revolutionary features, enhanced performance, and an even better experience.
             <br /><br />
-            Check back soon to discover all the new features! 🎵
+            Stay tuned for the big reveal! 🎵
           </Description>
           <WaveformContainer>
             {Array.from({ length: 12 }).map((_, i) => (
