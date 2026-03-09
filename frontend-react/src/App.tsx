@@ -9,6 +9,7 @@ import { Home } from './views/Home';
 import { Converter } from './views/Converter';
 import { MixMaster } from './views/MixMaster';
 import { Admin } from './views/Admin';
+import { NotFound } from './views/NotFound/NotFound';
 import { AuthProvider } from './context/AuthContext';
 import './styles/globals.css';
 import './styles/animations.css';
@@ -28,6 +29,7 @@ const AppContent: React.FC = () => {
               <Route path="/converter" element={<Converter />} />
               <Route path="/mixmaster" element={<MixMaster />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>
         </Layout>
