@@ -6,17 +6,8 @@ interface PageTransitionProps {
   children: ReactNode;
 }
 
-export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
-  return (
-    <motion.div
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      variants={pageVariants}
-      transition={pageTransition}
-    >
-      {children}
-    </motion.div>
-  );
-};
+export const PageTransition: React.FC<PageTransitionProps> = React.memo(({ children }) => {
+  // Disable animations to prevent re-animation on every render
+  return <div>{children}</div>;
+});
 

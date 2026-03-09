@@ -94,6 +94,10 @@ export const Converter: React.FC = React.memo(() => {
   const [status, setStatus] = useState<TaskStatus | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const handleUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setYoutubeUrl(e.target.value);
+  }, []);
+
   const handleConvert = useCallback(async () => {
     if (!youtubeUrl.trim()) {
       setMessage({ type: 'error', text: 'Please enter a YouTube URL' });
@@ -171,7 +175,7 @@ export const Converter: React.FC = React.memo(() => {
               type="url"
               placeholder="https://www.youtube.com/watch?v=..."
               value={youtubeUrl}
-              onChange={(e) => setYoutubeUrl(e.target.value)}
+              onChange={handleUrlChange}
               disabled={loading}
               fullWidth
             />

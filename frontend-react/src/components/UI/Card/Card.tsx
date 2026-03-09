@@ -1,7 +1,6 @@
 import React, { type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
-import { cardVariants } from '../../../utils/animationVariants';
 
 interface CardProps {
   variant?: 'default' | 'elevated' | 'interactive' | 'glass';
@@ -52,13 +51,28 @@ const CardBase = styled.div<{ $variant: string; $hover: boolean }>`
   }}
 `;
 
-export const Card: React.FC<CardProps> = ({
+export const Card: React.FC<CardProps> = React.memo(({
   variant = 'default',
   children,
   onClick,
   className,
   hover = false,
 }) => {
+  // Use regular div instead of motion for form cards to prevent re-animation on every render
+  if (variant === 'default' || variant === 'elevated') {
+    return (
+      <CardBase
+        $variant={variant}
+        $hover={hover}
+        onClick={onClick}
+        className={className}
+      >
+        {children}
+      </CardBase>
+    );
+  }
+
+  // Only use motion for interactive cards that need hover animations
   const MotionCard = motion(CardBase);
 
   return (
@@ -67,14 +81,11 @@ export const Card: React.FC<CardProps> = ({
       $hover={hover}
       onClick={onClick}
       className={className}
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
       whileHover={variant === 'interactive' || hover ? 'hover' : undefined}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </MotionCard>
   );
-};
+});
 

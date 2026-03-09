@@ -27,10 +27,9 @@ const LabelBase = styled.label<{ $hasValue: boolean; $error: boolean }>`
   font-family: ${({ theme }) => theme.typography.fonts.body};
   text-transform: uppercase;
   letter-spacing: 1px;
-  transform-origin: left top;
 `;
 
-const Label = motion(LabelBase);
+const Label = LabelBase;
 
 const InputContainer = styled.div<{ $error: boolean }>`
   position: relative;
@@ -219,9 +218,6 @@ export const Input: React.FC<InputProps> = React.memo(({
         <Label
           $hasValue={hasValue}
           $error={!!error}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
         >
           {label}
         </Label>
@@ -290,13 +286,19 @@ export const Input: React.FC<InputProps> = React.memo(({
   );
 }, (prevProps, nextProps) => {
   // Custom comparison to prevent unnecessary re-renders
+  // Note: We don't compare onChange/onFocus/onBlur as they're often recreated
+  // but the component should still re-render if value changes
   return (
     prevProps.value === nextProps.value &&
     prevProps.error === nextProps.error &&
     prevProps.success === nextProps.success &&
     prevProps.label === nextProps.label &&
     prevProps.disabled === nextProps.disabled &&
-    prevProps.placeholder === nextProps.placeholder
+    prevProps.placeholder === nextProps.placeholder &&
+    prevProps.icon === nextProps.icon &&
+    prevProps.iconPosition === nextProps.iconPosition &&
+    prevProps.clearable === nextProps.clearable &&
+    prevProps.fullWidth === nextProps.fullWidth
   );
 });
 
