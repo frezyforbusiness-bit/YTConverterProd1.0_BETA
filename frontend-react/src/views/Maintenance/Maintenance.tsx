@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { Button } from '../../components/UI/Button';
 
 const MaintenanceContainer = styled.div`
   display: flex;
@@ -121,7 +123,15 @@ const WaveBar = styled.div<{ $delay: number }>`
   }
 `;
 
+const AdminButton = styled.div`
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  padding-top: ${({ theme }) => theme.spacing.xl};
+  border-top: 1px solid ${({ theme }) => theme.colors.accent.border};
+`;
+
 export const Maintenance: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <MaintenanceContainer>
       <motion.div
@@ -145,6 +155,15 @@ export const Maintenance: React.FC = () => {
               <WaveBar key={i} $delay={i} />
             ))}
           </WaveformContainer>
+          <AdminButton>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => navigate('/admin')}
+            >
+              🔐 Admin Login
+            </Button>
+          </AdminButton>
         </ContentCard>
       </motion.div>
     </MaintenanceContainer>
