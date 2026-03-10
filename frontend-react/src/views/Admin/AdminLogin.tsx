@@ -76,16 +76,20 @@ export const AdminLogin: React.FC = () => {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[AdminLogin] Submit clicked', { username });
     setError(null);
     setLoading(true);
 
     try {
+      console.log('[AdminLogin] Calling login API...');
       await login(username, password);
+      console.log('[AdminLogin] Login successful, redirecting to /');
       // Small delay to ensure state is updated, then redirect
       setTimeout(() => {
         navigate('/');
       }, 100);
     } catch (err: any) {
+      console.error('[AdminLogin] Login error', err);
       setError(err.message || 'Login failed. Please check your credentials.');
       setLoading(false);
     }

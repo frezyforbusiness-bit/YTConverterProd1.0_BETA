@@ -73,9 +73,16 @@ const getAuthHeaders = () => {
 
 export const adminService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>('/api/admin/login', credentials);
-    setAuthToken(response.token);
-    return response;
+    console.log('[adminService] Login request', { username: credentials.username });
+    try {
+      const response = await apiClient.post<LoginResponse>('/api/admin/login', credentials);
+      console.log('[adminService] Login response OK');
+      setAuthToken(response.token);
+      return response;
+    } catch (error) {
+      console.error('[adminService] Login failed', error);
+      throw error;
+    }
   },
 
   logout: (): void => {
