@@ -4,9 +4,9 @@ FROM python:3.11-slim
 
 # Install system dependencies (ffmpeg required for audio conversion)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ffmpeg \
-        && rm -rf /var/lib/apt/lists/*
+  apt-get install -y --no-install-recommends \
+  ffmpeg \
+  && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -16,7 +16,7 @@ COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+  pip install --no-cache-dir -r requirements.txt
 
 # Copy application code (includes legacy frontend in /frontend)
 COPY . .
