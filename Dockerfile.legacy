@@ -36,3 +36,4 @@ ENV PYTHONUNBUFFERED=1
 # Start legacy app
 CMD ["/bin/bash", "scripts/shell/start_render.sh"]
 
+
