@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Producer Tools - YouTube to Audio Converter</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -25,13 +29,8 @@
                 <form id="converterForm">
                     <div class="form-group">
                         <label for="youtubeUrl">YouTube URL</label>
-                        <input 
-                            type="url" 
-                            id="youtubeUrl" 
-                            name="youtubeUrl" 
-                            placeholder="https://www.youtube.com/watch?v=..."
-                            required
-                        >
+                        <input type="url" id="youtubeUrl" name="youtubeUrl"
+                            placeholder="https://www.youtube.com/watch?v=..." required>
                         <small class="info-hint">
                             💡 Single videos only (no playlists, sorry! 🤷)
                         </small>
@@ -51,7 +50,8 @@
 
                     <div class="auto-detect-box">
                         <small>
-                            🎹 Automatic BPM & Key Detection - Perfect for music producers! Files will be named: TrackName-BPM-Key.ext
+                            🎹 Automatic BPM & Key Detection - Perfect for music producers! Files will be named:
+                            TrackName-BPM-Key.ext
                         </small>
                     </div>
 
@@ -66,7 +66,7 @@
 
                 <div id="errorMessage" class="error-message" style="display: none;"></div>
                 <div id="successMessage" class="success-message" style="display: none;"></div>
-                
+
                 <!-- Progress Bar -->
                 <div id="progressContainer" style="display: none; margin-top: 20px;">
                     <div class="progress-info">
@@ -114,5 +114,5 @@
 
     <script src="script.js"></script>
 </body>
-</html>
 
+</html>

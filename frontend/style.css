@@ -41,8 +41,15 @@ header h1 {
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }
 
 .subtitle {
@@ -232,7 +239,9 @@ main {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .error-message {
@@ -424,12 +433,10 @@ footer {
     left: 0;
     bottom: 0;
     right: 0;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.4),
-        transparent
-    );
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent);
     animation: shimmer 2s infinite;
 }
 
@@ -437,6 +444,7 @@ footer {
     0% {
         transform: translateX(-100%);
     }
+
     100% {
         transform: translateX(100%);
     }
@@ -458,7 +466,8 @@ footer {
 
     .form-group input[type="url"],
     .form-group select {
-        font-size: 16px; /* Previene zoom su iOS */
+        font-size: 16px;
+        /* Previene zoom su iOS */
     }
 
     .btn-primary {
@@ -474,21 +483,17 @@ footer {
     left: 0;
     right: 0;
     background: #2a2a2a;
-    background-image: 
-        repeating-linear-gradient(
-            45deg,
+    background-image:
+        repeating-linear-gradient(45deg,
             transparent,
             transparent 10px,
             rgba(60, 60, 60, 0.3) 10px,
-            rgba(60, 60, 60, 0.3) 20px
-        ),
-        repeating-linear-gradient(
-            -45deg,
+            rgba(60, 60, 60, 0.3) 20px),
+        repeating-linear-gradient(-45deg,
             transparent,
             transparent 10px,
             rgba(60, 60, 60, 0.3) 10px,
-            rgba(60, 60, 60, 0.3) 20px
-        );
+            rgba(60, 60, 60, 0.3) 20px);
     border-top: 2px solid #404040;
     padding: 15px 20px;
     z-index: 1000;
@@ -500,6 +505,7 @@ footer {
     from {
         transform: translateY(100%);
     }
+
     to {
         transform: translateY(0);
     }
@@ -588,30 +594,30 @@ footer {
     .cookies-banner {
         padding: 15px;
     }
-    
+
     .cookies-banner-content {
         flex-wrap: wrap;
         gap: 12px;
     }
-    
+
     .cookies-banner-icon {
         width: 35px;
         height: 35px;
         font-size: 1.5rem;
     }
-    
+
     .cookies-banner-text {
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
         width: 100%;
     }
-    
+
     .cookies-banner-text span {
         min-width: auto;
         width: 100%;
     }
-    
+
     .btn-accept-cookies {
         width: 100%;
         padding: 14px;
@@ -638,6 +644,7 @@ footer {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -660,6 +667,7 @@ footer {
         transform: translateY(-50px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -814,19 +822,19 @@ footer {
         max-width: 95%;
         margin: 10px;
     }
-    
+
     .cookies-modal-header {
         padding: 20px;
     }
-    
+
     .cookies-modal-body {
         padding: 20px;
     }
-    
+
     .cookies-modal-buttons {
         flex-direction: column;
     }
-    
+
     .btn-save-cookies,
     .btn-skip-cookies {
         width: 100%;
