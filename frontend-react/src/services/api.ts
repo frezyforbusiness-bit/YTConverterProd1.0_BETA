@@ -5,14 +5,17 @@
  * In development, use absolute URL (localhost:5000)
  */
 const getApiUrl = (): string => {
+  // Access env in a type-safe way, compatible with tools that don't know Vite types
+  const env = (import.meta as unknown as { env?: { VITE_API_URL?: string; PROD?: boolean } }).env || {};
+
   // If VITE_API_URL is explicitly set, use it
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+  if (env.VITE_API_URL) {
+    return env.VITE_API_URL;
   }
 
   // In production (same domain), use relative URL
   // This works because frontend and backend are served from the same domain
-  if (import.meta.env.PROD) {
+  if (env.PROD) {
     return ''; // Relative URL - same domain
   }
 
