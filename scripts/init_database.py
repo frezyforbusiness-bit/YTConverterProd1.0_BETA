@@ -39,36 +39,40 @@ def main():
         db_manager.init_schema()
         logger.info("✓ Database schema created")
         
-        # Create default admin user
-        admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
-        admin_password = os.environ.get('ADMIN_PASSWORD')
+        # Create or update default admin user.
+        # Env vars (ADMIN_USERNAME / ADMIN_PASSWORD) are OPTIONAL:
+        # - If set, they override the defaults
+        # - If not set, we fall back to a safe default admin user stored in DB
+        admin_username = os.environ.get('ADMIN_USERNAME') or 'admin'
+        admin_password = os.environ.get('ADMIN_PASSWORD') or 'YfwBdcA0FlOhn0YC'
+
+        logger.info(f"Ensuring default admin user exists: {admin_username}")
+        auth_manager = AuthManager()
         
-        if admin_password:
-            logger.info(f"Creating default admin user: {admin_username}")
-            auth_manager = AuthManager()
-            
-            # Check if admin already exists
-            existing_admin = db_manager.execute_one(
-                "SELECT id FROM admins WHERE username = %s",
-                (admin_username,)
+        # Check if admin already exists
+        existing_admin = db_manager.execute_one(
+            "SELECT id FROM admins WHERE username = %s",
+            (admin_username,)
+        )
+        
+        password_hash = auth_manager.hash_password(admin_password)
+        
+        if existing_admin:
+            # Update password to match current configuration/default
+            db_manager.execute(
+                "UPDATE admins SET password_hash = %s WHERE id = %s",
+                (password_hash, existing_admin['id']),
+                commit=True
             )
-            
-            if existing_admin:
-                logger.info(f"Admin user '{admin_username}' already exists, skipping creation")
-            else:
-                # Hash password and create admin
-                password_hash = auth_manager.hash_password(admin_password)
-                db_manager.execute(
-                    "INSERT INTO admins (username, password_hash) VALUES (%s, %s)",
-                    (admin_username, password_hash),
-                    commit=True
-                )
-                logger.info(f"✓ Admin user '{admin_username}' created successfully")
+            logger.info(f"✓ Admin user '{admin_username}' already exists, password updated.")
         else:
-            logger.warning("ADMIN_PASSWORD not set. Skipping admin user creation.")
-            logger.warning("To create admin user:")
-            logger.warning("  1. Set ADMIN_USERNAME and ADMIN_PASSWORD environment variables, OR")
-            logger.warning("  2. Run: python scripts/create_admin.py")
+            # Create new admin
+            db_manager.execute(
+                "INSERT INTO admins (username, password_hash) VALUES (%s, %s)",
+                (admin_username, password_hash),
+                commit=True
+            )
+            logger.info(f"✓ Admin user '{admin_username}' created successfully")
         
         logger.info("=" * 70)
         logger.info("Database initialization completed successfully!")
