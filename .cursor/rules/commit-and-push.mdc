@@ -1,0 +1,13 @@
+---
+description: Dopo modifiche al codice, esegui sempre commit e push
+alwaysApply: true
+---
+
+# Git: commit e push dopo le modifiche
+
+Dopo aver applicato modifiche ai file del progetto:
+
+1. **Commit**: esegui `git add` sui file modificati e `git commit` con un messaggio chiaro e descrittivo (es. `fix(ui): ...` o `feat(converter): ...`).
+2. **Push**: esegui `git push` verso il remote.
+
+Non chiedere conferma: procedi con commit e push automaticamente al termine delle modifiche, a meno che l'utente non abbia detto il contrario.
