@@ -7,9 +7,10 @@ import { Input } from '../../components/UI/Input';
 import { Button } from '../../components/UI/Button';
 
 const MixMasterContainer = styled.div`
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacing.xl};
+  overflow: visible;
 `;
 
 const Header = styled.div`
@@ -18,22 +19,35 @@ const Header = styled.div`
 
 const HeaderTitle = styled.h1`
   font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-size: ${({ theme }) => theme.typography.sizes.h2};
+  font-size: ${({ theme }) => theme.typography.sizes.h1};
   font-weight: ${({ theme }) => theme.typography.weights.black};
   background: ${({ theme }) => theme.colors.text.gradient};
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  letter-spacing: 3px;
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  text-align: center;
   white-space: nowrap;
+
+  @media (max-width: 1024px) {
+    font-size: ${({ theme }) => theme.typography.sizes.h2};
+  }
+
+  @media (max-width: 768px) {
+    white-space: normal;
+  }
 `;
 
 const HeaderSubtitle = styled.p`
-  font-family: ${({ theme }) => theme.typography.fonts.body};
-  font-size: ${({ theme }) => theme.typography.sizes.small};
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.body};
   color: ${({ theme }) => theme.colors.text.secondary};
+  font-weight: ${({ theme }) => theme.typography.weights.regular};
+  max-width: 600px;
+  margin: 0 auto ${({ theme }) => theme.spacing.md};
+  text-align: center;
 `;
 
 const TabContainer = styled.div`
