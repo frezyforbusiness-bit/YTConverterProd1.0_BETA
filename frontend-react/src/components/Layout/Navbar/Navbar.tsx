@@ -8,7 +8,7 @@ const NavbarBase = styled.nav`
   top: 0;
   left: 0;
   right: 0;
-  background: radial-gradient(circle at top left, #111 0%, #050505 35%, #000 100%);
+  background: radial-gradient(circle at top left, #020617 0%, #020617 30%, #000 100%);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.09);
   z-index: ${({ theme }) => theme.zIndex.fixed};
@@ -31,7 +31,7 @@ const LogoBase = styled(Link)`
   font-size: ${({ theme }) => theme.typography.sizes.h3};
   font-weight: ${({ theme }) => theme.typography.weights.black};
   text-decoration: none;
-  background: linear-gradient(135deg, #f97316 0%, #ecfeff 40%, #22c55e 80%);
+  background: linear-gradient(135deg, #38bdf8 0%, #6366f1 50%, #0ea5e9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -81,7 +81,7 @@ const UnderlineBase = styled.div`
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #22c55e, #f97316);
+  background: linear-gradient(90deg, #38bdf8, #6366f1);
   border-radius: 2px;
 `;
 

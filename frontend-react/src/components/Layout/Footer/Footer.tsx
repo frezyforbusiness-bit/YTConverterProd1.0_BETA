@@ -5,7 +5,7 @@ const FooterContainer = styled.footer`
   margin-top: ${({ theme }) => theme.spacing['3xl']};
   padding: ${({ theme }) => `${theme.spacing['2xl']} ${theme.spacing.xl}`};
   border-top: 1px solid ${({ theme }) => theme.colors.accent.border};
-  background: radial-gradient(circle at top, #050505 0%, #020617 40%, #000 100%);
+  background: radial-gradient(circle at top, #020617 0%, #020617 40%, #000 100%);
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 

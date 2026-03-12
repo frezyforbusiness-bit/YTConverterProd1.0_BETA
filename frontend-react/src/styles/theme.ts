@@ -16,10 +16,10 @@ export const theme = {
 
     // Accent Colors
     accent: {
-      primary: '#22c55e',
-      secondary: '#f97316',
+      primary: '#3b82f6', // electric blue
+      secondary: '#8b5cf6', // violet
       border: 'rgba(148, 163, 184, 0.35)',
-      focusRing: 'rgba(34, 197, 94, 0.4)',
+      focusRing: 'rgba(59, 130, 246, 0.4)',
     },
 
     // Text Colors
@@ -27,7 +27,7 @@ export const theme = {
       primary: '#f9fafb',
       secondary: '#e5e7eb',
       muted: '#9ca3af',
-      gradient: 'linear-gradient(135deg, #e5e7eb 0%, #22c55e 45%, #f97316 90%)',
+      gradient: 'linear-gradient(135deg, #e5e7eb 0%, #60a5fa 45%, #a855f7 90%)',
     },
 
     // Status Colors
