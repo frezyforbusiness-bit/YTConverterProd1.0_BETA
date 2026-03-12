@@ -6,8 +6,22 @@ import { PageTransition } from '../../components/common/PageTransition';
 import { Card } from '../../components/UI/Card';
 import { Input } from '../../components/UI/Input';
 import { Button } from '../../components/UI/Button';
+import { ProgressBar } from '../../components/UI/ProgressBar';
 
 const ACCEPT_AUDIO = 'audio/*,.mp3,.wav,.flac,.m4a,.aac,.ogg';
+
+type AnalysisResult = {
+  trackName: string;
+  sampleRate: string;
+  bitDepth: string;
+  clipping: boolean;
+  monoCompatibility: boolean;
+  integratedLoudness: number;
+  truePeak: number;
+  phaseIssues: boolean;
+  stereoField: string;
+  suggestedChanges: { title: string; description: string; isIssue: boolean }[];
+};
 
 const AnalyzerContainer = styled.div`
   max-width: 1000px;
@@ -191,6 +205,122 @@ const Chip = styled.button<{ $active?: boolean }>`
   }
 `;
 
+const AnalyzeRow = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  text-align: center;
+`;
+
+const ResultSection = styled.section`
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+`;
+
+const ResultTrackName = styled.h2`
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.h3};
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const ReportCard = styled(Card)`
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacing.xl};
+`;
+
+const ReportCardTitle = styled.h3`
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.body};
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin: 0 0 ${({ theme }) => theme.spacing.xs};
+`;
+
+const ReportCardSubtitle = styled.p`
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.muted};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const MetricGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const MetricItem = styled.div`
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: ${({ theme }) => theme.spacing.md};
+  border: 1px solid ${({ theme }) => theme.colors.accent.border};
+`;
+
+const MetricLabel = styled.span`
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.muted};
+  display: block;
+  margin-bottom: 4px;
+`;
+
+const MetricValue = styled.span<{ $issue?: boolean }>`
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.body};
+  color: ${({ theme, $issue }) => ($issue ? theme.colors.status.error : theme.colors.text.primary)};
+`;
+
+const TonalProfileBar = styled.div`
+  height: 24px;
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  background: linear-gradient(90deg, #22c55e 0%, #22c55e 70%, rgba(34, 197, 94, 0.3) 100%);
+  margin-top: ${({ theme }) => theme.spacing.sm};
+  position: relative;
+`;
+
+const TonalLabel = styled.div`
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.muted};
+  margin-bottom: 4px;
+`;
+
+const SuggestedChangeItem = styled.div<{ $isIssue?: boolean }>`
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  border-left: 4px solid
+    ${({ theme, $isIssue }) => ($isIssue ? theme.colors.status.error : theme.colors.accent.primary)};
+`;
+
+const SuggestedChangeTitle = styled.div`
+  font-weight: ${({ theme }) => theme.typography.weights.semibold};
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin-bottom: 4px;
+`;
+
+const SuggestedChangeDesc = styled.p`
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  margin: 0;
+  line-height: 1.5;
+`;
+
+const BackLink = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.accent.primary};
+  font-family: ${({ theme }) => theme.typography.fonts.body};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  cursor: pointer;
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 export const MixMasterAnalyzer: React.FC = () => {
   const { theme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -204,6 +334,10 @@ export const MixMasterAnalyzer: React.FC = () => {
   const question1Ref = useRef<HTMLDivElement>(null);
   const question2Ref = useRef<HTMLDivElement>(null);
   const question3Ref = useRef<HTMLDivElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
 
   useEffect(() => {
     if (!selectedFile) return;
@@ -219,6 +353,62 @@ export const MixMasterAnalyzer: React.FC = () => {
     if (genre == null) return;
     question3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [genre]);
+
+  useEffect(() => {
+    if (!analyzing) return;
+    setProgress(0);
+    let current = 0;
+    const id = setInterval(() => {
+      current = Math.min(100, current + Math.random() * 8 + 4);
+      setProgress(current);
+      if (current >= 100) {
+        clearInterval(id);
+        const trackName = selectedFile?.name?.replace(/\.[^.]+$/, '') ?? 'Track';
+        setResult({
+          trackName,
+          sampleRate: '44100 Hz',
+          bitDepth: '16 bit',
+          clipping: true,
+          monoCompatibility: true,
+          integratedLoudness: -9.3,
+          truePeak: 1.4,
+          phaseIssues: false,
+          stereoField: 'Normal',
+          suggestedChanges: [
+            { title: 'Clipping', description: 'There appears to be major clipping occurring.', isIssue: true },
+            {
+              title: 'Dynamic Range',
+              description: 'Your track seems to have a limited dynamic range that may not be suitable for this genre.',
+              isIssue: true,
+            },
+            {
+              title: 'Loudness',
+              description: 'It looks like your mix might be too loud to be sent for mastering.',
+              isIssue: true,
+            },
+          ],
+        });
+        setAnalyzing(false);
+      }
+    }, 200);
+    return () => clearInterval(id);
+  }, [analyzing, selectedFile?.name]);
+
+  const allAnswered = mixType != null && genre != null && contentType != null;
+  const handleAnalyze = useCallback(() => {
+    if (!allAnswered || analyzing) return;
+    setResult(null);
+    setAnalyzing(true);
+  }, [allAnswered, analyzing]);
+
+  const handleAnalyzeAnother = useCallback(() => {
+    setResult(null);
+    setProgress(0);
+  }, []);
+
+  useEffect(() => {
+    if (result) resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [result]);
 
   const openFilePicker = useCallback(() => {
     fileInputRef.current?.click();
@@ -370,6 +560,28 @@ export const MixMasterAnalyzer: React.FC = () => {
                       </Chip>
                     </ChipRow>
                   </QuestionBlock>
+
+                  {allAnswered && !result && (
+                    <AnalyzeRow>
+                      {analyzing ? (
+                        <ProgressBar
+                          progress={progress}
+                          label="Analyzing your track..."
+                          pulsing
+                          shimmer
+                        />
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="lg"
+                          onClick={handleAnalyze}
+                        >
+                          Analyze
+                        </Button>
+                      )}
+                    </AnalyzeRow>
+                  )}
                 </QuestionGroup>
               )}
             </>
@@ -391,6 +603,75 @@ export const MixMasterAnalyzer: React.FC = () => {
             </div>
           )}
         </Card>
+
+        {result && (
+          <ResultSection ref={resultRef}>
+            <BackLink type="button" onClick={handleAnalyzeAnother}>
+              ← Analyze another track
+            </BackLink>
+            <ResultTrackName>🎵 {result.trackName}</ResultTrackName>
+
+            <ReportCard>
+              <ReportCardTitle>Check</ReportCardTitle>
+              <ReportCardSubtitle>Detailed analysis of your track&apos;s technical quality.</ReportCardSubtitle>
+              <MetricGrid>
+                <MetricItem>
+                  <MetricLabel>Sample Rate</MetricLabel>
+                  <MetricValue>{result.sampleRate}</MetricValue>
+                </MetricItem>
+                <MetricItem>
+                  <MetricLabel>Bit Depth</MetricLabel>
+                  <MetricValue>{result.bitDepth}</MetricValue>
+                </MetricItem>
+                <MetricItem>
+                  <MetricLabel>Clipping</MetricLabel>
+                  <MetricValue $issue={result.clipping}>{result.clipping ? 'Yes' : 'No'}</MetricValue>
+                </MetricItem>
+                <MetricItem>
+                  <MetricLabel>Mono Compatibility</MetricLabel>
+                  <MetricValue>{result.monoCompatibility ? 'Yes' : 'No'}</MetricValue>
+                </MetricItem>
+                <MetricItem>
+                  <MetricLabel>Integrated Loudness</MetricLabel>
+                  <MetricValue>{result.integratedLoudness} LUFS</MetricValue>
+                </MetricItem>
+                <MetricItem>
+                  <MetricLabel>True Peak</MetricLabel>
+                  <MetricValue>{result.truePeak} dB</MetricValue>
+                </MetricItem>
+                <MetricItem>
+                  <MetricLabel>Phase Issues</MetricLabel>
+                  <MetricValue>{result.phaseIssues ? 'Yes' : 'No'}</MetricValue>
+                </MetricItem>
+                <MetricItem>
+                  <MetricLabel>Stereo Field</MetricLabel>
+                  <MetricValue>{result.stereoField}</MetricValue>
+                </MetricItem>
+              </MetricGrid>
+            </ReportCard>
+
+            <ReportCard>
+              <ReportCardTitle>Tonal Profile</ReportCardTitle>
+              <ReportCardSubtitle>Frequency balance (20 Hz – 20 kHz)</ReportCardSubtitle>
+              <TonalLabel>Optimal</TonalLabel>
+              <TonalProfileBar />
+            </ReportCard>
+
+            <ReportCard>
+              <ReportCardTitle>Suggested Changes</ReportCardTitle>
+              <ReportCardSubtitle>
+                Remember, these are suggestions based on our analysis and not the final say. Always listen critically and
+                trust your ears.
+              </ReportCardSubtitle>
+              {result.suggestedChanges.map((change, i) => (
+                <SuggestedChangeItem key={i} $isIssue={change.isIssue}>
+                  <SuggestedChangeTitle>{change.title}</SuggestedChangeTitle>
+                  <SuggestedChangeDesc>{change.description}</SuggestedChangeDesc>
+                </SuggestedChangeItem>
+              ))}
+            </ReportCard>
+          </ResultSection>
+        )}
       </AnalyzerContainer>
     </PageTransition>
   );
