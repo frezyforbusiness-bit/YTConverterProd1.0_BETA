@@ -5,8 +5,10 @@ Wraps YouTubeAudioConverter and provides search helpers
 
 from __future__ import annotations
 
-from typing import Tuple
+from typing import Tuple, List, Dict, Any
 import re
+import os
+import requests
 
 from services.converter import YouTubeAudioConverter
 from utils.logger import setup_logger
@@ -42,6 +44,10 @@ class YouTubeGateway:
         """
         Search YouTube for the best audio-focused version of a track.
 
+        Strategy:
+        1. If YOUTUBE_API_KEY is configured, use YouTube Data API v3 search.
+        2. Fallback to pytubefix/pytube Search if API key missing or request fails.
+
         Heuristics:
         - Prefer titles with 'audio', 'lyrics', 'lyric', 'official audio', 'visualizer'
         - Penalize 'official video', 'music video', 'clip', 'live'
@@ -52,6 +58,113 @@ class YouTubeGateway:
 
         Raises:
             ValueError if no suitable result is found
+        """
+        api_key = os.environ.get("YOUTUBE_API_KEY")
+        if api_key:
+            try:
+                return self._search_with_youtube_api(query, api_key)
+            except Exception as e:
+                logger.warning(f"YouTube Data API search failed for {query!r}: {e}. Falling back to pytube search.")
+
+        # Fallback: HTML-based search via pytubefix/pytube
+        return self._search_with_pytube(query)
+
+    # === Implementations ===================================================
+
+    def _search_with_youtube_api(self, query: str, api_key: str) -> Tuple[str, dict]:
+        """
+        Use YouTube Data API v3 to search for videos matching the query.
+        """
+        logger.info(f"Searching YouTube Data API for audio version of: {query!r}")
+        url = "https://www.googleapis.com/youtube/v3/search"
+        params = {
+            "part": "snippet",
+            "type": "video",
+            "q": query,
+            "maxResults": 8,
+            "key": api_key,
+            # Optional: bias towards music
+            "videoCategoryId": "10",  # Music
+        }
+        resp = requests.get(url, params=params, timeout=5)
+        if resp.status_code != 200:
+            raise ValueError(f"YouTube API error: HTTP {resp.status_code} - {resp.text}")
+
+        data = resp.json()
+        items: List[Dict[str, Any]] = data.get("items", [])
+        if not items:
+            raise ValueError("No YouTube results found for this track (API).")
+
+        def score_item(item: Dict[str, Any], index: int) -> float:
+            snippet = item.get("snippet", {}) or {}
+            title = (snippet.get("title") or "").lower()
+            channel = (snippet.get("channelTitle") or "").lower()
+
+            score = 0.0
+
+            # Base score: earlier results are slightly better
+            score += max(0, 10 - index)
+
+            positive_keywords = [
+                "audio",
+                "official audio",
+                "lyrics",
+                "lyric",
+                "visualizer",
+                "topic",
+            ]
+            negative_keywords = [
+                "official video",
+                "music video",
+                "video ufficiale",
+                "clip",
+                "live",
+                "concert",
+            ]
+
+            for kw in positive_keywords:
+                if kw in title:
+                    score += 15
+            if " - topic" in channel:
+                score += 10
+
+            for kw in negative_keywords:
+                if kw in title:
+                    score -= 20
+            if re.search(r"\b(official\s+video|music\s+video|mv)\b", title):
+                score -= 25
+
+            return score
+
+        best_item = None
+        best_score = float("-inf")
+        for idx, item in enumerate(items):
+            s = score_item(item, idx)
+            logger.debug(f"[API] Candidate {idx}: title={item.get('snippet', {}).get('title')!r}, score={s}")
+            if s > best_score:
+                best_score = s
+                best_item = item
+
+        if not best_item:
+            raise ValueError("No suitable audio result found on YouTube (API).")
+
+        vid_id = best_item["id"]["videoId"]
+        snippet = best_item["snippet"]
+        video_url = f"https://www.youtube.com/watch?v={vid_id}"
+        info = {
+            "id": vid_id,
+            "title": snippet.get("title"),
+            "duration": None,  # would require an extra videos.list call
+            "uploader": snippet.get("channelTitle"),
+            "thumbnail": (snippet.get("thumbnails") or {}).get("high", {}).get("url"),
+        }
+
+        logger.info(f"[API] Selected YouTube audio candidate: {video_url} (score={best_score})")
+        return video_url, info
+
+    def _search_with_pytube(self, query: str) -> Tuple[str, dict]:
+        """
+        Fallback search using pytubefix/pytube HTML-based Search.
         """
         try:
             try:
@@ -66,7 +179,7 @@ class YouTubeGateway:
                 "Please install pytubefix or pytube on the server."
             )
 
-        logger.info(f"Searching YouTube for audio version of: {query!r}")
+        logger.info(f"Searching YouTube (pytube) for audio version of: {query!r}")
         try:
             search = Search(query)
             # results is a list of YouTube objects
