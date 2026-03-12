@@ -8,6 +8,7 @@ import { Home } from './views/Home';
 import { Converter } from './views/Converter';
 import { MixMaster } from './views/MixMaster';
 import { Admin } from './views/Admin';
+import { About } from './views/About';
 import { NotFound } from './views/NotFound/NotFound';
 import { AuthProvider } from './context/AuthContext';
 import './styles/globals.css';
@@ -25,6 +26,7 @@ const AppContent: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/converter" element={<Converter />} />
             <Route path="/mixmaster" element={<MixMaster />} />
+            <Route path="/about" element={<About />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
