@@ -27,6 +27,7 @@ const HeaderTitle = styled.h1`
   text-transform: uppercase;
   letter-spacing: 2px;
   margin-bottom: ${({ theme }) => theme.spacing.xs};
+  white-space: nowrap;
 `;
 
 const HeaderSubtitle = styled.p`

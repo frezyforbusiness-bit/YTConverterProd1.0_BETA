@@ -28,6 +28,7 @@ const HeroTitleBase = styled.h1`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
   animation: float 3s ease-in-out infinite;
   text-align: center;
+  white-space: nowrap;
 `;
 
 const HeroTitle = motion(HeroTitleBase);
@@ -43,14 +44,6 @@ const HeroSubtitleBase = styled.p`
 `;
 
 const HeroSubtitle = motion(HeroSubtitleBase);
-
-const HeaderSubtitleSecondary = styled.p`
-  font-family: ${({ theme }) => theme.typography.fonts.body};
-  font-size: ${({ theme }) => theme.typography.sizes.small};
-  color: ${({ theme }) => theme.colors.text.muted};
-  text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-`;
 
 const ConverterCard = styled(Card)`
   margin-bottom: ${({ theme }) => theme.spacing.xl};
@@ -242,12 +235,9 @@ export const Converter: React.FC = React.memo(() => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Professional audio tools for music producers. Convert, analyze, and perfect your tracks.
-        </HeroSubtitle>
-        <HeaderSubtitleSecondary>
           Audio Converter – paste a YouTube or Spotify track, pick the format and hit convert. Use BPM &amp; key
           analysis when you need DJ‑ready files.
-        </HeaderSubtitleSecondary>
+        </HeroSubtitle>
 
         <ConverterCard>
           <FormGroup>
