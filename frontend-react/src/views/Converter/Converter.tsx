@@ -148,6 +148,34 @@ const ProgressWrapper = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xl};
 `;
 
+const ConversionInfo = styled.div`
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  font-family: ${({ theme }) => theme.typography.fonts.body};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  line-height: 1.7;
+
+  h3 {
+    font-family: ${({ theme }) => theme.typography.fonts.accent};
+    font-size: ${({ theme }) => theme.typography.sizes.body};
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: ${({ theme }) => theme.colors.text.primary};
+    margin-bottom: ${({ theme }) => theme.spacing.sm};
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 ${({ theme }) => theme.spacing.md};
+  }
+
+  li::before {
+    content: '– ';
+    color: ${({ theme }) => theme.colors.accent.primary};
+  }
+`;
+
 export const Converter: React.FC = React.memo(() => {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [format, setFormat] = useState('mp3');
@@ -343,6 +371,23 @@ export const Converter: React.FC = React.memo(() => {
             )}
           </AnimatePresence>
         </ConverterCard>
+        <ConversionInfo>
+          <h3>Available formats</h3>
+          <ul>
+            <li>MP3 – good balance between size and compatibility.</li>
+            <li>WAV – uncompressed, recommended for production and further processing.</li>
+            <li>FLAC – lossless compression, smaller than WAV but same quality.</li>
+            <li>M4A/AAC – optimized for streaming and mobile playback.</li>
+            <li>OGG / Opus – modern codecs for very small files at good quality.</li>
+          </ul>
+          <h3>Conversion notes</h3>
+          <ul>
+            <li>Source audio is taken from YouTube or Spotify track metadata and converted server‑side.</li>
+            <li>The system always tries to pick audio/lyrics versions, avoiding official videoclips when possible.</li>
+            <li>Analysis (BPM &amp; key) slightly increases processing time but is ideal for DJ‑ready files.</li>
+            <li>Playlists are not supported yet: convert one track at a time for best stability.</li>
+          </ul>
+        </ConversionInfo>
       </ConverterContainer>
     </PageTransition>
   );
