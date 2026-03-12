@@ -62,7 +62,7 @@ const ServicesGrid = motion(ServicesGridBase);
 
 const services = [
   {
-    title: 'Street Converter',
+    title: 'Audio Converter',
     description:
       'Drop in a YouTube or Spotify track and get a clean, tagged audio file. Optional BPM & key detection for DJs and producers.',
     icon: '🎵',
