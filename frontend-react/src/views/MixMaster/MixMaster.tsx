@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
@@ -6,6 +6,8 @@ import { PageTransition } from '../../components/common/PageTransition';
 import { Card } from '../../components/UI/Card';
 import { Input } from '../../components/UI/Input';
 import { Button } from '../../components/UI/Button';
+
+const ACCEPT_AUDIO = 'audio/*,.mp3,.wav,.flac,.m4a,.aac,.ogg';
 
 const MixMasterContainer = styled.div`
   max-width: 1000px;
@@ -84,18 +86,29 @@ const Tab = styled.button<{ $active: boolean }>`
   }
 `;
 
-const DragDropArea = styled.div`
-  border: 2px dashed ${({ theme }) => theme.colors.accent.border};
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+const DragDropArea = styled.div<{ $isDragging?: boolean }>`
+  border: 2px dashed ${({ theme, $isDragging }) => ($isDragging ? theme.colors.accent.primary : theme.colors.accent.border)};
   border-radius: ${({ theme }) => theme.borderRadius.large};
   padding: ${({ theme }) => theme.spacing['3xl']};
   text-align: center;
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easing.smooth};
-  
+  background: ${({ $isDragging }) => ($isDragging ? 'rgba(154, 154, 154, 0.08)' : 'transparent')};
+
   &:hover {
     border-color: ${({ theme }) => theme.colors.accent.primary};
     background: rgba(154, 154, 154, 0.05);
   }
+`;
+
+const SelectedFile = styled.p`
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.status.success};
+  margin-top: ${({ theme }) => theme.spacing.sm};
 `;
 
 const AnalysisInfo = styled.div`
@@ -132,8 +145,41 @@ const InfoText = styled.p`
 
 export const MixMaster: React.FC = () => {
   const { theme } = useTheme();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'youtube'>('upload');
   const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const openFilePicker = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setSelectedFile(file);
+    e.target.value = '';
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('audio/')) setSelectedFile(file);
+  }, []);
 
   return (
     <PageTransition>
@@ -167,15 +213,34 @@ export const MixMaster: React.FC = () => {
           </TabContainer>
 
           {activeTab === 'upload' ? (
-            <DragDropArea>
-              <p style={{ fontSize: theme.typography.sizes.h3, marginBottom: theme.spacing.md }}>
-                📁 Drag &amp; Drop Audio File
-              </p>
-              <p style={{ color: theme.colors.text.secondary, marginBottom: theme.spacing.lg }}>
-                Or click to browse (MP3, WAV, FLAC, M4A, OGG). Ideal for bounced mixes, masters and reference tracks.
-              </p>
-              <Button variant="secondary">Choose File</Button>
-            </DragDropArea>
+            <>
+              <HiddenFileInput
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPT_AUDIO}
+                onChange={handleFileChange}
+              />
+              <DragDropArea
+                $isDragging={isDragging}
+                onClick={openFilePicker}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <p style={{ fontSize: theme.typography.sizes.h3, marginBottom: theme.spacing.md }}>
+                  📁 Drag &amp; Drop Audio File
+                </p>
+                <p style={{ color: theme.colors.text.secondary, marginBottom: theme.spacing.lg }}>
+                  Or click to browse (MP3, WAV, FLAC, M4A, OGG). Ideal for bounced mixes, masters and reference tracks.
+                </p>
+                <Button type="button" variant="secondary" onClick={(e) => { e.stopPropagation(); openFilePicker(); }}>
+                  Choose File
+                </Button>
+                {selectedFile && (
+                  <SelectedFile>✓ Selected: {selectedFile.name}</SelectedFile>
+                )}
+              </DragDropArea>
+            </>
           ) : (
             <div>
               <Input
