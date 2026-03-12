@@ -14,6 +14,7 @@ from adapter.gateways.file_gateway import FileGateway
 from adapter.gateways.audio_analyzer_gateway import AudioAnalyzerGateway
 from adapter.gateways.task_gateway import TaskGateway
 from adapter.gateways.auth_gateway import AuthGateway
+from adapter.gateways.spotify_gateway import SpotifyGateway
 from adapter.repositories.mysql_conversion_repository import MySQLConversionRepository
 from adapter.repositories.mysql_admin_repository import MySQLAdminRepository
 from adapter.repositories.mysql_statistics_repository import MySQLStatisticsRepository
@@ -57,6 +58,8 @@ def create_app() -> Flask:
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
     GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI')
     ADMIN_GOOGLE_EMAILS = os.environ.get('ADMIN_GOOGLE_EMAILS', '')
+    SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
+    SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
     # Check if React frontend is built (for production), otherwise use old frontend
     # The React frontend is built in frontend-react/dist and copied to frontend-react-dist by Dockerfile
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -140,6 +143,12 @@ def create_app() -> Flask:
     converter = YouTubeAudioConverter(TEMP_DIR)
     task_manager = TaskManager(TASK_TIMEOUT)
     auth_manager = AuthManager()
+    spotify_gateway = None
+    if SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET:
+        spotify_gateway = SpotifyGateway(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET)
+        logger.info("✓ SpotifyGateway initialized with client credentials")
+    else:
+        logger.warning("Spotify client id/secret not configured - Spotify API metadata will not be used")
 
     # Initialize OAuth (Google) for admin login, if configured
     oauth = OAuth(app)
@@ -244,6 +253,7 @@ def create_app() -> Flask:
         google_oauth=google_oauth,
         frontend_url=FRONTEND_URL,
         admin_google_emails=ADMIN_GOOGLE_EMAILS,
+        spotify_gateway=spotify_gateway,
     )
     
     # Initialize cleanup scheduler

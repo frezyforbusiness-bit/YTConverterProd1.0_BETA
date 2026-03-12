@@ -17,6 +17,7 @@ from domain.use_cases.get_statistics import GetStatisticsUseCase
 from domain.entities.task import Task
 from adapter.gateways.task_gateway import TaskGateway
 from adapter.gateways.auth_gateway import AuthGateway
+from adapter.gateways.spotify_gateway import SpotifyGateway
 from utils.validators import validate_convert_request
 from utils.logger import setup_logger, log_error_with_traceback
 
@@ -40,6 +41,7 @@ class FlaskController:
         google_oauth=None,
         frontend_url: str = "http://localhost:5173",
         admin_google_emails: str | Iterable[str] | None = None,
+        spotify_gateway: Optional[SpotifyGateway] = None,
     ):
         self.app = app
         self.convert_use_case = convert_use_case
@@ -57,6 +59,7 @@ class FlaskController:
             emails = [e.strip().lower() for e in (admin_google_emails or [])]
         self.admin_google_emails = set(emails)
         self.frontend_url = frontend_url
+        self.spotify_gateway = spotify_gateway
         
         self._register_routes()
     
@@ -484,40 +487,60 @@ class FlaskController:
     def _resolve_spotify_track_to_youtube(self, url: str) -> str:
         """
         Resolve a Spotify track URL to a YouTube video URL by:
-        - Calling Spotify oEmbed to get track title/artist (no auth needed)
+        - Preferably using Spotify Web API (client credentials) to get track name + artists
+        - Fallback to Spotify oEmbed if gateway is not available
         - Searching YouTube for the best audio/lyrics version
         """
-        import requests
+        title_for_search = None
 
+        # 1) Prefer Spotify Web API via SpotifyGateway
+        if self.spotify_gateway:
+            try:
+                meta = self.spotify_gateway.get_track_metadata(url)
+                name = (meta.get("name") or "").strip()
+                artists = (meta.get("artists") or "").strip()
+                if name and artists:
+                    title_for_search = f"{artists} - {name}"
+                elif name:
+                    title_for_search = name
+                logger.info(f"Resolved Spotify track via API: {title_for_search!r}")
+            except Exception as e:
+                logger.warning(f"SpotifyGateway failed to resolve track, will try oEmbed. Error: {e}")
+
+        # 2) Fallback: Spotify oEmbed (no auth)
+        if not title_for_search:
+            import requests
+
+            try:
+                oembed_url = "https://open.spotify.com/oembed"
+                resp = requests.get(oembed_url, params={"url": url}, timeout=5)
+                if resp.status_code != 200:
+                    logger.warning(f"Spotify oEmbed returned {resp.status_code} for URL={url!r}")
+                    raise ValueError("Could not fetch metadata for this Spotify track.")
+
+                data = resp.json()
+                # data['title'] is usually 'Artist – Track' or similar
+                title = (data.get("title") or "").strip()
+                if not title:
+                    raise ValueError("Spotify track metadata is missing title.")
+
+                title_for_search = title
+                logger.info(f"Resolved Spotify track via oEmbed: {title_for_search!r}")
+            except ValueError:
+                # Re-raise explicit value errors
+                raise
+            except Exception as e:
+                logger.error(f"Error resolving Spotify track via oEmbed: {e}")
+                raise ValueError("Failed to resolve Spotify track. Please try again or use a YouTube link.")
+
+        # 3) Use YouTubeGateway to find the best audio-oriented video for this track
         try:
-            oembed_url = "https://open.spotify.com/oembed"
-            resp = requests.get(oembed_url, params={"url": url}, timeout=5)
-            if resp.status_code != 200:
-                logger.warning(f"Spotify oEmbed returned {resp.status_code} for URL={url!r}")
-                raise ValueError("Could not fetch metadata for this Spotify track.")
-
-            data = resp.json()
-            # data['title'] is usually 'Artist – Track' or similar
-            title = (data.get("title") or "").strip()
-            if not title:
-                raise ValueError("Spotify track metadata is missing title.")
-
-            logger.info(f"Resolved Spotify track metadata title={title!r}")
-        except ValueError:
-            # Re-raise explicit value errors
-            raise
-        except Exception as e:
-            logger.error(f"Error resolving Spotify track via oEmbed: {e}")
-            raise ValueError("Failed to resolve Spotify track. Please try again or use a YouTube link.")
-
-        # Use YouTubeGateway to find the best audio-oriented video for this track title
-        try:
-            youtube_url, _info = self.convert_use_case.youtube_gateway.search_best_audio_video(title)
+            youtube_url, _info = self.convert_use_case.youtube_gateway.search_best_audio_video(title_for_search)
             return youtube_url
-        except ValueError as e:
+        except ValueError:
             # Propagate user-facing error
             raise
         except Exception as e:
-            logger.error(f"Error searching YouTube for Spotify track {title!r}: {e}")
+            logger.error(f"Error searching YouTube for Spotify track {title_for_search!r}: {e}")
             raise ValueError("Could not find a suitable audio version on YouTube for this track.")
 
