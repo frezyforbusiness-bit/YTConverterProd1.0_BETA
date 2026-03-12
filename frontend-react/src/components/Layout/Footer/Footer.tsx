@@ -10,7 +10,7 @@ const FooterContainer = styled.footer`
 `;
 
 const FooterInner = styled.div`
-  max-width: 1280px;
+  max-width: 960px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
