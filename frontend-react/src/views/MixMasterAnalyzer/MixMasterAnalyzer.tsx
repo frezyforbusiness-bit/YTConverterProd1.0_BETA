@@ -531,35 +531,39 @@ export const MixMasterAnalyzer: React.FC = () => {
                     </BigChoiceRow>
                   </QuestionBlock>
 
-                  <QuestionBlock ref={question2Ref}>
-                    <QuestionLabel>Genre</QuestionLabel>
-                    <ChipRow>
-                      <Chip type="button" $active={genre === 'trap'} onClick={() => setGenre('trap')}>
-                        Trap / Drill
-                      </Chip>
-                      <Chip type="button" $active={genre === 'club'} onClick={() => setGenre('club')}>
-                        House / Techno
-                      </Chip>
-                      <Chip type="button" $active={genre === 'pop'} onClick={() => setGenre('pop')}>
-                        Pop / R&amp;B
-                      </Chip>
-                      <Chip type="button" $active={genre === 'other'} onClick={() => setGenre('other')}>
-                        Other
-                      </Chip>
-                    </ChipRow>
-                  </QuestionBlock>
+                  {mixType != null && (
+                    <QuestionBlock ref={question2Ref}>
+                      <QuestionLabel>Genre</QuestionLabel>
+                      <ChipRow>
+                        <Chip type="button" $active={genre === 'trap'} onClick={() => setGenre('trap')}>
+                          Trap / Drill
+                        </Chip>
+                        <Chip type="button" $active={genre === 'club'} onClick={() => setGenre('club')}>
+                          House / Techno
+                        </Chip>
+                        <Chip type="button" $active={genre === 'pop'} onClick={() => setGenre('pop')}>
+                          Pop / R&amp;B
+                        </Chip>
+                        <Chip type="button" $active={genre === 'other'} onClick={() => setGenre('other')}>
+                          Other
+                        </Chip>
+                      </ChipRow>
+                    </QuestionBlock>
+                  )}
 
-                  <QuestionBlock ref={question3Ref}>
-                    <QuestionLabel>What&apos;s inside?</QuestionLabel>
-                    <ChipRow>
-                      <Chip type="button" $active={contentType === 'beat'} onClick={() => setContentType('beat')}>
-                        Instrumental / Beat only
-                      </Chip>
-                      <Chip type="button" $active={contentType === 'song'} onClick={() => setContentType('song')}>
-                        Full song with vocals
-                      </Chip>
-                    </ChipRow>
-                  </QuestionBlock>
+                  {genre != null && (
+                    <QuestionBlock ref={question3Ref}>
+                      <QuestionLabel>What&apos;s inside?</QuestionLabel>
+                      <ChipRow>
+                        <Chip type="button" $active={contentType === 'beat'} onClick={() => setContentType('beat')}>
+                          Instrumental / Beat only
+                        </Chip>
+                        <Chip type="button" $active={contentType === 'song'} onClick={() => setContentType('song')}>
+                          Full song with vocals
+                        </Chip>
+                      </ChipRow>
+                    </QuestionBlock>
+                  )}
 
                   {allAnswered && !result && (
                     <AnalyzeRow>
