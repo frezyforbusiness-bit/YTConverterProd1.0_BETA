@@ -63,13 +63,6 @@ const ServicesGrid = motion(ServicesGridBase);
 
 const services = [
   {
-    title: 'Audio Converter',
-    description:
-      'Drop in a YouTube or Spotify track and get a clean, tagged audio file. Optional BPM & key detection for DJs and producers.',
-    icon: '🎵',
-    path: '/converter',
-  },
-  {
     title: 'Mix & Master Analyzer',
     description:
       'Professional audio analysis tool. Analyze your tracks for LUFS, dynamic range, frequency balance, and get detailed feedback. Currently in beta.',

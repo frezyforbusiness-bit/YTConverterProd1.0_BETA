@@ -2,6 +2,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import { PageTransition } from '../../components/common/PageTransition';
+import { ServiceCard } from '../../components/UI/ServiceCard';
+import { containerVariants } from '../../utils/animationVariants';
+import { useNavigate } from 'react-router-dom';
 
 const AboutContainer = styled.div`
   max-width: 960px;
@@ -35,7 +38,39 @@ const Highlight = styled.span`
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
 `;
 
+const ServicesGridBase = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: ${({ theme }) => theme.spacing.xl};
+  margin-top: ${({ theme }) => theme.spacing['3xl']};
+  
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ServicesGrid = motion(ServicesGridBase);
+
+const services = [
+  {
+    title: 'Audio Converter',
+    description:
+      'Turn YouTube or Spotify links into clean audio files with optional BPM & key detection for DJs and producers.',
+    icon: '🎵',
+    path: '/converter',
+  },
+  {
+    title: 'Mix & Master Analyzer',
+    description:
+      'Analyze your mix for LUFS, dynamics and tonal balance. Designed to give you quick, actionable feedback on your tracks.',
+    icon: '🎚️',
+    path: '/mixmaster',
+    badge: 'BETA',
+  },
+];
+
 export const About: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <PageTransition>
       <AboutContainer>
@@ -70,6 +105,25 @@ export const About: React.FC = () => {
             to the final mix. Tools are built around one rule: if it doesn&apos;t make your workflow smoother, it doesn&apos;t ship.
           </Paragraph>
         </motion.div>
+
+        <ServicesGrid
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {services.map((service, index) => (
+            <ServiceCard
+              key={service.path}
+              title={service.title}
+              description={service.description}
+              icon={service.icon}
+              onClick={() => navigate(service.path)}
+              gradientBorder={index === 0}
+              index={index}
+              badge={service.badge}
+            />
+          ))}
+        </ServicesGrid>
       </AboutContainer>
     </PageTransition>
   );
