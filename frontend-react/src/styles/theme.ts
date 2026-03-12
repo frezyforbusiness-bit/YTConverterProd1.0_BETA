@@ -41,9 +41,9 @@ export const theme = {
 
   typography: {
     fonts: {
-      heading: "'Orbitron', sans-serif",
-      body: "'Rajdhani', sans-serif",
-      accent: "'Exo 2', sans-serif",
+      heading: "'Chakra Petch', sans-serif",
+      body: "'Barlow Semi Condensed', sans-serif",
+      accent: "'Kanit', sans-serif",
     },
     weights: {
       regular: 400,
