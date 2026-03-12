@@ -6,7 +6,7 @@ import { Card } from '../../components/UI/Card';
 import { Input } from '../../components/UI/Input';
 import { Button } from '../../components/UI/Button';
 import { ProgressBar } from '../../components/UI/ProgressBar';
-import { converterService, type TaskStatus, type PlaylistTaskEntry } from '../../services/converter.service';
+import { converterService, type TaskStatus } from '../../services/converter.service';
 import { usePolling } from '../../hooks/usePolling';
 
 const ConverterContainer = styled.div`
@@ -109,45 +109,6 @@ const ProgressWrapper = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xl};
 `;
 
-const PlaylistList = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xl};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const PlaylistItemCard = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  background: ${({ theme }) => theme.colors.background.secondary};
-  border: 1px solid ${({ theme }) => theme.colors.accent.border};
-`;
-
-const PlaylistItemHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const PlaylistItemTitle = styled.div`
-  font-family: ${({ theme }) => theme.typography.fonts.body};
-  font-size: ${({ theme }) => theme.typography.sizes.body};
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
-
-const PlaylistItemSubtitle = styled.div`
-  font-family: ${({ theme }) => theme.typography.fonts.body};
-  font-size: ${({ theme }) => theme.typography.sizes.small};
-  color: ${({ theme }) => theme.colors.text.secondary};
-`;
-
-const SmallButton = styled(Button)`
-  padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.sm}`};
-  font-size: ${({ theme }) => theme.typography.sizes.small};
-`;
-
 export const Converter: React.FC = React.memo(() => {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [format, setFormat] = useState('mp3');
@@ -156,14 +117,6 @@ export const Converter: React.FC = React.memo(() => {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [status, setStatus] = useState<TaskStatus | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [playlistTasks, setPlaylistTasks] = useState<
-    (PlaylistTaskEntry & { status?: TaskStatus; downloaded?: boolean })[]
-  >([]);
-
-  const isSpotifyPlaylist = useCallback((url: string) => {
-    const lower = url.toLowerCase();
-    return lower.includes('open.spotify.com/playlist/') || lower.startsWith('spotify:playlist:');
-  }, []);
 
   const handleUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setYoutubeUrl(e.target.value);
@@ -179,39 +132,12 @@ export const Converter: React.FC = React.memo(() => {
       setLoading(true);
       setMessage(null);
       setStatus(null);
-      setPlaylistTasks([]);
-
-      if (isSpotifyPlaylist(youtubeUrl)) {
-        // Playlist flow (Spotify playlists only, for now)
-        const response = await converterService.startPlaylistConversion({
-          youtube_url: youtubeUrl,
-          format,
-          analyze_bpm_key: analyzeBpmKey,
-        });
-        const entries = response.playlist.started_tasks;
-        if (!entries || entries.length === 0) {
-          setLoading(false);
-          setMessage({
-            type: 'error',
-            text: 'No tracks could be started from this playlist.',
-          });
-          return;
-        }
-        setPlaylistTasks(entries.map((e) => ({ ...e, downloaded: false })));
-        setLoading(false);
-        setMessage({
-          type: 'success',
-          text: `Started conversion for ${entries.length} track(s) from the playlist.`,
-        });
-      } else {
-        // Single track/video flow
-        const response = await converterService.startConversion({
-          youtube_url: youtubeUrl,
-          format,
-          analyze_bpm_key: analyzeBpmKey,
-        });
-        setTaskId(response.task_id);
-      }
+      const response = await converterService.startConversion({
+        youtube_url: youtubeUrl,
+        format,
+        analyze_bpm_key: analyzeBpmKey,
+      });
+      setTaskId(response.task_id);
     } catch (error: any) {
       setLoading(false);
       setMessage({
@@ -219,7 +145,7 @@ export const Converter: React.FC = React.memo(() => {
         text: error.message || 'Failed to start conversion',
       });
     }
-  }, [youtubeUrl, format, analyzeBpmKey, isSpotifyPlaylist]);
+  }, [youtubeUrl, format, analyzeBpmKey]);
 
   usePolling({
     enabled: !!taskId && status?.status !== 'done' && status?.status !== 'error',
@@ -263,56 +189,6 @@ export const Converter: React.FC = React.memo(() => {
       }
     },
   });
-
-  // Polling for playlist tasks
-  usePolling({
-    enabled: playlistTasks.length > 0,
-    interval: 1000,
-    onPoll: async () => {
-      if (!playlistTasks.length) return;
-      try {
-        const updated = [...playlistTasks];
-        for (let i = 0; i < updated.length; i += 1) {
-          const item = updated[i];
-          if (item.status && (item.status.status === 'done' || item.status.status === 'error')) {
-            continue;
-          }
-          const st = await converterService.getStatus(item.task_id);
-          updated[i] = { ...item, status: st };
-        }
-        setPlaylistTasks(updated);
-      } catch (error) {
-        console.error('Playlist polling error:', error);
-      }
-    },
-  });
-
-  const handleDownloadTrack = useCallback(
-    async (task: PlaylistTaskEntry & { status?: TaskStatus; downloaded?: boolean }) => {
-      if (!task.status || task.status.status !== 'done' || task.downloaded) return;
-      try {
-        const blob = await converterService.downloadFile(task.task_id);
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const defaultName = `${task.track_name || 'Track'}.${format}`;
-        a.download = task.status.file_path?.split('/').pop() || defaultName;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        setPlaylistTasks((prev) =>
-          prev.map((p) => (p.task_id === task.task_id ? { ...p, downloaded: true } : p)),
-        );
-      } catch (error: any) {
-        setMessage({
-          type: 'error',
-          text: error.message || 'Download failed for this track',
-        });
-      }
-    },
-    [format],
-  );
 
   return (
     <PageTransition>
@@ -372,9 +248,9 @@ export const Converter: React.FC = React.memo(() => {
             <br />
             <br />
             <strong>Supported links</strong>
-            : You can paste a single YouTube video URL, a single Spotify track URL, or a Spotify
-            playlist URL (the first N tracks will be converted in batch). The converter always
-            tries to pick an audio/lyrics version on YouTube, not the official videoclip.
+            : You can paste a single YouTube video URL or a single Spotify track URL. Playlists are
+            not supported yet. The converter always tries to pick an audio/lyrics version on
+            YouTube, not the official videoclip.
           </InfoBox>
 
           <Button
@@ -385,14 +261,10 @@ export const Converter: React.FC = React.memo(() => {
             onClick={handleConvert}
             disabled={loading || !youtubeUrl.trim()}
           >
-            {isSpotifyPlaylist(youtubeUrl)
-              ? '🚀 Convert Playlist'
-              : analyzeBpmKey
-                ? '🚀 Convert & Analyze'
-                : '🚀 Convert'}
+            {analyzeBpmKey ? '🚀 Convert & Analyze' : '🚀 Convert'}
           </Button>
 
-          {status && !playlistTasks.length && (
+          {status && (
             <ProgressWrapper>
               <ProgressBar
                 progress={status.progress}
@@ -401,43 +273,6 @@ export const Converter: React.FC = React.memo(() => {
                 shimmer={status.status === 'processing'}
               />
             </ProgressWrapper>
-          )}
-
-          {!!playlistTasks.length && (
-            <PlaylistList>
-              {playlistTasks.map((t) => (
-                <PlaylistItemCard key={t.task_id}>
-                  <PlaylistItemHeader>
-                    <div>
-                      <PlaylistItemTitle>{t.track_name}</PlaylistItemTitle>
-                      <PlaylistItemSubtitle>{t.artists}</PlaylistItemSubtitle>
-                    </div>
-                    <SmallButton
-                      variant="secondary"
-                      size="sm"
-                      disabled={!t.status || t.status.status !== 'done' || t.downloaded}
-                      onClick={() => handleDownloadTrack(t)}
-                    >
-                      {t.downloaded
-                        ? 'Downloaded'
-                        : t.status?.status === 'done'
-                          ? 'Download'
-                          : t.status?.status === 'error'
-                            ? 'Error'
-                            : 'Processing...'}
-                    </SmallButton>
-                  </PlaylistItemHeader>
-                  {t.status && (
-                    <ProgressBar
-                      progress={t.status.progress}
-                      label={t.status.message || 'Processing...'}
-                      pulsing={t.status.status === 'processing'}
-                      shimmer={t.status.status === 'processing'}
-                    />
-                  )}
-                </PlaylistItemCard>
-              ))}
-            </PlaylistList>
           )}
 
           <AnimatePresence>
