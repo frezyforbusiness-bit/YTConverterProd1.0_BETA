@@ -161,17 +161,43 @@ const ConversionInfo = styled.div`
     text-transform: uppercase;
     letter-spacing: 1px;
     color: ${({ theme }) => theme.colors.text.primary};
-    margin-bottom: ${({ theme }) => theme.spacing.sm};
+    margin: 0 0 ${({ theme }) => theme.spacing.sm};
   }
 
+  ol,
   ul {
     list-style: none;
     padding: 0;
     margin: 0 0 ${({ theme }) => theme.spacing.md};
   }
 
-  li::before {
-    content: '– ';
+  li {
+    background: ${({ theme }) => theme.colors.background.secondary};
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: baseline;
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
+
+  li span.label {
+    display: inline-block;
+    min-width: 70px;
+    font-weight: ${({ theme }) => theme.typography.weights.semibold};
+    color: ${({ theme }) => theme.colors.text.primary};
+  }
+
+  li span.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid ${({ theme }) => theme.colors.accent.primary};
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-left: auto;
     color: ${({ theme }) => theme.colors.accent.primary};
   }
 `;
@@ -372,20 +398,72 @@ export const Converter: React.FC = React.memo(() => {
           </AnimatePresence>
         </ConverterCard>
         <ConversionInfo>
-          <h3>Available formats</h3>
+          <h3>Built for music producers</h3>
+          <ol>
+            <li>
+              <span className="label">1.</span>
+              <span>Paste a YouTube or Spotify track URL above.</span>
+            </li>
+            <li>
+              <span className="label">2.</span>
+              <span>Choose your preferred audio format and (optionally) enable BPM &amp; key detection.</span>
+            </li>
+            <li>
+              <span className="label">3.</span>
+              <span>Hit convert – the system will process the audio and start the download automatically.</span>
+            </li>
+          </ol>
+
+          <h3>Professional audio formats</h3>
           <ul>
-            <li>MP3 – good balance between size and compatibility.</li>
-            <li>WAV – uncompressed, recommended for production and further processing.</li>
-            <li>FLAC – lossless compression, smaller than WAV but same quality.</li>
-            <li>M4A/AAC – optimized for streaming and mobile playback.</li>
-            <li>OGG / Opus – modern codecs for very small files at good quality.</li>
+            <li>
+              <span className="label">MP3</span>
+              <span>Universal compatibility, good for sharing and quick exports.</span>
+            </li>
+            <li>
+              <span className="label">WAV</span>
+              <span>Uncompressed, studio quality. Best choice for production and further processing.</span>
+            </li>
+            <li>
+              <span className="label">FLAC</span>
+              <span>Lossless compression, perfect quality with smaller file size than WAV.</span>
+            </li>
+            <li>
+              <span className="label">OGG</span>
+              <span>Open‑source format with efficient compression and solid quality.</span>
+            </li>
+            <li>
+              <span className="label">M4A/AAC</span>
+              <span>Apple standard, great quality for streaming and mobile playback.</span>
+            </li>
+            <li>
+              <span className="label">Opus</span>
+              <span>Modern codec for very small files with surprisingly high quality.</span>
+            </li>
           </ul>
-          <h3>Conversion notes</h3>
+
+          <h3>Features</h3>
           <ul>
-            <li>Source audio is taken from YouTube or Spotify track metadata and converted server‑side.</li>
-            <li>The system always tries to pick audio/lyrics versions, avoiding official videoclips when possible.</li>
-            <li>Analysis (BPM &amp; key) slightly increases processing time but is ideal for DJ‑ready files.</li>
-            <li>Playlists are not supported yet: convert one track at a time for best stability.</li>
+            <li>
+              <span className="label">Automatic BPM</span>
+              <span>Get the tempo instantly when analysis is enabled.</span>
+            </li>
+            <li>
+              <span className="label">Key detection</span>
+              <span>Know the musical key (Major/Minor) for cleaner mashups and harmonic mixes.</span>
+            </li>
+            <li>
+              <span className="label">Smart naming</span>
+              <span>Files can be auto‑named as TrackName‑BPM‑Key.ext when analysis is active.</span>
+            </li>
+            <li>
+              <span className="label">Audio focus</span>
+              <span>The converter prefers audio/lyrics uploads on YouTube, avoiding videoclip versions when possible.</span>
+            </li>
+            <li>
+              <span className="label">Single tracks</span>
+              <span>Playlists are not supported yet – convert one track at a time for maximum stability.</span>
+            </li>
           </ul>
         </ConversionInfo>
       </ConverterContainer>
