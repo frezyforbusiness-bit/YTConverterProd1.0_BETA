@@ -10,9 +10,10 @@ import { converterService, type TaskStatus } from '../../services/converter.serv
 import { usePolling } from '../../hooks/usePolling';
 
 const ConverterContainer = styled.div`
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacing.xl};
+  overflow: visible;
 `;
 
 const HeroTitleBase = styled.h1`
