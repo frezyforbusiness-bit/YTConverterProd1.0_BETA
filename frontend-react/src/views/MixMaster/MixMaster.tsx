@@ -143,6 +143,53 @@ const InfoText = styled.p`
   margin: 0;
 `;
 
+const QuestionGroup = styled.div`
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+const QuestionBlock = styled.div`
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.lg}`};
+  border: 1px solid ${({ theme }) => theme.colors.accent.border};
+`;
+
+const QuestionLabel = styled.p`
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin: 0 0 ${({ theme }) => theme.spacing.sm};
+`;
+
+const ChipRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const Chip = styled.button<{ $active?: boolean }>`
+  border-radius: 999px;
+  padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.md}`};
+  border: 1px solid
+    ${({ theme, $active }) => ($active ? theme.colors.accent.primary : theme.colors.accent.border)};
+  background: ${({ theme, $active }) =>
+    $active ? 'rgba(148, 163, 184, 0.08)' : theme.colors.background.card};
+  color: ${({ theme }) => theme.colors.text.primary};
+  font-family: ${({ theme }) => theme.typography.fonts.body};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast} ${({ theme }) => theme.transitions.easing.smooth};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.accent.primary};
+  }
+`;
+
 export const MixMaster: React.FC = () => {
   const { theme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,6 +197,9 @@ export const MixMaster: React.FC = () => {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [mixType, setMixType] = useState<'mix' | 'master' | null>(null);
+  const [genre, setGenre] = useState<string | null>(null);
+  const [contentType, setContentType] = useState<'beat' | 'song' | null>(null);
 
   const openFilePicker = useCallback(() => {
     fileInputRef.current?.click();
@@ -157,7 +207,12 @@ export const MixMaster: React.FC = () => {
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setSelectedFile(file);
+    if (file) {
+      setSelectedFile(file);
+      setMixType(null);
+      setGenre(null);
+      setContentType(null);
+    }
     e.target.value = '';
   }, []);
 
@@ -178,7 +233,12 @@ export const MixMaster: React.FC = () => {
     e.stopPropagation();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('audio/')) setSelectedFile(file);
+    if (file && file.type.startsWith('audio/')) {
+      setSelectedFile(file);
+      setMixType(null);
+      setGenre(null);
+      setContentType(null);
+    }
   }, []);
 
   return (
@@ -240,6 +300,51 @@ export const MixMaster: React.FC = () => {
                   <SelectedFile>✓ Selected: {selectedFile.name}</SelectedFile>
                 )}
               </DragDropArea>
+              {selectedFile && (
+                <QuestionGroup>
+                  <QuestionBlock>
+                    <QuestionLabel>Mix or master?</QuestionLabel>
+                    <ChipRow>
+                      <Chip type="button" $active={mixType === 'mix'} onClick={() => setMixType('mix')}>
+                        Mix (work in progress)
+                      </Chip>
+                      <Chip type="button" $active={mixType === 'master'} onClick={() => setMixType('master')}>
+                        Final master
+                      </Chip>
+                    </ChipRow>
+                  </QuestionBlock>
+
+                  <QuestionBlock>
+                    <QuestionLabel>Genre</QuestionLabel>
+                    <ChipRow>
+                      <Chip type="button" $active={genre === 'trap'} onClick={() => setGenre('trap')}>
+                        Trap / Drill
+                      </Chip>
+                      <Chip type="button" $active={genre === 'club'} onClick={() => setGenre('club')}>
+                        House / Techno
+                      </Chip>
+                      <Chip type="button" $active={genre === 'pop'} onClick={() => setGenre('pop')}>
+                        Pop / R&amp;B
+                      </Chip>
+                      <Chip type="button" $active={genre === 'other'} onClick={() => setGenre('other')}>
+                        Other
+                      </Chip>
+                    </ChipRow>
+                  </QuestionBlock>
+
+                  <QuestionBlock>
+                    <QuestionLabel>What&apos;s inside?</QuestionLabel>
+                    <ChipRow>
+                      <Chip type="button" $active={contentType === 'beat'} onClick={() => setContentType('beat')}>
+                        Instrumental / Beat only
+                      </Chip>
+                      <Chip type="button" $active={contentType === 'song'} onClick={() => setContentType('song')}>
+                        Full song with vocals
+                      </Chip>
+                    </ChipRow>
+                  </QuestionBlock>
+                </QuestionGroup>
+              )}
             </>
           ) : (
             <div>
