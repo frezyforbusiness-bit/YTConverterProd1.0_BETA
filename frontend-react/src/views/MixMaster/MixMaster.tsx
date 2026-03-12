@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
 import { PageTransition } from '../../components/common/PageTransition';
@@ -17,7 +18,7 @@ const Header = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
-const HeaderTitle = styled.h1`
+const HeaderTitleBase = styled.h1`
   font-family: ${({ theme }) => theme.typography.fonts.heading};
   font-size: ${({ theme }) => theme.typography.sizes.h1};
   font-weight: ${({ theme }) => theme.typography.weights.black};
@@ -40,7 +41,9 @@ const HeaderTitle = styled.h1`
   }
 `;
 
-const HeaderSubtitle = styled.p`
+const HeaderTitle = motion(HeaderTitleBase);
+
+const HeaderSubtitleBase = styled.p`
   font-family: ${({ theme }) => theme.typography.fonts.accent};
   font-size: ${({ theme }) => theme.typography.sizes.body};
   color: ${({ theme }) => theme.colors.text.secondary};
@@ -49,6 +52,8 @@ const HeaderSubtitle = styled.p`
   margin: 0 auto ${({ theme }) => theme.spacing.md};
   text-align: center;
 `;
+
+const HeaderSubtitle = motion(HeaderSubtitleBase);
 
 const TabContainer = styled.div`
   display: flex;
@@ -133,8 +138,18 @@ export const MixMaster: React.FC = () => {
     <PageTransition>
       <MixMasterContainer>
         <Header>
-          <HeaderTitle>Producer Tools</HeaderTitle>
-          <HeaderSubtitle>
+          <HeaderTitle
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            Producer Tools
+          </HeaderTitle>
+          <HeaderSubtitle
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             Mix &amp; Master Analyzer – upload an audio file or paste a YouTube URL, then run an analysis to understand
             loudness, dynamics and tonal balance of your track.
           </HeaderSubtitle>
