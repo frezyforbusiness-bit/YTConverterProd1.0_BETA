@@ -153,7 +153,6 @@ const navItems = [
   { path: '/', label: 'Home' },
   { path: '/converter', label: 'Converter' },
   { path: '/mixmaster', label: 'Mix Master' },
-  { path: '/auth', label: 'Account' },
   { path: '/admin', label: 'Admin' },
 ];
 

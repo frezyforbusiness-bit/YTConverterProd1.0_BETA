@@ -17,9 +17,6 @@ from domain.use_cases.get_statistics import GetStatisticsUseCase
 from domain.entities.task import Task
 from adapter.gateways.task_gateway import TaskGateway
 from adapter.gateways.auth_gateway import AuthGateway
-from domain.repositories.user_repository import UserRepository
-from domain.use_cases.register_user import RegisterUserUseCase
-from domain.use_cases.login_user import LoginUserUseCase
 from utils.validators import validate_convert_request
 from utils.logger import setup_logger, log_error_with_traceback
 
@@ -40,9 +37,6 @@ class FlaskController:
         task_gateway: TaskGateway,
         auth_gateway: AuthGateway,
         frontend_dir: str,
-        user_repository: Optional[UserRepository] = None,
-        register_user_use_case: Optional[RegisterUserUseCase] = None,
-        login_user_use_case: Optional[LoginUserUseCase] = None,
     ):
         self.app = app
         self.convert_use_case = convert_use_case
@@ -53,9 +47,6 @@ class FlaskController:
         self.task_gateway = task_gateway
         self.auth_gateway = auth_gateway
         self.frontend_dir = frontend_dir
-        self.user_repository = user_repository
-        self.register_user_use_case = register_user_use_case
-        self.login_user_use_case = login_user_use_case
         
         self._register_routes()
     
@@ -83,9 +74,6 @@ class FlaskController:
                     "convert": "/convert (POST)",
                     "status": "/status/<task_id> (GET)",
                     "download": "/download/<task_id> (GET)",
-                    "register": "/api/auth/register (POST)",
-                    "login": "/api/auth/login (POST)",
-                    "me": "/api/auth/me (GET)",
                     "admin_login": "/api/admin/login (POST)",
                     "admin_dashboard": "/api/admin/dashboard (GET)",
                     "admin_recent": "/api/admin/recent-conversions (GET)",
@@ -94,65 +82,6 @@ class FlaskController:
                     "admin_profile": "/api/admin/profile (GET)"
                 }
             })
-        
-        # Auth routes (users)
-        @self.app.route('/api/auth/register', methods=['POST'])
-        def register_user():
-            if not self.register_user_use_case or not self.user_repository:
-                return jsonify({"error": "User registration not available"}), 503
-            try:
-                data = request.get_json() or {}
-                email = data.get('email')
-                password = data.get('password')
-                if not email or not password:
-                    return jsonify({"error": "Email and password are required"}), 400
-                role = data.get('role', 'user')
-                result = self.register_user_use_case.execute(email=email, password=password, role=role)
-                if not result:
-                    return jsonify({"error": "Email already in use"}), 409
-                return jsonify(result), 201
-            except Exception as e:
-                logger.error(f"Error in /api/auth/register: {e}")
-                return jsonify({"error": "Internal server error"}), 500
-        
-        @self.app.route('/api/auth/login', methods=['POST'])
-        def login_user():
-            if not self.login_user_use_case or not self.user_repository:
-                return jsonify({"error": "User login not available"}), 503
-            try:
-                data = request.get_json() or {}
-                email = data.get('email')
-                password = data.get('password')
-                if not email or not password:
-                    return jsonify({"error": "Email and password are required"}), 400
-                result = self.login_user_use_case.execute(email=email, password=password)
-                if not result:
-                    return jsonify({"error": "Invalid credentials"}), 401
-                return jsonify(result), 200
-            except Exception as e:
-                logger.error(f"Error in /api/auth/login: {e}")
-                return jsonify({"error": "Internal server error"}), 500
-        
-        @self.app.route('/api/auth/me', methods=['GET'])
-        def auth_me():
-            """Return current user info based on JWT token."""
-            auth_header = request.headers.get('Authorization')
-            if not auth_header:
-                return jsonify({"error": "No authorization token provided"}), 401
-            try:
-                token = auth_header.split(' ')[1] if ' ' in auth_header else auth_header
-            except IndexError:
-                return jsonify({"error": "Invalid authorization header format"}), 401
-            
-            payload = self.auth_gateway.verify_token(token)
-            if not payload:
-                return jsonify({"error": "Invalid or expired token"}), 401
-            
-            return jsonify({
-                "user_id": payload.get("user_id"),
-                "email": payload.get("username"),
-                "role": payload.get("role", "user"),
-            }), 200
         
         @self.app.route('/health', methods=['GET'])
         def health():
