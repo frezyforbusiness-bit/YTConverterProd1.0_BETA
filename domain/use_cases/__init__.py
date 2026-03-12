@@ -8,6 +8,7 @@ from .get_status import GetStatusUseCase
 from .download_file import DownloadFileUseCase
 from .login_admin import LoginAdminUseCase
 from .get_statistics import GetStatisticsUseCase
+from .analyze_audio import AnalyzeAudioUseCase
 
 __all__ = [
     'ConvertVideoUseCase',
@@ -15,6 +16,7 @@ __all__ = [
     'DownloadFileUseCase',
     'LoginAdminUseCase',
     'GetStatisticsUseCase',
+    'AnalyzeAudioUseCase',
 ]
 
 

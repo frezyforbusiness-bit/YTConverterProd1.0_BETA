@@ -14,6 +14,7 @@ from domain.use_cases.get_status import GetStatusUseCase
 from domain.use_cases.download_file import DownloadFileUseCase
 from domain.use_cases.login_admin import LoginAdminUseCase
 from domain.use_cases.get_statistics import GetStatisticsUseCase
+from domain.use_cases.analyze_audio import AnalyzeAudioUseCase
 from domain.entities.task import Task
 from adapter.gateways.task_gateway import TaskGateway
 from adapter.gateways.auth_gateway import AuthGateway
@@ -35,6 +36,7 @@ class FlaskController:
         download_use_case: DownloadFileUseCase,
         login_use_case: LoginAdminUseCase,
         get_statistics_use_case: GetStatisticsUseCase,
+        analyze_audio_use_case: AnalyzeAudioUseCase,
         task_gateway: TaskGateway,
         auth_gateway: AuthGateway,
         frontend_dir: str,
@@ -49,6 +51,7 @@ class FlaskController:
         self.download_use_case = download_use_case
         self.login_use_case = login_use_case
         self.get_statistics_use_case = get_statistics_use_case
+        self.analyze_audio_use_case = analyze_audio_use_case
         self.task_gateway = task_gateway
         self.auth_gateway = auth_gateway
         self.frontend_dir = frontend_dir
@@ -92,13 +95,70 @@ class FlaskController:
                     "admin_recent": "/api/admin/recent-conversions (GET)",
                     "admin_errors": "/api/admin/errors (GET)",
                     "admin_stats_date": "/api/admin/stats-by-date (GET)",
-                    "admin_profile": "/api/admin/profile (GET)"
+                    "admin_profile": "/api/admin/profile (GET)",
+                    "analyze": "/api/analyze (POST)",
                 }
             })
         
         @self.app.route('/health', methods=['GET'])
         def health():
             return jsonify({"status": "ok"})
+
+        @self.app.route('/api/analyze', methods=['POST'])
+        def analyze_track():
+            """
+            Analyze an uploaded audio file (Mix & Master Analyzer).
+
+            Accepts multipart/form-data with:
+            - file: audio file
+            - mix_type: 'mix' | 'master' (optional, defaults to 'mix')
+            - genre: free text (optional)
+            - content_type: 'beat' | 'song' (optional)
+            """
+            try:
+                if 'file' not in request.files:
+                    return jsonify({"error": "No file provided"}), 400
+
+                uploaded = request.files['file']
+                if uploaded.filename == '':
+                    return jsonify({"error": "Empty filename"}), 400
+
+                mix_type = request.form.get('mix_type') or request.form.get('mixType')
+                genre = request.form.get('genre')
+                content_type = request.form.get('content_type') or request.form.get('contentType')
+
+                # Basic extension guard
+                allowed_ext = {'.mp3', '.wav', '.flac', '.ogg', '.m4a', '.aac'}
+                _, ext = os.path.splitext(uploaded.filename.lower())
+                if ext and ext not in allowed_ext:
+                    return jsonify({"error": "Unsupported file type for analysis"}), 400
+
+                temp_dir = os.environ.get('TEMP_DIR') or os.path.join(os.path.dirname(__file__), '../../temp')
+                os.makedirs(temp_dir, exist_ok=True)
+
+                temp_path = os.path.join(temp_dir, f"analyze_{threading.get_ident()}_{uploaded.filename}")
+                uploaded.save(temp_path)
+
+                try:
+                    report = self.analyze_audio_use_case.execute(
+                        audio_path=temp_path,
+                        mix_type=mix_type,
+                        genre=genre,
+                        content_type=content_type,
+                    )
+                finally:
+                    try:
+                        if os.path.exists(temp_path):
+                            os.remove(temp_path)
+                    except Exception as cleanup_err:
+                        logger.warning(f"Failed to clean temp analyze file {temp_path}: {cleanup_err}")
+
+                return jsonify(report), 200
+            except Exception as e:
+                error_msg = str(e)
+                logger.error(f"Error in /api/analyze endpoint: {error_msg}")
+                log_error_with_traceback(logger, e, "Error in /api/analyze endpoint")
+                return jsonify({"error": "Internal server error"}), 500
         
         @self.app.route('/convert', methods=['POST'])
         def convert():

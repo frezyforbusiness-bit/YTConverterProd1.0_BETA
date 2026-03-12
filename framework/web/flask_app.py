@@ -15,6 +15,7 @@ from adapter.gateways.audio_analyzer_gateway import AudioAnalyzerGateway
 from adapter.gateways.task_gateway import TaskGateway
 from adapter.gateways.auth_gateway import AuthGateway
 from adapter.gateways.spotify_gateway import SpotifyGateway
+from adapter.gateways.mix_analyzer_gateway import MixAnalyzerGateway
 from adapter.repositories.mysql_conversion_repository import MySQLConversionRepository
 from adapter.repositories.mysql_admin_repository import MySQLAdminRepository
 from adapter.repositories.mysql_statistics_repository import MySQLStatisticsRepository
@@ -23,7 +24,9 @@ from domain.use_cases.get_status import GetStatusUseCase
 from domain.use_cases.download_file import DownloadFileUseCase
 from domain.use_cases.login_admin import LoginAdminUseCase
 from domain.use_cases.get_statistics import GetStatisticsUseCase
+from domain.use_cases.analyze_audio import AnalyzeAudioUseCase
 from services.converter import YouTubeAudioConverter
+from services.mix_analyzer import MixAnalyzerService
 from services.task_manager import TaskManager
 from services.database import DatabaseManager
 from services.auth import AuthManager
@@ -141,6 +144,7 @@ def create_app() -> Flask:
     
     # Initialize framework services
     converter = YouTubeAudioConverter(TEMP_DIR)
+    mix_analyzer_service = MixAnalyzerService()
     task_manager = TaskManager(TASK_TIMEOUT)
     auth_manager = AuthManager()
     spotify_gateway = None
@@ -184,6 +188,7 @@ def create_app() -> Flask:
     youtube_gateway = YouTubeGateway(converter)
     file_gateway = FileGateway(converter)
     audio_analyzer = AudioAnalyzerGateway(converter)
+    mix_analyzer_gateway = MixAnalyzerGateway(mix_analyzer_service)
     task_gateway = TaskGateway(task_manager)
     auth_gateway = AuthGateway(auth_manager)
     
@@ -238,6 +243,7 @@ def create_app() -> Flask:
     get_statistics_use_case = GetStatisticsUseCase(
         statistics_repository=statistics_repository
     )
+    analyze_audio_use_case = AnalyzeAudioUseCase(analyzer_gateway=mix_analyzer_gateway)
     
     # Initialize controller
     controller = FlaskController(
@@ -247,6 +253,7 @@ def create_app() -> Flask:
         download_use_case=download_use_case,
         login_use_case=login_use_case,
         get_statistics_use_case=get_statistics_use_case,
+        analyze_audio_use_case=analyze_audio_use_case,
         task_gateway=task_gateway,
         auth_gateway=auth_gateway,
         frontend_dir=FRONTEND_DIR,

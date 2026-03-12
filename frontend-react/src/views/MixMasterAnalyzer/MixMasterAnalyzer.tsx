@@ -7,21 +7,9 @@ import { Card } from '../../components/UI/Card';
 import { Input } from '../../components/UI/Input';
 import { Button } from '../../components/UI/Button';
 import { ProgressBar } from '../../components/UI/ProgressBar';
+import { analyzerService, type AnalysisResult } from '../../services/analyzer.service';
 
 const ACCEPT_AUDIO = 'audio/*,.mp3,.wav,.flac,.m4a,.aac,.ogg';
-
-type AnalysisResult = {
-  trackName: string;
-  sampleRate: string;
-  bitDepth: string;
-  clipping: boolean;
-  monoCompatibility: boolean;
-  integratedLoudness: number;
-  truePeak: number;
-  phaseIssues: boolean;
-  stereoField: string;
-  suggestedChanges: { title: string; description: string; isIssue: boolean }[];
-};
 
 const AnalyzerContainer = styled.div`
   max-width: 1000px;
@@ -356,43 +344,45 @@ export const MixMasterAnalyzer: React.FC = () => {
 
   useEffect(() => {
     if (!analyzing) return;
+    let cancelled = false;
     setProgress(0);
     let current = 0;
     const id = setInterval(() => {
-      current = Math.min(100, current + Math.random() * 8 + 4);
+      current = Math.min(95, current + Math.random() * 8 + 4);
       setProgress(current);
-      if (current >= 100) {
-        clearInterval(id);
-        const trackName = selectedFile?.name?.replace(/\.[^.]+$/, '') ?? 'Track';
-        setResult({
-          trackName,
-          sampleRate: '44100 Hz',
-          bitDepth: '16 bit',
-          clipping: true,
-          monoCompatibility: true,
-          integratedLoudness: -9.3,
-          truePeak: 1.4,
-          phaseIssues: false,
-          stereoField: 'Normal',
-          suggestedChanges: [
-            { title: 'Clipping', description: 'There appears to be major clipping occurring.', isIssue: true },
-            {
-              title: 'Dynamic Range',
-              description: 'Your track seems to have a limited dynamic range that may not be suitable for this genre.',
-              isIssue: true,
-            },
-            {
-              title: 'Loudness',
-              description: 'It looks like your mix might be too loud to be sent for mastering.',
-              isIssue: true,
-            },
-          ],
-        });
-        setAnalyzing(false);
-      }
     }, 200);
-    return () => clearInterval(id);
-  }, [analyzing, selectedFile?.name]);
+
+    const run = async () => {
+      if (!selectedFile) return;
+      try {
+        const response = await analyzerService.analyzeTrack({
+          file: selectedFile,
+          mixType,
+          genre,
+          contentType,
+        });
+        if (cancelled) return;
+        setProgress(100);
+        setResult(response);
+      } catch (error: any) {
+        if (cancelled) return;
+        console.error('Analyzer error', error);
+        setResult(null);
+      } finally {
+        if (!cancelled) {
+          setAnalyzing(false);
+        }
+        clearInterval(id);
+      }
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [analyzing, selectedFile, mixType, genre, contentType]);
 
   const allAnswered = mixType != null && genre != null && contentType != null;
   const handleAnalyze = useCallback(() => {
