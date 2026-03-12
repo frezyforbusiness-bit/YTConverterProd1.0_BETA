@@ -8,11 +8,11 @@ const NavbarBase = styled.nav`
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(10, 10, 10, 0.8);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid ${({ theme }) => theme.colors.accent.border};
+  background: radial-gradient(circle at top left, #111 0%, #050505 35%, #000 100%);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
   z-index: ${({ theme }) => theme.zIndex.fixed};
-  padding: ${({ theme }) => `${theme.spacing.md} 0`};
+  padding: ${({ theme }) => `${theme.spacing.sm} 0`};
 `;
 
 const NavbarContainer = motion(NavbarBase);
@@ -31,7 +31,7 @@ const LogoBase = styled(Link)`
   font-size: ${({ theme }) => theme.typography.sizes.h3};
   font-weight: ${({ theme }) => theme.typography.weights.black};
   text-decoration: none;
-  background: ${({ theme }) => theme.colors.text.gradient};
+  background: linear-gradient(135deg, #f97316 0%, #ecfeff 40%, #22c55e 80%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -47,7 +47,7 @@ const Logo = motion(LogoBase);
 const NavLinks = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacing.lg};
   
   @media (max-width: 1023px) {
     display: none;
@@ -60,15 +60,18 @@ const NavLink = styled(Link)<{ $isActive: boolean }>`
   font-size: ${({ theme }) => theme.typography.sizes.body};
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
   color: ${({ theme, $isActive }) =>
-    $isActive ? theme.colors.text.primary : theme.colors.text.secondary};
+    $isActive ? theme.colors.text.primary : theme.colors.text.muted};
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
-  transition: color ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easing.smooth};
+  transition:
+    color ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easing.smooth},
+    transform ${({ theme }) => theme.transitions.fast} ${({ theme }) => theme.transitions.easing.smooth};
   
   &:hover {
     color: ${({ theme }) => theme.colors.text.primary};
+    transform: translateY(-1px);
   }
 `;
 
@@ -78,7 +81,7 @@ const UnderlineBase = styled.div`
   left: 0;
   right: 0;
   height: 2px;
-  background: ${({ theme }) => theme.colors.accent.primary};
+  background: linear-gradient(90deg, #22c55e, #f97316);
   border-radius: 2px;
 `;
 
@@ -153,7 +156,6 @@ const navItems = [
   { path: '/', label: 'Home' },
   { path: '/converter', label: 'Converter' },
   { path: '/mixmaster', label: 'Mix Master' },
-  { path: '/admin', label: 'Admin' },
 ];
 
 export const Navbar: React.FC = () => {
@@ -217,7 +219,7 @@ export const Navbar: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            🎵 Producer Tools
+            PT
           </Logo>
 
           <NavLinks>

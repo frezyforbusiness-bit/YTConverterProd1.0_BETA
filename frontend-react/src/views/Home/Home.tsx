@@ -29,7 +29,7 @@ const HeroTitleBase = styled.h1`
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   margin-bottom: ${({ theme }) => theme.spacing.lg};
   animation: float 3s ease-in-out infinite;
 `;
@@ -62,9 +62,9 @@ const ServicesGrid = motion(ServicesGridBase);
 
 const services = [
   {
-    title: 'YouTube to Audio Converter',
+    title: 'Street Converter',
     description:
-      'Convert YouTube videos to high-quality audio files with automatic BPM & key detection. Perfect for music producers!',
+      'Drop in a YouTube or Spotify track and get a clean, tagged audio file. Optional BPM & key detection for DJs and producers.',
     icon: '🎵',
     path: '/converter',
   },

@@ -16,18 +16,18 @@ export const theme = {
 
     // Accent Colors
     accent: {
-      primary: '#9a9a9a',
-      secondary: '#707070',
-      border: 'rgba(154, 154, 154, 0.3)',
-      focusRing: 'rgba(154, 154, 154, 0.4)',
+      primary: '#22c55e',
+      secondary: '#f97316',
+      border: 'rgba(148, 163, 184, 0.35)',
+      focusRing: 'rgba(34, 197, 94, 0.4)',
     },
 
     // Text Colors
     text: {
-      primary: '#f5f5f5',
-      secondary: '#c0c0c0',
-      muted: '#909090',
-      gradient: 'linear-gradient(135deg, #ffffff 0%, #b0b0b0 100%)',
+      primary: '#f9fafb',
+      secondary: '#e5e7eb',
+      muted: '#9ca3af',
+      gradient: 'linear-gradient(135deg, #e5e7eb 0%, #22c55e 45%, #f97316 90%)',
     },
 
     // Status Colors
