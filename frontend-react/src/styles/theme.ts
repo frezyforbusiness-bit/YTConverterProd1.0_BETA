@@ -41,9 +41,9 @@ export const theme = {
 
   typography: {
     fonts: {
-      heading: "'Syncopate', sans-serif",
-      body: "'Urbanist', sans-serif",
-      accent: "'Saira Condensed', sans-serif",
+      heading: "'Audiowide', cursive",
+      body: "'Manrope', sans-serif",
+      accent: "'Staatliches', cursive",
     },
     weights: {
       regular: 400,
