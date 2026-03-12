@@ -145,31 +145,64 @@ const InfoText = styled.p`
 
 const QuestionGroup = styled.div`
   margin-top: ${({ theme }) => theme.spacing['2xl']};
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: ${({ theme }) => theme.spacing.lg};
 `;
 
 const QuestionBlock = styled.div`
   background: ${({ theme }) => theme.colors.background.secondary};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.lg}`};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.xl}`};
   border: 1px solid ${({ theme }) => theme.colors.accent.border};
 `;
 
 const QuestionLabel = styled.p`
   font-family: ${({ theme }) => theme.typography.fonts.accent};
-  font-size: ${({ theme }) => theme.typography.sizes.small};
+  font-size: ${({ theme }) => theme.typography.sizes.body};
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: ${({ theme }) => theme.colors.text.primary};
   margin: 0 0 ${({ theme }) => theme.spacing.sm};
+  text-align: center;
 `;
 
 const ChipRow = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const BigChoiceRow = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacing.md};
+  flex-wrap: wrap;
+`;
+
+const BigChoiceButton = styled.button<{ $active?: boolean }>`
+  min-width: 220px;
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.xl}`};
+  border: 1px solid
+    ${({ theme, $active }) => ($active ? theme.colors.accent.primary : theme.colors.accent.border)};
+  background: ${({ theme, $active }) =>
+    $active ? 'rgba(148, 163, 184, 0.12)' : theme.colors.background.card};
+  color: ${({ theme }) => theme.colors.text.primary};
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.body};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  transition: all ${({ theme }) => theme.transitions.fast} ${({ theme }) => theme.transitions.easing.smooth};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.accent.primary};
+    transform: translateY(-1px);
+  }
 `;
 
 const Chip = styled.button<{ $active?: boolean }>`
@@ -303,15 +336,23 @@ export const MixMaster: React.FC = () => {
               {selectedFile && (
                 <QuestionGroup>
                   <QuestionBlock>
-                    <QuestionLabel>Mix or master?</QuestionLabel>
-                    <ChipRow>
-                      <Chip type="button" $active={mixType === 'mix'} onClick={() => setMixType('mix')}>
-                        Mix (work in progress)
-                      </Chip>
-                      <Chip type="button" $active={mixType === 'master'} onClick={() => setMixType('master')}>
-                        Final master
-                      </Chip>
-                    </ChipRow>
+                    <QuestionLabel>Is your track mastered?</QuestionLabel>
+                    <BigChoiceRow>
+                      <BigChoiceButton
+                        type="button"
+                        $active={mixType === 'master'}
+                        onClick={() => setMixType('master')}
+                      >
+                        ✓ Yes, it&apos;s mastered
+                      </BigChoiceButton>
+                      <BigChoiceButton
+                        type="button"
+                        $active={mixType === 'mix'}
+                        onClick={() => setMixType('mix')}
+                      >
+                        ✕ No, it&apos;s still a mix
+                      </BigChoiceButton>
+                    </BigChoiceRow>
                   </QuestionBlock>
 
                   <QuestionBlock>
