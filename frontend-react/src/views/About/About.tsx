@@ -22,13 +22,6 @@ const Title = styled.h1`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
-const Subtitle = styled.h2`
-  font-family: ${({ theme }) => theme.typography.fonts.accent};
-  font-size: ${({ theme }) => theme.typography.sizes.h3};
-  color: ${({ theme }) => theme.colors.text.secondary};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
 const Paragraph = styled.p`
   font-family: ${({ theme }) => theme.typography.fonts.body};
   font-size: ${({ theme }) => theme.typography.sizes.body};
@@ -52,29 +45,29 @@ export const About: React.FC = () => {
           transition={{ duration: 0.4 }}
         >
           <Title>About Producer Tools</Title>
-          <Subtitle>Filippo &quot;Freeezy&quot; Piumatti</Subtitle>
 
           <Paragraph>
-            <Highlight>Filippo Piumatti</Highlight> è un music producer, software engineer e fondatore di{' '}
-            <Highlight>Producer Tools</Highlight>, una piattaforma dedicata alla creazione di strumenti digitali
-            pensati per semplificare e potenziare il workflow dei producer musicali.
+            <Highlight>Producer Tools</Highlight> è una piattaforma di strumenti digitali pensata per cambiare il modo
+            in cui i producer musicali lavorano ogni giorno. L&apos;obiettivo è rendere la tecnologia un alleato
+            silenzioso che si occupa delle parti noiose, lasciando il producer concentrato solo sulla musica.
           </Paragraph>
 
           <Paragraph>
-            Con un background che unisce <Highlight>produzione musicale</Highlight> e <Highlight>sviluppo software</Highlight>, Filippo
-            costruisce tools che nascono da esigenze reali di studio: gestione di sample, generazione di idee musicali,
-            automazione del workflow creativo e strumenti pensati per accelerare il processo di produzione.
+            Ogni tool nasce da esigenze reali di studio: gestione di sample, generazione di idee musicali, automazione
+            dei passaggi ripetitivi e utilità pensate per velocizzare le decisioni creative. Il focus è sempre lo
+            stesso: <Highlight>meno frizione tecnica, più spazio per le idee</Highlight>.
           </Paragraph>
 
           <Paragraph>
-            Il progetto <Highlight>Producer Tools</Highlight> nasce con una visione chiara: rendere la tecnologia un alleato creativo per i
-            producer moderni, offrendo strumenti semplici, veloci e progettati da chi vive la musica ogni giorno.
+            La visione di <Highlight>Producer Tools</Highlight> è costruire una cassetta degli attrezzi moderna per il producer
+            contemporaneo: strumenti semplici da capire, veloci da usare e abbastanza solidi da integrarsi nei workflow
+            professionali, dal bedroom studio al grande mix room.
           </Paragraph>
 
           <Paragraph>
-            Parallelamente alla parte tecnica, Filippo lavora anche come <Highlight>producer</Highlight> e{' '}
-            <Highlight>sound engineer</Highlight>, collaborando con diversi artisti e sviluppando progetti musicali sotto il nome
-            artistico <Highlight>Freeezy</Highlight>.
+            A partire dall&apos;<Highlight>Audio Converter</Highlight> e dagli analyzer, Producer Tools vuole diventare una suite che segue il
+            producer in tutte le fasi del processo: dall&apos;idea iniziale, all&apos;organizzazione dei suoni, fino al mix finale.
+            Strumenti costruiti con una regola chiara: se non rende il tuo workflow più fluido, non serve.
           </Paragraph>
         </motion.div>
       </AboutContainer>
