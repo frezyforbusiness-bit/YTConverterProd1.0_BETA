@@ -15,27 +15,41 @@ const ConverterContainer = styled.div`
   padding: ${({ theme }) => theme.spacing.xl};
 `;
 
-const Header = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-`;
-
-const HeaderTitle = styled.h1`
+const HeroTitleBase = styled.h1`
   font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-size: ${({ theme }) => theme.typography.sizes.h2};
+  font-size: ${({ theme }) => theme.typography.sizes.h1};
   font-weight: ${({ theme }) => theme.typography.weights.black};
   background: ${({ theme }) => theme.colors.text.gradient};
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  letter-spacing: 3px;
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  animation: float 3s ease-in-out infinite;
+  text-align: center;
 `;
 
-const HeaderSubtitle = styled.p`
+const HeroTitle = motion(HeroTitleBase);
+
+const HeroSubtitleBase = styled.p`
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.h3};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-weight: ${({ theme }) => theme.typography.weights.regular};
+  max-width: 600px;
+  margin: 0 auto ${({ theme }) => theme.spacing.md};
+  text-align: center;
+`;
+
+const HeroSubtitle = motion(HeroSubtitleBase);
+
+const HeaderSubtitleSecondary = styled.p`
   font-family: ${({ theme }) => theme.typography.fonts.body};
   font-size: ${({ theme }) => theme.typography.sizes.small};
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: ${({ theme }) => theme.colors.text.muted};
+  text-align: center;
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
 
 const ConverterCard = styled(Card)`
@@ -216,13 +230,24 @@ export const Converter: React.FC = React.memo(() => {
   return (
     <PageTransition>
       <ConverterContainer>
-        <Header>
-          <HeaderTitle>Producer Tools</HeaderTitle>
-          <HeaderSubtitle>
-            Audio Converter – paste a YouTube or Spotify track, pick the format, then hit convert. Optional BPM &amp; key
-            analysis if you need DJ‑friendly files.
-          </HeaderSubtitle>
-        </Header>
+        <HeroTitle
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          🎵 Producer Tools
+        </HeroTitle>
+        <HeroSubtitle
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          Professional audio tools for music producers. Convert, analyze, and perfect your tracks.
+        </HeroSubtitle>
+        <HeaderSubtitleSecondary>
+          Audio Converter – paste a YouTube or Spotify track, pick the format and hit convert. Use BPM &amp; key
+          analysis when you need DJ‑ready files.
+        </HeaderSubtitleSecondary>
 
         <ConverterCard>
           <FormGroup>
