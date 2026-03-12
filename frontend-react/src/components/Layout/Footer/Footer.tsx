@@ -15,8 +15,6 @@ const FooterInner = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: ${({ theme }) => theme.spacing.xl};
-  justify-items: center;
-  text-align: center;
 `;
 
 const Column = styled.div`
