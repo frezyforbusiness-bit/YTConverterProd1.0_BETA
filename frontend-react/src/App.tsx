@@ -6,6 +6,7 @@ import { Layout } from './components/Layout';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { Converter } from './views/Converter';
 import { MixMaster } from './views/MixMaster';
+import { MixMasterAnalyzer } from './views/MixMasterAnalyzer';
 import { Admin } from './views/Admin';
 import { About } from './views/About';
 import { NotFound } from './views/NotFound/NotFound';
@@ -24,6 +25,7 @@ const AppContent: React.FC = () => {
           <Routes>
             <Route path="/" element={<Converter />} />
             <Route path="/mixmaster" element={<MixMaster />} />
+            <Route path="/mixmaster/analyzer" element={<MixMasterAnalyzer />} />
             <Route path="/about" element={<About />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
