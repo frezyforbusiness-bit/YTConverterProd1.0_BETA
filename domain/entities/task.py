@@ -13,6 +13,7 @@ class Task:
     task_id: str
     youtube_url: str
     audio_format: str
+    analyze_bpm_key: bool = True
     status: str = 'pending'  # pending, processing, done, error
     progress: int = 0
     file_path: Optional[str] = None

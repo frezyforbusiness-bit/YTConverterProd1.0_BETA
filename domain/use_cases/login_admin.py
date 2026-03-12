@@ -37,8 +37,8 @@ class LoginAdminUseCase:
         # Update last login
         self.admin_repository.update_last_login(admin.id)
         
-        # Generate token
-        token = self.auth_gateway.create_token(username)
+        # Generate token (admin role)
+        token = self.auth_gateway.create_token(username, role="admin", user_id=admin.id)
         
         return {
             'token': token,

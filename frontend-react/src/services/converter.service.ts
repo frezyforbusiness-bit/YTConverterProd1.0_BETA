@@ -3,6 +3,7 @@ import { apiClient } from './api';
 export interface ConvertRequest {
   youtube_url: string;
   format: string;
+  analyze_bpm_key?: boolean;
 }
 
 export interface ConvertResponse {

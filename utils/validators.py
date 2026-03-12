@@ -67,6 +67,22 @@ def validate_format(audio_format: str) -> Tuple[bool, Optional[str]]:
     return True, None
 
 
+def _to_bool(value) -> bool:
+    """
+    Safely convert various truthy/falsy representations to bool.
+    Accepts bools, strings like 'true'/'false', '1'/'0', 'yes'/'no'.
+    """
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        return value.strip().lower() in ('1', 'true', 'yes', 'on')
+    return bool(value)
+
+
 def validate_convert_request(data: Dict) -> Tuple[bool, Optional[str], Optional[Dict]]:
     """
     Validates a complete convert request
@@ -100,10 +116,15 @@ def validate_convert_request(data: Dict) -> Tuple[bool, Optional[str], Optional[
     if not is_valid_format:
         return False, format_error, None
     
+    # Optional: analyze_bpm_key flag (default True)
+    analyze_bpm_key_raw = data.get('analyze_bpm_key', True)
+    analyze_bpm_key = _to_bool(analyze_bpm_key_raw)
+    
     # Return validated data
     validated_data = {
         'youtube_url': youtube_url.strip(),
-        'format': audio_format.lower().strip()
+        'format': audio_format.lower().strip(),
+        'analyze_bpm_key': analyze_bpm_key,
     }
     
     return True, None, validated_data

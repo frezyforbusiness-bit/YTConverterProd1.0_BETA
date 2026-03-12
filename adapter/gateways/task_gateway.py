@@ -17,18 +17,19 @@ class TaskGateway:
     def __init__(self, task_manager: TaskManager):
         self.task_manager = task_manager
     
-    def create_task(self, youtube_url: str, audio_format: str) -> str:
+    def create_task(self, youtube_url: str, audio_format: str, analyze_bpm_key: bool = True) -> str:
         """
         Create a new task
         
         Args:
             youtube_url: YouTube URL
             audio_format: Audio format
+            analyze_bpm_key: Whether to run BPM & key analysis
             
         Returns:
             Task ID
         """
-        return self.task_manager.create_task(youtube_url, audio_format)
+        return self.task_manager.create_task(youtube_url, audio_format, analyze_bpm_key)
     
     def get_status(self, task_id: str) -> Optional[Dict]:
         """

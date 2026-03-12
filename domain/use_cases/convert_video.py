@@ -76,18 +76,31 @@ class ConvertVideoUseCase:
             if on_progress:
                 on_progress(task.task_id, progress=60, message='Conversion completed')
             
-            # Step 3: Analyze audio
-            if on_progress:
-                on_progress(task.task_id, progress=70, message='Analyzing track: BPM & key detection...')
+            # Step 3: Analyze audio (optional)
+            bpm = None
+            scale = None
+            analyze_bpm_key = getattr(task, 'analyze_bpm_key', True)
             
-            bpm, scale = self.audio_analyzer.analyze_audio(audio_path)
+            if analyze_bpm_key:
+                if on_progress:
+                    on_progress(task.task_id, progress=70, message='Analyzing track: BPM & key detection...')
+                
+                bpm, scale = self.audio_analyzer.analyze_audio(audio_path)
+                
+                if on_progress:
+                    on_progress(task.task_id, progress=85, message='Analysis completed')
+            else:
+                if on_progress:
+                    on_progress(
+                        task.task_id,
+                        progress=85,
+                        message='Fast mode: skipping BPM & key analysis'
+                    )
             
-            if on_progress:
-                on_progress(task.task_id, progress=85, message='Analysis completed')
-            
-            # Step 4: Generate final filename
+            # Step 4: Generate final filename (includes artist and BPM/key only if available)
             final_path = self.file_gateway.generate_final_filename(
                 video.title,
+                video.uploader,
                 bpm,
                 scale,
                 task.audio_format

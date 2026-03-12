@@ -28,7 +28,7 @@ class TaskManager:
         self.lock = threading.Lock()
         self.task_timeout = task_timeout_seconds
     
-    def create_task(self, youtube_url: str, audio_format: str) -> str:
+    def create_task(self, youtube_url: str, audio_format: str, analyze_bpm_key: bool = True) -> str:
         """
         Creates a new task and returns its task_id
         
@@ -49,7 +49,8 @@ class TaskManager:
             'message': 'Initializing conversion...',
             'created_at': time.time(),
             'youtube_url': youtube_url,
-            'audio_format': audio_format
+            'audio_format': audio_format,
+            'analyze_bpm_key': analyze_bpm_key,
         }
         
         with self.lock:

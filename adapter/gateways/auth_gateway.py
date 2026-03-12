@@ -24,9 +24,9 @@ class AuthGateway:
         """Verify password"""
         return self.auth_manager.verify_password(password, password_hash)
     
-    def create_token(self, username: str) -> str:
+    def create_token(self, username: str, role: str = "user", user_id: int | None = None) -> str:
         """Create JWT token"""
-        return self.auth_manager.create_token(username)
+        return self.auth_manager.create_token(username, role=role, user_id=user_id)
     
     def verify_token(self, token: str) -> Optional[dict]:
         """Verify JWT token"""

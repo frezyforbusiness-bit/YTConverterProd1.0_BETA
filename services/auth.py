@@ -68,21 +68,24 @@ class AuthManager:
             logger.error(f"Password verification error: {e}")
             return False
     
-    def create_token(self, username: str) -> str:
+    def create_token(self, username: str, role: str = "user", user_id: int | None = None) -> str:
         """
         Create JWT token for user
         
         Args:
-            username: Username
+            username: Username or email
             
         Returns:
             JWT token string
         """
-        payload = {
+        payload: Dict[str, object] = {
             'username': username,
+            'role': role,
             'exp': datetime.utcnow() + timedelta(hours=self.token_expiration_hours),
             'iat': datetime.utcnow()
         }
+        if user_id is not None:
+            payload['user_id'] = user_id
         
         token = jwt.encode(payload, self.secret_key, algorithm='HS256')
         return token

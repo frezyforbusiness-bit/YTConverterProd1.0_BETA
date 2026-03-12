@@ -472,13 +472,21 @@ class YouTubeAudioConverter:
         filename = filename.strip()
         return filename
     
-    def generate_filename(self, title: str, bpm: int = None, scale: str = None, audio_format: str = 'mp3') -> str:
+    def generate_filename(
+        self,
+        title: str,
+        artist: str | None = None,
+        bpm: int = None,
+        scale: str = None,
+        audio_format: str = 'mp3'
+    ) -> str:
         """
         Generates filename in format: Track-BPM-Scale.ext
         Example: Track1-130BPM-AMinor.mp3
         
         Args:
             title: Video title
+            artist: Artist/uploader name (optional)
             bpm: BPM (optional)
             scale: Musical scale (optional)
             audio_format: Audio format
@@ -503,6 +511,20 @@ class YouTubeAudioConverter:
         # If name is empty, use default
         if not track_name:
             track_name = "Track"
+        
+        # Optional: append artist/uploader
+        if artist:
+            artist_clean = self.sanitize_filename(artist)
+            artist_clean = re.sub(r'[^\w\s-]', '', artist_clean)
+            artist_clean = re.sub(r'\s+', ' ', artist_clean).strip()
+            artist_clean = artist_clean.replace(' ', '-')
+            if artist_clean:
+                # Limit artist length and clean up hyphens
+                if len(artist_clean) > 40:
+                    artist_clean = artist_clean[:40]
+                artist_clean = re.sub(r'-+', '-', artist_clean).strip('-')
+                if artist_clean:
+                    track_name = f"{track_name}-{artist_clean}"
         
         # Build filename
         parts = [track_name]

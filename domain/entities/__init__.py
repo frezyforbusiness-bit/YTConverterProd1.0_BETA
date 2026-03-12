@@ -7,7 +7,9 @@ from .video import Video
 from .conversion import Conversion
 from .task import Task
 from .admin import Admin
+from .user import User
 
-__all__ = ['Video', 'Conversion', 'Task', 'Admin']
+__all__ = ['Video', 'Conversion', 'Task', 'Admin', 'User']
+
 
 

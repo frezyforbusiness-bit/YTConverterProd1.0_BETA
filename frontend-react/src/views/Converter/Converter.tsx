@@ -53,6 +53,29 @@ const InfoBox = styled.div`
   font-family: ${({ theme }) => theme.typography.fonts.body};
 `;
 
+const CheckboxRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const CheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  cursor: pointer;
+  font-family: ${({ theme }) => theme.typography.fonts.body};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const CheckboxInput = styled.input`
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+`;
+
 const StyledLabel = styled.label`
   display: block;
   margin-bottom: ${({ theme }) => theme.spacing.sm};
@@ -89,6 +112,7 @@ const ProgressWrapper = styled.div`
 export const Converter: React.FC = React.memo(() => {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [format, setFormat] = useState('mp3');
+  const [analyzeBpmKey, setAnalyzeBpmKey] = useState(false);
   const [loading, setLoading] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [status, setStatus] = useState<TaskStatus | null>(null);
@@ -111,6 +135,7 @@ export const Converter: React.FC = React.memo(() => {
       const response = await converterService.startConversion({
         youtube_url: youtubeUrl,
         format,
+        analyze_bpm_key: analyzeBpmKey,
       });
       setTaskId(response.task_id);
     } catch (error: any) {
@@ -120,7 +145,7 @@ export const Converter: React.FC = React.memo(() => {
         text: error.message || 'Failed to start conversion',
       });
     }
-  }, [youtubeUrl, format]);
+  }, [youtubeUrl, format, analyzeBpmKey]);
 
   usePolling({
     enabled: !!taskId && status?.status !== 'done' && status?.status !== 'error',
@@ -196,8 +221,30 @@ export const Converter: React.FC = React.memo(() => {
           </FormGroup>
 
           <InfoBox>
-            🎹 Automatic BPM & Key Detection - Perfect for music producers! Files will be named:
-            TrackName-BPM-Key.ext
+            <CheckboxRow>
+              <CheckboxLabel>
+                <CheckboxInput
+                  type="checkbox"
+                  checked={analyzeBpmKey}
+                  onChange={(e) => setAnalyzeBpmKey(e.target.checked)}
+                  disabled={loading}
+                />
+                <span>Analyze BPM &amp; Key (recommended for DJs/producers)</span>
+              </CheckboxLabel>
+            </CheckboxRow>
+            {analyzeBpmKey ? (
+              <>
+                🎹 Automatic BPM &amp; Key Detection enabled. Files will be named:
+                {' '}
+                <strong>TrackName-BPM-Key.ext</strong>
+              </>
+            ) : (
+              <>
+                ⚡ Fast mode: BPM &amp; Key analysis disabled. Files will be named:
+                {' '}
+                <strong>TrackName.ext</strong>
+              </>
+            )}
           </InfoBox>
 
           <Button
@@ -208,7 +255,7 @@ export const Converter: React.FC = React.memo(() => {
             onClick={handleConvert}
             disabled={loading || !youtubeUrl.trim()}
           >
-            🚀 Convert & Analyze
+            {analyzeBpmKey ? '🚀 Convert & Analyze' : '🚀 Convert'}
           </Button>
 
           {status && (

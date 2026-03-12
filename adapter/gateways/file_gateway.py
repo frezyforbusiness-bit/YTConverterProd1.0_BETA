@@ -30,12 +30,20 @@ class FileGateway:
         """
         return self.converter.convert_to_audio(video_path, audio_format)
     
-    def generate_final_filename(self, title: str, bpm: int = None, scale: str = None, audio_format: str = 'mp3') -> str:
+    def generate_final_filename(
+        self,
+        title: str,
+        artist: str = None,
+        bpm: int = None,
+        scale: str = None,
+        audio_format: str = 'mp3'
+    ) -> str:
         """
         Generate final filename with BPM and key
         
         Args:
             title: Video title
+            artist: Artist/uploader name
             bpm: BPM value
             scale: Musical scale
             audio_format: Audio format
@@ -43,7 +51,7 @@ class FileGateway:
         Returns:
             Final filename
         """
-        filename = self.converter.generate_filename(title, bpm, scale, audio_format)
+        filename = self.converter.generate_filename(title, artist, bpm, scale, audio_format)
         return os.path.join(self.temp_dir, filename)
     
     def rename_file(self, old_path: str, new_path: str) -> bool:

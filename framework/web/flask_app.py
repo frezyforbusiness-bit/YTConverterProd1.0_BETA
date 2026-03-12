@@ -159,6 +159,8 @@ def create_app() -> Flask:
     # Initialize repositories (if database available)
     conversion_repository = MySQLConversionRepository(db_manager) if db_manager else None
     admin_repository = MySQLAdminRepository(db_manager) if db_manager else None
+    from adapter.repositories.mysql_user_repository import MySQLUserRepository
+    user_repository = MySQLUserRepository(db_manager) if db_manager else None
     statistics_repository = MySQLStatisticsRepository(db_manager) if db_manager else None
     
     # Initialize use cases
@@ -204,6 +206,16 @@ def create_app() -> Flask:
         admin_repository=admin_repository,
         auth_gateway=auth_gateway
     )
+    from domain.use_cases.register_user import RegisterUserUseCase
+    from domain.use_cases.login_user import LoginUserUseCase
+    register_user_use_case = RegisterUserUseCase(
+        user_repository=user_repository if user_repository else None,
+        auth_gateway=auth_gateway,
+    )
+    login_user_use_case = LoginUserUseCase(
+        user_repository=user_repository if user_repository else None,
+        auth_gateway=auth_gateway,
+    )
     
     get_statistics_use_case = GetStatisticsUseCase(
         statistics_repository=statistics_repository
@@ -219,7 +231,10 @@ def create_app() -> Flask:
         get_statistics_use_case=get_statistics_use_case,
         task_gateway=task_gateway,
         auth_gateway=auth_gateway,
-        frontend_dir=FRONTEND_DIR
+        frontend_dir=FRONTEND_DIR,
+        user_repository=user_repository,
+        register_user_use_case=register_user_use_case,
+        login_user_use_case=login_user_use_case,
     )
     
     # Initialize cleanup scheduler
