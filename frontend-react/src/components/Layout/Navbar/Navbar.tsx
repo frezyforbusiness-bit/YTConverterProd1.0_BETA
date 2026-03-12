@@ -153,8 +153,7 @@ const MobileNavLink = styled(Link)<{ $isActive: boolean }>`
 `;
 
 const navItems = [
-  { path: '/', label: 'Home' },
-  { path: '/converter', label: 'Converter' },
+  { path: '/', label: 'Converter' },
   { path: '/mixmaster', label: 'Mix Master' },
   { path: '/about', label: 'About' },
 ];

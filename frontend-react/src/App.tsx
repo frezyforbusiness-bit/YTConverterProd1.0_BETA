@@ -4,7 +4,6 @@ import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Layout } from './components/Layout';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
-import { Home } from './views/Home';
 import { Converter } from './views/Converter';
 import { MixMaster } from './views/MixMaster';
 import { Admin } from './views/Admin';
@@ -23,8 +22,7 @@ const AppContent: React.FC = () => {
       <ErrorBoundary>
         <Layout>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/converter" element={<Converter />} />
+            <Route path="/" element={<Converter />} />
             <Route path="/mixmaster" element={<MixMaster />} />
             <Route path="/about" element={<About />} />
             <Route path="/admin" element={<Admin />} />
