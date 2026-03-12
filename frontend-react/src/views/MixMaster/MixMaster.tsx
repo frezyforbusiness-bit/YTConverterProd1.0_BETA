@@ -92,6 +92,38 @@ const DragDropArea = styled.div`
   }
 `;
 
+const AnalysisInfo = styled.div`
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+const InfoCard = styled.div`
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.xl}`};
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+`;
+
+const InfoTitle = styled.h3`
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.body};
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin: 0 0 ${({ theme }) => theme.spacing.xs};
+`;
+
+const InfoText = styled.p`
+  font-family: ${({ theme }) => theme.typography.fonts.body};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  line-height: 1.7;
+  margin: 0;
+`;
+
 export const MixMaster: React.FC = () => {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<'upload' | 'youtube'>('upload');
@@ -121,10 +153,10 @@ export const MixMaster: React.FC = () => {
           {activeTab === 'upload' ? (
             <DragDropArea>
               <p style={{ fontSize: theme.typography.sizes.h3, marginBottom: theme.spacing.md }}>
-                📁 Drag & Drop Audio File
+                📁 Drag &amp; Drop Audio File
               </p>
               <p style={{ color: theme.colors.text.secondary, marginBottom: theme.spacing.lg }}>
-                or click to browse (MP3, WAV, FLAC, M4A, OGG)
+                Or click to browse (MP3, WAV, FLAC, M4A, OGG). Ideal for bounced mixes, masters and reference tracks.
               </p>
               <Button variant="secondary">Choose File</Button>
             </DragDropArea>
@@ -146,6 +178,30 @@ export const MixMaster: React.FC = () => {
             </div>
           )}
         </Card>
+
+        <AnalysisInfo>
+          <InfoCard>
+            <InfoTitle>Loudness &amp; dynamics</InfoTitle>
+            <InfoText>
+              Understand how loud your track really is in LUFS and how much dynamic range you are leaving. Perfect for
+              comparing rough mixes to reference masters.
+            </InfoText>
+          </InfoCard>
+          <InfoCard>
+            <InfoTitle>Tonal balance</InfoTitle>
+            <InfoText>
+              Spot if your low end, mids or highs are out of control. Use the analyzer to quickly see whether your mix
+              is too dark, too bright or right in the pocket.
+            </InfoText>
+          </InfoCard>
+          <InfoCard>
+            <InfoTitle>Reference ready</InfoTitle>
+            <InfoText>
+              Upload released tracks from your favorite artists and compare them to your own mix to guide EQ, compression
+              and limiting decisions.
+            </InfoText>
+          </InfoCard>
+        </AnalysisInfo>
       </MixMasterContainer>
     </PageTransition>
   );
