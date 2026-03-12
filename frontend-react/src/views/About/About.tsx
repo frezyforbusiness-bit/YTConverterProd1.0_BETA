@@ -38,17 +38,41 @@ const TitleBase = styled.h1`
 
 const Title = motion(TitleBase);
 
-const Paragraph = styled.p`
+const Highlight = styled.span`
+  color: ${({ theme }) => theme.colors.text.primary};
+  font-weight: ${({ theme }) => theme.typography.weights.semibold};
+`;
+
+const InfoBlocks = styled.div`
+  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+const InfoBlock = styled.div`
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.xl}`};
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+`;
+
+const InfoBlockTitle = styled.h3`
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.body};
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin: 0 0 ${({ theme }) => theme.spacing.sm};
+`;
+
+const InfoBlockText = styled.p`
   font-family: ${({ theme }) => theme.typography.fonts.body};
   font-size: ${({ theme }) => theme.typography.sizes.body};
   color: ${({ theme }) => theme.colors.text.secondary};
   line-height: 1.7;
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-`;
-
-const Highlight = styled.span`
-  color: ${({ theme }) => theme.colors.text.primary};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
+  margin: 0;
 `;
 
 const ServicesGridBase = styled.div`
@@ -100,29 +124,44 @@ export const About: React.FC = () => {
             Producer Tools
           </Title>
 
-          <Paragraph>
-            <Highlight>Producer Tools</Highlight> is a digital toolkit designed to change the way music producers work
-            every day. The goal is simple: let technology quietly handle the boring parts so producers can stay focused
-            on the music.
-          </Paragraph>
+          <InfoBlocks>
+            <InfoBlock>
+              <InfoBlockTitle>What is Producer Tools</InfoBlockTitle>
+              <InfoBlockText>
+                <Highlight>Producer Tools</Highlight> is a digital toolkit designed to change the way music producers work
+                every day. The goal is simple: let technology quietly handle the boring parts so producers can stay
+                focused on the music.
+              </InfoBlockText>
+            </InfoBlock>
 
-          <Paragraph>
-            Every tool starts from real studio needs: smarter sample management, idea generation, automation of
-            repetitive steps and utilities built to speed up creative decisions. The focus never changes:{' '}
-            <Highlight>less technical friction, more room for ideas</Highlight>.
-          </Paragraph>
+            <InfoBlock>
+              <InfoBlockTitle>Built from real studio needs</InfoBlockTitle>
+              <InfoBlockText>
+                Every tool starts from real studio needs: smarter sample management, idea generation, automation of
+                repetitive steps and utilities built to speed up creative decisions. The focus never changes:{' '}
+                <Highlight>less technical friction, more room for ideas</Highlight>.
+              </InfoBlockText>
+            </InfoBlock>
 
-          <Paragraph>
-            The vision behind <Highlight>Producer Tools</Highlight> is to build a modern toolbox for the contemporary producer: tools
-            that are easy to understand, fast to use and solid enough to live inside professional workflows, from the
-            bedroom studio to high–end mix rooms.
-          </Paragraph>
+            <InfoBlock>
+              <InfoBlockTitle>The long-term vision</InfoBlockTitle>
+              <InfoBlockText>
+                The vision behind <Highlight>Producer Tools</Highlight> is to build a modern toolbox for the contemporary producer:
+                tools that are easy to understand, fast to use and solid enough to live inside professional workflows,
+                from the bedroom studio to high–end mix rooms.
+              </InfoBlockText>
+            </InfoBlock>
 
-          <Paragraph>
-            Starting from the <Highlight>Audio Converter</Highlight> and the analyzers, Producer Tools aims to become a suite that
-            follows producers through every stage of the process: from the first idea, to organizing sounds, all the way
-            to the final mix. Tools are built around one rule: if it doesn&apos;t make your workflow smoother, it doesn&apos;t ship.
-          </Paragraph>
+            <InfoBlock>
+              <InfoBlockTitle>From idea to final mix</InfoBlockTitle>
+              <InfoBlockText>
+                Starting from the <Highlight>Audio Converter</Highlight> and the analyzers, Producer Tools aims to become a suite
+                that follows producers through every stage of the process: from the first idea, to organizing sounds,
+                all the way to the final mix. Tools are built around one rule: if it doesn&apos;t make your workflow
+                smoother, it doesn&apos;t ship.
+              </InfoBlockText>
+            </InfoBlock>
+          </InfoBlocks>
         </motion.div>
 
         <ServicesGrid
