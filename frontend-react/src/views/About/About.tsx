@@ -79,7 +79,7 @@ export const About: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Title>About Producer Tools</Title>
+          <Title>Producer Tools</Title>
 
           <Paragraph>
             <Highlight>Producer Tools</Highlight> is a digital toolkit designed to change the way music producers work

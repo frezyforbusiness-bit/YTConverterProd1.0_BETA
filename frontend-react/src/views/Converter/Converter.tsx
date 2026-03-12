@@ -15,6 +15,29 @@ const ConverterContainer = styled.div`
   padding: ${({ theme }) => theme.spacing.xl};
 `;
 
+const Header = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const HeaderTitle = styled.h1`
+  font-family: ${({ theme }) => theme.typography.fonts.heading};
+  font-size: ${({ theme }) => theme.typography.sizes.h2};
+  font-weight: ${({ theme }) => theme.typography.weights.black};
+  background: ${({ theme }) => theme.colors.text.gradient};
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+`;
+
+const HeaderSubtitle = styled.p`
+  font-family: ${({ theme }) => theme.typography.fonts.body};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
 const ConverterCard = styled(Card)`
   margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
@@ -193,6 +216,14 @@ export const Converter: React.FC = React.memo(() => {
   return (
     <PageTransition>
       <ConverterContainer>
+        <Header>
+          <HeaderTitle>Producer Tools</HeaderTitle>
+          <HeaderSubtitle>
+            Audio Converter – paste a YouTube or Spotify track, pick the format, then hit convert. Optional BPM &amp; key
+            analysis if you need DJ‑friendly files.
+          </HeaderSubtitle>
+        </Header>
+
         <ConverterCard>
           <FormGroup>
             <Input

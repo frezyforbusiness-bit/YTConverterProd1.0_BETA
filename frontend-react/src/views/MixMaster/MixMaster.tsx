@@ -12,6 +12,29 @@ const MixMasterContainer = styled.div`
   padding: ${({ theme }) => theme.spacing.xl};
 `;
 
+const Header = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const HeaderTitle = styled.h1`
+  font-family: ${({ theme }) => theme.typography.fonts.heading};
+  font-size: ${({ theme }) => theme.typography.sizes.h2};
+  font-weight: ${({ theme }) => theme.typography.weights.black};
+  background: ${({ theme }) => theme.colors.text.gradient};
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+`;
+
+const HeaderSubtitle = styled.p`
+  font-family: ${({ theme }) => theme.typography.fonts.body};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
 const TabContainer = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.md};
@@ -62,6 +85,14 @@ export const MixMaster: React.FC = () => {
   return (
     <PageTransition>
       <MixMasterContainer>
+        <Header>
+          <HeaderTitle>Producer Tools</HeaderTitle>
+          <HeaderSubtitle>
+            Mix &amp; Master Analyzer – upload an audio file or paste a YouTube URL, then run an analysis to understand
+            loudness, dynamics and tonal balance of your track.
+          </HeaderSubtitle>
+        </Header>
+
         <Card>
           <TabContainer>
             <Tab $active={activeTab === 'upload'} onClick={() => setActiveTab('upload')}>
