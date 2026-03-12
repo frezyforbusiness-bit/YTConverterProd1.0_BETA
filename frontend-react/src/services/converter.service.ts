@@ -20,9 +20,28 @@ export interface TaskStatus {
   key?: string;
 }
 
+export interface PlaylistTaskEntry {
+  task_id: string;
+  track_name: string;
+  artists: string;
+  youtube_url: string;
+}
+
+export interface PlaylistConvertResponse {
+  playlist: {
+    source_url: string;
+    total_tracks: number;
+    started_tasks: PlaylistTaskEntry[];
+  };
+}
+
 export const converterService = {
   async startConversion(data: ConvertRequest): Promise<ConvertResponse> {
     return apiClient.post<ConvertResponse>('/convert', data);
+  },
+
+  async startPlaylistConversion(data: ConvertRequest): Promise<PlaylistConvertResponse> {
+    return apiClient.post<PlaylistConvertResponse>('/convert/playlist', data);
   },
 
   async getStatus(taskId: string): Promise<TaskStatus> {
