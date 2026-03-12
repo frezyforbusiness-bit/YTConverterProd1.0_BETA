@@ -15,6 +15,8 @@ const FooterInner = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: ${({ theme }) => theme.spacing.xl};
+  justify-items: center;
+  text-align: center;
 `;
 
 const Column = styled.div`
@@ -47,7 +49,7 @@ const FaqAnswer = styled.div`
 const BottomRow = styled.div`
   grid-column: 1 / -1;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-top: ${({ theme }) => theme.spacing.lg};
   font-family: ${({ theme }) => theme.typography.fonts.accent};
