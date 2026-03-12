@@ -26,6 +26,7 @@ const TitleBase = styled.h1`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
   text-align: center;
   white-space: nowrap;
+  animation: float 3s ease-in-out infinite;
 
   @media (max-width: 1024px) {
     font-size: ${({ theme }) => theme.typography.sizes.h2};
