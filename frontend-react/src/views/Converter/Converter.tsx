@@ -124,7 +124,7 @@ export const Converter: React.FC = React.memo(() => {
 
   const handleConvert = useCallback(async () => {
     if (!youtubeUrl.trim()) {
-      setMessage({ type: 'error', text: 'Please enter a YouTube URL' });
+      setMessage({ type: 'error', text: 'Please enter a YouTube or Spotify URL' });
       return;
     }
 
@@ -196,9 +196,9 @@ export const Converter: React.FC = React.memo(() => {
         <ConverterCard>
           <FormGroup>
             <Input
-              label="YouTube URL"
+              label="Source URL"
               type="url"
-              placeholder="https://www.youtube.com/watch?v=..."
+              placeholder="YouTube or Spotify track URL"
               value={youtubeUrl}
               onChange={handleUrlChange}
               disabled={loading}
@@ -245,6 +245,12 @@ export const Converter: React.FC = React.memo(() => {
                 <strong>TrackName.ext</strong>
               </>
             )}
+            <br />
+            <br />
+            <strong>Supported links</strong>
+            : You can paste a single YouTube video URL or a single Spotify track URL. Playlists are
+            not supported yet. The converter always tries to pick an audio/lyrics version on
+            YouTube, not the official videoclip.
           </InfoBox>
 
           <Button

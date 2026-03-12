@@ -13,34 +13,25 @@ SUPPORTED_FORMATS = ['mp3', 'wav', 'flac', 'ogg', 'm4a', 'opus']
 
 def validate_youtube_url(url: str) -> Tuple[bool, Optional[str]]:
     """
-    Validates a YouTube URL
-    
-    Args:
-        url: URL string to validate
-        
-    Returns:
-        Tuple of (is_valid, error_message)
-        If valid, returns (True, None)
-        If invalid, returns (False, error_message)
+    Validates a YouTube URL (single video).
+
+    NOTE: playlist URL support is handled at a higher level; here
+    we only validate direct video URLs.
     """
     if not url or not isinstance(url, str):
         return False, "URL must be a non-empty string"
-    
+
     url = url.strip()
-    
-    # Reject explicit playlist URLs
-    if '/playlist' in url.lower():
-        return False, "Playlists are not supported. Use a single video URL."
-    
+
     # YouTube URL pattern - matches various YouTube URL formats
     youtube_pattern = re.compile(
         r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/'
         r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
     )
-    
+
     if not youtube_pattern.match(url):
         return False, "Invalid YouTube URL format"
-    
+
     return True, None
 
 
@@ -98,15 +89,27 @@ def validate_convert_request(data: Dict) -> Tuple[bool, Optional[str], Optional[
     if not data or not isinstance(data, dict):
         return False, "Request body must be a JSON object", None
     
-    # Check for youtube_url
+    # Check for source URL (backward compatible name: youtube_url)
     youtube_url = data.get('youtube_url')
     if not youtube_url:
         return False, "Missing required field: youtube_url", None
-    
-    # Validate YouTube URL
-    is_valid_url, url_error = validate_youtube_url(youtube_url)
-    if not is_valid_url:
-        return False, url_error, None
+
+    youtube_url = str(youtube_url).strip()
+
+    # Basic URL validation & supported sources check
+    url_lower = youtube_url.lower()
+    is_spotify = "open.spotify.com" in url_lower or "spotify:track" in url_lower or "spotify:playlist" in url_lower
+    is_youtube = "youtube.com" in url_lower or "youtu.be" in url_lower or "youtube-nocookie.com" in url_lower
+
+    if not (is_spotify or is_youtube):
+        return False, "Unsupported URL. Please provide a YouTube or Spotify link.", None
+
+    # For direct YouTube video URLs, keep strict validation.
+    # Playlist handling (YouTube/Spotify) is managed at a higher level.
+    if is_youtube and "list=" not in url_lower and "/playlist" not in url_lower:
+        is_valid_url, url_error = validate_youtube_url(youtube_url)
+        if not is_valid_url:
+            return False, url_error, None
     
     # Get format (default to mp3)
     audio_format = data.get('format', 'mp3')
