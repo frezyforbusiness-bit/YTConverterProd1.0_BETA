@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { ServiceCard } from '../../components/UI/ServiceCard';
 import { PageTransition } from '../../components/common/PageTransition';
 import { containerVariants } from '../../utils/animationVariants';
+import { Converter } from '../Converter';
 
 const HomeContainer = styled.div`
   max-width: 1280px;
@@ -14,8 +15,8 @@ const HomeContainer = styled.div`
 
 const HeroSectionBase = styled.section`
   text-align: center;
-  padding: ${({ theme }) => `${theme.spacing['3xl']} 0`};
-  margin-bottom: ${({ theme }) => theme.spacing['3xl']};
+  padding: ${({ theme }) => `${theme.spacing['2xl']} 0`};
+  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
 `;
 
 const HeroSection = motion(HeroSectionBase);
@@ -100,6 +101,9 @@ export const Home: React.FC = () => {
             Professional audio tools for music producers. Convert, analyze, and perfect your tracks.
           </HeroSubtitle>
         </HeroSection>
+
+        {/* Inline converter on home */}
+        <Converter />
 
         <ServicesGrid
           variants={containerVariants}
