@@ -97,6 +97,21 @@ class SpotifyGateway:
             return part.split("?")[0].split("/")[0]
         raise ValueError("Invalid Spotify track URL")
 
+    @staticmethod
+    def _extract_playlist_id(spotify_url: str) -> str:
+        """
+        Extract playlist ID from:
+        - https://open.spotify.com/playlist/{id}
+        - spotify:playlist:{id}
+        """
+        url = (spotify_url or "").strip()
+        if "spotify:playlist:" in url:
+            return url.split("spotify:playlist:")[-1].split("?")[0]
+        if "open.spotify.com/playlist/" in url:
+            part = url.split("open.spotify.com/playlist/")[-1]
+            return part.split("?")[0].split("/")[0]
+        raise ValueError("Invalid Spotify playlist URL")
+
     # === Public API =========================================================
 
     def get_track_metadata(self, spotify_url: str) -> Dict[str, Any]:
@@ -119,4 +134,54 @@ class SpotifyGateway:
             "artists": artists,
             "duration_ms": data.get("duration_ms"),
         }
+
+    def get_playlist_tracks(self, playlist_url: str, limit: int | None = None) -> List[Dict[str, Any]]:
+        """
+        Return a list of tracks for a Spotify playlist URL.
+
+        Each item contains:
+        - id
+        - name
+        - artists (comma-separated)
+        - duration_ms
+
+        limit: optional maximum number of tracks to return.
+        """
+        playlist_id = self._extract_playlist_id(playlist_url)
+
+        tracks: List[Dict[str, Any]] = []
+        path = f"/playlists/{playlist_id}/tracks"
+        params: Dict[str, Any] = {"market": self.market, "limit": 100}
+        next_url: Optional[str] = None
+
+        while True:
+            if next_url:
+                resp = self._get(next_url.replace(self.API_BASE_URL, ""), params=None)
+            else:
+                resp = self._get(path, params=params)
+
+            items = resp.get("items") or []
+            for item in items:
+                track = item.get("track") or {}
+                if not track or track.get("type") != "track":
+                    continue
+                name = track.get("name") or ""
+                artist_items = track.get("artists") or []
+                artists = ", ".join(a.get("name", "") for a in artist_items if a.get("name"))
+                tracks.append(
+                    {
+                        "id": track.get("id"),
+                        "name": name,
+                        "artists": artists,
+                        "duration_ms": track.get("duration_ms"),
+                    }
+                )
+                if limit is not None and len(tracks) >= limit:
+                    return tracks
+
+            next_url = resp.get("next")
+            if not next_url:
+                break
+
+        return tracks
 
