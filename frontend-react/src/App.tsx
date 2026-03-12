@@ -8,8 +8,10 @@ import { Home } from './views/Home';
 import { Converter } from './views/Converter';
 import { MixMaster } from './views/MixMaster';
 import { Admin } from './views/Admin';
+import { UserAuth } from './views/Auth';
 import { NotFound } from './views/NotFound/NotFound';
 import { AuthProvider } from './context/AuthContext';
+import { UserAuthProvider } from './context/UserAuthContext';
 import './styles/globals.css';
 import './styles/animations.css';
 import './styles/utilities.css';
@@ -25,6 +27,7 @@ const AppContent: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/converter" element={<Converter />} />
             <Route path="/mixmaster" element={<MixMaster />} />
+            <Route path="/auth" element={<UserAuth />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -38,9 +41,11 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
+        <UserAuthProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </UserAuthProvider>
       </AuthProvider>
     </ThemeProvider>
   );
