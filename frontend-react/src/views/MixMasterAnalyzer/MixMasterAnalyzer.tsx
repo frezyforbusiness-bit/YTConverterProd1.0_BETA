@@ -259,11 +259,14 @@ const MetricValue = styled.span<{ $issue?: boolean }>`
 `;
 
 const TonalProfileBar = styled.div`
-  height: 24px;
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  background: linear-gradient(90deg, #22c55e 0%, #22c55e 70%, rgba(34, 197, 94, 0.3) 100%);
+  height: 80px;
   margin-top: ${({ theme }) => theme.spacing.sm};
-  position: relative;
+`;
+
+const TonalProfileSvg = styled.svg`
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 `;
 
 const TonalLabel = styled.div`
@@ -647,8 +650,34 @@ export const MixMasterAnalyzer: React.FC = () => {
             <ReportCard>
               <ReportCardTitle>Tonal Profile</ReportCardTitle>
               <ReportCardSubtitle>Frequency balance (20 Hz – 20 kHz)</ReportCardSubtitle>
-              <TonalLabel>Optimal</TonalLabel>
-              <TonalProfileBar />
+              <TonalLabel>
+                {result.integratedLoudness > -10 || result.clipping
+                  ? 'Energy decreasing from low to high frequencies (red)'
+                  : 'Energy increasing towards the top end (blue)'}
+              </TonalLabel>
+              <TonalProfileBar>
+                <TonalProfileSvg viewBox="0 0 100 40" preserveAspectRatio="none">
+                  {result.integratedLoudness > -10 || result.clipping ? (
+                    // Descending curve → red
+                    <polyline
+                      points="0,5 20,12 40,20 60,28 80,34 100,38"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                    />
+                  ) : (
+                    // Ascending curve → blue
+                    <polyline
+                      points="0,38 20,32 40,24 60,16 80,10 100,5"
+                      fill="none"
+                      stroke="#3b82f6"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                    />
+                  )}
+                </TonalProfileSvg>
+              </TonalProfileBar>
             </ReportCard>
 
             <ReportCard>
