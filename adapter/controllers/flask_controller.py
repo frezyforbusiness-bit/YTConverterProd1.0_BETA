@@ -5,9 +5,9 @@ Handles HTTP requests and responses
 
 import os
 import threading
-from flask import Flask, request, jsonify, send_file, send_from_directory
+from flask import Flask, request, jsonify, send_file, send_from_directory, redirect
 from flask_cors import CORS
-from typing import Optional
+from typing import Optional, Iterable
 
 from domain.use_cases.convert_video import ConvertVideoUseCase
 from domain.use_cases.get_status import GetStatusUseCase
@@ -37,6 +37,9 @@ class FlaskController:
         task_gateway: TaskGateway,
         auth_gateway: AuthGateway,
         frontend_dir: str,
+        google_oauth=None,
+        frontend_url: str = "http://localhost:5173",
+        admin_google_emails: str | Iterable[str] | None = None,
     ):
         self.app = app
         self.convert_use_case = convert_use_case
@@ -47,6 +50,13 @@ class FlaskController:
         self.task_gateway = task_gateway
         self.auth_gateway = auth_gateway
         self.frontend_dir = frontend_dir
+        self.google_oauth = google_oauth
+        if isinstance(admin_google_emails, str):
+            emails = [e.strip().lower() for e in admin_google_emails.split(",") if e.strip()]
+        else:
+            emails = [e.strip().lower() for e in (admin_google_emails or [])]
+        self.admin_google_emails = set(emails)
+        self.frontend_url = frontend_url
         
         self._register_routes()
     
@@ -222,6 +232,44 @@ class FlaskController:
             except Exception as e:
                 logger.error(f"Error in admin login: {e}")
                 return jsonify({"error": "Internal server error"}), 500
+        
+        @self.app.route('/api/admin/google/login', methods=['GET'])
+        def admin_google_login():
+            """Start Google OAuth flow for admin login."""
+            if not self.google_oauth:
+                return jsonify({"error": "Google OAuth not configured"}), 503
+            redirect_uri = os.environ.get('GOOGLE_REDIRECT_URI')
+            if not redirect_uri:
+                return jsonify({"error": "GOOGLE_REDIRECT_URI not configured"}), 503
+            return self.google_oauth.authorize_redirect(redirect_uri)
+        
+        @self.app.route('/api/admin/google/callback', methods=['GET'])
+        def admin_google_callback():
+            """Handle Google OAuth callback and issue admin JWT."""
+            if not self.google_oauth:
+                return jsonify({"error": "Google OAuth not configured"}), 503
+            try:
+                token = self.google_oauth.authorize_access_token()
+                userinfo = self.google_oauth.parse_id_token(token)
+            except Exception as e:
+                logger.error(f"Google OAuth callback error: {e}")
+                return jsonify({"error": "Google login failed"}), 400
+
+            email = (userinfo.get("email") or "").lower()
+            if not email:
+                return jsonify({"error": "Google account has no email"}), 400
+
+            # If admin email allowlist is configured, enforce it
+            if self.admin_google_emails and email not in self.admin_google_emails:
+                logger.warning(f"Google email {email} not authorized for admin access")
+                return jsonify({"error": "This Google account is not allowed to access admin"}), 403
+
+            # Issue admin token using existing AuthGateway
+            token_str = self.auth_gateway.create_token(username=email, role="admin")
+
+            # Redirect back to frontend with token in query string
+            redirect_target = f"{self.frontend_url}/admin?token={token_str}"
+            return redirect(redirect_target)
         
         @self.app.route('/api/admin/dashboard', methods=['GET'])
         def admin_dashboard():

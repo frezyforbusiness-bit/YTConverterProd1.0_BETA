@@ -6,6 +6,7 @@ Creates and configures Flask application
 import os
 from flask import Flask
 from flask_cors import CORS
+from authlib.integrations.flask_client import OAuth
 
 from adapter.controllers.flask_controller import FlaskController
 from adapter.gateways.youtube_gateway import YouTubeGateway
@@ -51,6 +52,11 @@ def create_app() -> Flask:
     TEMP_DIR = os.environ.get('TEMP_DIR') or os.path.join(os.path.dirname(__file__), '../../temp')
     TASK_TIMEOUT = int(os.environ.get('TASK_TIMEOUT', 1800))
     CLEANUP_INTERVAL = int(os.environ.get('CLEANUP_INTERVAL', 3600))
+    FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+    GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI')
+    ADMIN_GOOGLE_EMAILS = os.environ.get('ADMIN_GOOGLE_EMAILS', '')
     # Check if React frontend is built (for production), otherwise use old frontend
     # The React frontend is built in frontend-react/dist and copied to frontend-react-dist by Dockerfile
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -134,6 +140,22 @@ def create_app() -> Flask:
     converter = YouTubeAudioConverter(TEMP_DIR)
     task_manager = TaskManager(TASK_TIMEOUT)
     auth_manager = AuthManager()
+
+    # Initialize OAuth (Google) for admin login, if configured
+    oauth = OAuth(app)
+    google_oauth = None
+    if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+        google_oauth = oauth.register(
+            name='google',
+            client_id=GOOGLE_CLIENT_ID,
+            client_secret=GOOGLE_CLIENT_SECRET,
+            access_token_url='https://oauth2.googleapis.com/token',
+            authorize_url='https://accounts.google.com/o/oauth2/v2/auth',
+            client_kwargs={'scope': 'openid email profile'},
+        )
+        logger.info("✓ Google OAuth client registered for admin login")
+    else:
+        logger.warning("Google OAuth not configured (GOOGLE_CLIENT_ID/SECRET not set)")
     
     # Initialize database (optional)
     db_manager = None
@@ -219,6 +241,9 @@ def create_app() -> Flask:
         task_gateway=task_gateway,
         auth_gateway=auth_gateway,
         frontend_dir=FRONTEND_DIR,
+        google_oauth=google_oauth,
+        frontend_url=FRONTEND_URL,
+        admin_google_emails=ADMIN_GOOGLE_EMAILS,
     )
     
     # Initialize cleanup scheduler
