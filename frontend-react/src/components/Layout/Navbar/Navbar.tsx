@@ -31,7 +31,7 @@ const LogoBase = styled(Link)`
   font-size: ${({ theme }) => theme.typography.sizes.h3};
   font-weight: ${({ theme }) => theme.typography.weights.black};
   text-decoration: none;
-  background: linear-gradient(135deg, #38bdf8 0%, #6366f1 50%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #a855f7 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
