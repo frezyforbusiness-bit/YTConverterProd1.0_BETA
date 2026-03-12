@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
@@ -233,6 +233,24 @@ export const MixMaster: React.FC = () => {
   const [mixType, setMixType] = useState<'mix' | 'master' | null>(null);
   const [genre, setGenre] = useState<string | null>(null);
   const [contentType, setContentType] = useState<'beat' | 'song' | null>(null);
+  const question1Ref = useRef<HTMLDivElement>(null);
+  const question2Ref = useRef<HTMLDivElement>(null);
+  const question3Ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!selectedFile) return;
+    question1Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [selectedFile]);
+
+  useEffect(() => {
+    if (mixType == null) return;
+    question2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [mixType]);
+
+  useEffect(() => {
+    if (genre == null) return;
+    question3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [genre]);
 
   const openFilePicker = useCallback(() => {
     fileInputRef.current?.click();
@@ -335,7 +353,7 @@ export const MixMaster: React.FC = () => {
               </DragDropArea>
               {selectedFile && (
                 <QuestionGroup>
-                  <QuestionBlock>
+                  <QuestionBlock ref={question1Ref}>
                     <QuestionLabel>Is your track mastered?</QuestionLabel>
                     <BigChoiceRow>
                       <BigChoiceButton
@@ -355,7 +373,7 @@ export const MixMaster: React.FC = () => {
                     </BigChoiceRow>
                   </QuestionBlock>
 
-                  <QuestionBlock>
+                  <QuestionBlock ref={question2Ref}>
                     <QuestionLabel>Genre</QuestionLabel>
                     <ChipRow>
                       <Chip type="button" $active={genre === 'trap'} onClick={() => setGenre('trap')}>
@@ -373,7 +391,7 @@ export const MixMaster: React.FC = () => {
                     </ChipRow>
                   </QuestionBlock>
 
-                  <QuestionBlock>
+                  <QuestionBlock ref={question3Ref}>
                     <QuestionLabel>What&apos;s inside?</QuestionLabel>
                     <ChipRow>
                       <Chip type="button" $active={contentType === 'beat'} onClick={() => setContentType('beat')}>
