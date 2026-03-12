@@ -122,7 +122,7 @@ export const About: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            Producer Tools
+            🎵 Producer Tools
           </Title>
 
           <InfoBlocks>
