@@ -41,9 +41,9 @@ export const theme = {
 
   typography: {
     fonts: {
-      heading: "'Audiowide', cursive",
-      body: "'Manrope', sans-serif",
-      accent: "'Staatliches', cursive",
+      heading: "'Orbitron', sans-serif",
+      body: "'Rajdhani', sans-serif",
+      accent: "'Exo 2', sans-serif",
     },
     weights: {
       regular: 400,
