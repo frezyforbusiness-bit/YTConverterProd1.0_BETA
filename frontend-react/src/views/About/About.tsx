@@ -7,14 +7,15 @@ import { containerVariants } from '../../utils/animationVariants';
 import { useNavigate } from 'react-router-dom';
 
 const AboutContainer = styled.div`
-  max-width: 960px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacing.xl};
+  overflow: visible;
 `;
 
-const Title = styled.h1`
+const TitleBase = styled.h1`
   font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-size: ${({ theme }) => theme.typography.sizes.h2};
+  font-size: ${({ theme }) => theme.typography.sizes.h1};
   font-weight: ${({ theme }) => theme.typography.weights.black};
   background: ${({ theme }) => theme.colors.text.gradient};
   -webkit-background-clip: text;
@@ -23,7 +24,19 @@ const Title = styled.h1`
   text-transform: uppercase;
   letter-spacing: 3px;
   margin-bottom: ${({ theme }) => theme.spacing.lg};
+  text-align: center;
+  white-space: nowrap;
+
+  @media (max-width: 1024px) {
+    font-size: ${({ theme }) => theme.typography.sizes.h2};
+  }
+
+  @media (max-width: 768px) {
+    white-space: normal;
+  }
 `;
+
+const Title = motion(TitleBase);
 
 const Paragraph = styled.p`
   font-family: ${({ theme }) => theme.typography.fonts.body};
@@ -79,7 +92,13 @@ export const About: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Title>Producer Tools</Title>
+          <Title
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            Producer Tools
+          </Title>
 
           <Paragraph>
             <Highlight>Producer Tools</Highlight> is a digital toolkit designed to change the way music producers work
