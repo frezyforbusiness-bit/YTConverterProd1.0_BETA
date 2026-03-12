@@ -29,13 +29,21 @@ const HeroTitleBase = styled.h1`
   animation: float 3s ease-in-out infinite;
   text-align: center;
   white-space: nowrap;
+
+  @media (max-width: 1024px) {
+    font-size: ${({ theme }) => theme.typography.sizes.h2};
+  }
+
+  @media (max-width: 768px) {
+    white-space: normal;
+  }
 `;
 
 const HeroTitle = motion(HeroTitleBase);
 
 const HeroSubtitleBase = styled.p`
   font-family: ${({ theme }) => theme.typography.fonts.accent};
-  font-size: ${({ theme }) => theme.typography.sizes.h3};
+  font-size: ${({ theme }) => theme.typography.sizes.body};
   color: ${({ theme }) => theme.colors.text.secondary};
   font-weight: ${({ theme }) => theme.typography.weights.regular};
   max-width: 600px;
