@@ -330,14 +330,12 @@ class YouTubeAudioConverter:
             error_text = str(e)
             logger.error(f"pytube download failed: {error_text}")
 
-            # Hide low-level bot-detection / PoToken details from end users.
-            lowered = error_text.lower()
-            if "detected as a bot" in lowered or "po_token" in lowered or "po token" in lowered:
-                raise Exception(
-                    "Temporary YouTube download error. This video cannot be fetched right now; please try again later."
-                )
-
-            raise Exception(f"pytube download failed: {error_text}")
+            # Never expose low-level pytube/pytubefix errors to end users.
+            # Many of these are transient (player updates, bot detection, PoToken, etc.).
+            raise Exception(
+                "We couldn’t download this video from YouTube right now. "
+                "Please try again later or with a different link."
+            )
     
     
     def convert_to_audio(self, video_path: str, audio_format: str, output_path: str = None) -> str:
