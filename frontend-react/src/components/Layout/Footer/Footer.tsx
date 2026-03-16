@@ -47,7 +47,7 @@ const FaqQuestion = styled.div`
 `;
 
 const FaqAnswer = styled.div`
-  color: ${({ theme }) => theme.colors.text.muted};
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const BottomRow = styled.div`
@@ -82,19 +82,19 @@ const defaultFaqs = [
 
 const mixmasterAnalyzerFaqs = [
   {
-    question: 'Che tipo di analisi fa Mix Master Analyzer?',
+    question: 'What does Mix Master Analyzer check?',
     answer:
-      'Analizza loudness (LUFS), true peak, dynamic range, stereo field e un profilo tonale di massima per aiutarti a capire come si comporta il tuo mix o master.',
+      'It runs a quick technical check on your track: loudness (LUFS), true peak, dynamic range, stereo field and a rough tonal profile so you can understand how your mix or master is behaving.',
   },
   {
-    question: 'È una funzione BETA?',
+    question: 'Is this a BETA feature?',
     answer:
-      'Sì, Mix Master Analyzer è in BETA: i risultati sono indicazioni utili per prendere decisioni più rapide, ma non sostituiscono il lavoro di un mixing o mastering engineer professionista.',
+      'Yes. Mix Master Analyzer is in BETA – results are guidance to speed up your decisions, not a replacement for a professional mixing or mastering engineer.',
   },
   {
-    question: 'Quali formati posso caricare?',
+    question: 'Which formats can I upload?',
     answer:
-      'Puoi caricare file audio comuni come MP3, WAV, FLAC, M4A e OGG. Per risultati più affidabili è preferibile usare esportazioni in alta qualità.',
+      'You can upload common audio formats like MP3, WAV, FLAC, M4A and OGG. For more reliable analysis, prefer high–quality bounces.',
   },
 ];
 

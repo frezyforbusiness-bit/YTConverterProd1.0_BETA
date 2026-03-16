@@ -24,7 +24,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
 
   const faqContext =
-    location.pathname.startsWith('/mixmaster/analyzer') ? 'mixmaster_analyzer' : 'default';
+    location.pathname.startsWith('/mixmaster')
+      ? 'mixmaster_analyzer'
+      : 'default';
 
   return (
     <LayoutContainer>

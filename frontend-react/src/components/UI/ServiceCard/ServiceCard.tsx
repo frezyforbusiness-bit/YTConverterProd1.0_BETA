@@ -174,7 +174,12 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
             {badge && <Badge>{badge}</Badge>}
           </HeaderRow>
           <Description>{description}</Description>
-          <CTAButton variant="secondary" size="md" fullWidth>
+          <CTAButton
+            variant="secondary"
+            size="md"
+            fullWidth
+            onClick={onClick}
+          >
             Get Started
           </CTAButton>
         </StyledCard>

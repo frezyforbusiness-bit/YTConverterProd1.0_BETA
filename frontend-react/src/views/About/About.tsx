@@ -95,7 +95,7 @@ const services = [
     description:
       'Turn YouTube or Spotify links into clean audio files with optional BPM & key detection for DJs and producers.',
     icon: '🎵',
-    path: '/converter',
+    path: '/',
   },
   {
     title: 'Mix & Master Analyzer',
