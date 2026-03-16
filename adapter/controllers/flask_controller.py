@@ -207,7 +207,10 @@ class FlaskController:
                             on_progress=self._update_task_progress
                         )
                     except Exception as e:
+                        # Log full error and traceback so that platforms like Railway
+                        # show detailed diagnostics in their logs.
                         logger.error(f"Conversion task failed: {e}")
+                        log_error_with_traceback(logger, e, f"Conversion task failed for {task.task_id}")
                         self._update_task_progress(
                             task_id,
                             status='error',
