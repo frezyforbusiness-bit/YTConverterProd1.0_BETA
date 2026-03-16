@@ -54,6 +54,42 @@ const HeroSubtitleBase = styled.p`
 
 const HeroSubtitle = motion(HeroSubtitleBase);
 
+const AnalysisModeSection = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.lg}`};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  border: 1px solid ${({ theme }) => theme.colors.accent.border};
+  background: ${({ theme }) => theme.colors.background.secondary};
+`;
+
+const ModeToggleRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacing.sm};
+`;
+
+const ModeToggleButton = styled.button<{ $active?: boolean }>`
+  flex: 1 1 160px;
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
+  border: 1px solid
+    ${({ theme, $active }) => ($active ? theme.colors.accent.primary : theme.colors.accent.border)};
+  background: ${({ theme, $active }) =>
+    $active ? 'rgba(148, 163, 184, 0.12)' : theme.colors.background.card};
+  color: ${({ theme }) => theme.colors.text.primary};
+  font-family: ${({ theme }) => theme.typography.fonts.body};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  cursor: pointer;
+  text-align: left;
+  transition: all ${({ theme }) => theme.transitions.fast} ${({ theme }) => theme.transitions.easing.smooth};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.accent.primary};
+    transform: translateY(-1px);
+  }
+`;
+
 const ConverterCard = styled(Card)`
   margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
@@ -90,29 +126,6 @@ const InfoBox = styled.div`
   font-size: ${({ theme }) => theme.typography.sizes.small};
   color: ${({ theme }) => theme.colors.text.secondary};
   font-family: ${({ theme }) => theme.typography.fonts.body};
-`;
-
-const CheckboxRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  cursor: pointer;
-  font-family: ${({ theme }) => theme.typography.fonts.body};
-  font-size: ${({ theme }) => theme.typography.sizes.small};
-  color: ${({ theme }) => theme.colors.text.secondary};
-`;
-
-const CheckboxInput = styled.input`
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
 `;
 
 const StyledLabel = styled.label`
@@ -298,8 +311,8 @@ export const Converter: React.FC = React.memo(() => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Audio Converter – paste a YouTube or Spotify track, pick the format and hit convert. Use BPM &amp; key
-          analysis when you need DJ‑ready files.
+          Audio Converter – turn any YouTube or Spotify track into a clean audio file in the format you need. Enable BPM
+          &amp; key analysis when you want truly DJ‑ready files.
         </HeroSubtitle>
 
         <ConverterCard>
@@ -329,33 +342,31 @@ export const Converter: React.FC = React.memo(() => {
             </Select>
           </FormGroup>
 
+          <AnalysisModeSection>
+            <StyledLabel>Select the mode you prefer</StyledLabel>
+            <ModeToggleRow>
+              <ModeToggleButton
+                type="button"
+                $active={!analyzeBpmKey}
+                onClick={() => !loading && setAnalyzeBpmKey(false)}
+              >
+                ⚡ Fast Convert
+                <br />
+                <span>Best when you just need a quick audio file.</span>
+              </ModeToggleButton>
+              <ModeToggleButton
+                type="button"
+                $active={analyzeBpmKey}
+                onClick={() => !loading && setAnalyzeBpmKey(true)}
+              >
+                🎹 Convert & Analyze
+                <br />
+                <span>Includes automatic BPM & key detection for DJs/producers.</span>
+              </ModeToggleButton>
+            </ModeToggleRow>
+          </AnalysisModeSection>
+
           <InfoBox>
-            <CheckboxRow>
-              <CheckboxLabel>
-                <CheckboxInput
-                  type="checkbox"
-                  checked={analyzeBpmKey}
-                  onChange={(e) => setAnalyzeBpmKey(e.target.checked)}
-                  disabled={loading}
-                />
-                <span>Analyze BPM &amp; Key (recommended for DJs/producers)</span>
-              </CheckboxLabel>
-            </CheckboxRow>
-            {analyzeBpmKey ? (
-              <>
-                🎹 Automatic BPM &amp; Key Detection enabled. Files will be named:
-                {' '}
-                <strong>TrackName-BPM-Key.ext</strong>
-              </>
-            ) : (
-              <>
-                ⚡ Fast mode: BPM &amp; Key analysis disabled. Files will be named:
-                {' '}
-                <strong>TrackName.ext</strong>
-              </>
-            )}
-            <br />
-            <br />
             <strong>Supported links</strong>
             : You can paste a single YouTube video URL or a single Spotify track URL. Playlists are
             not supported yet. The converter always tries to pick an audio/lyrics version on
