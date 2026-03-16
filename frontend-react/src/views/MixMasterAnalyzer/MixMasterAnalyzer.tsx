@@ -214,6 +214,45 @@ const AnalyzeRow = styled.div`
   text-align: center;
 `;
 
+const FullscreenOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.98), rgba(0, 0, 0, 0.98));
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: ${({ theme }) => theme.zIndex.modal};
+`;
+
+const OverlayContent = styled.div`
+  max-width: 420px;
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing['2xl']};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border: 1px solid ${({ theme }) => theme.colors.accent.border};
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+  text-align: center;
+`;
+
+const OverlayTitle = styled.h2`
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.body};
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin: 0 0 ${({ theme }) => theme.spacing.md};
+`;
+
+const OverlayText = styled.p`
+  font-family: ${({ theme }) => theme.typography.fonts.body};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  margin: 0 0 ${({ theme }) => theme.spacing.lg};
+  line-height: 1.6;
+`;
+
 const ResultSection = styled.section`
   margin-top: ${({ theme }) => theme.spacing['2xl']};
 `;
@@ -618,6 +657,24 @@ export const MixMasterAnalyzer: React.FC = () => {
             </div>
           )}
         </Card>
+
+        {analyzing && !result && (
+          <FullscreenOverlay aria-modal="true" role="dialog">
+            <OverlayContent>
+              <OverlayTitle>Analyzing your track</OverlayTitle>
+              <OverlayText>
+                We are running a detailed Mix &amp; Master analysis. This can take a few seconds depending on the length
+                of your audio. Please wait until the progress bar reaches 100%.
+              </OverlayText>
+              <ProgressBar
+                progress={progress}
+                label="Analyzing your track..."
+                pulsing
+                shimmer
+              />
+            </OverlayContent>
+          </FullscreenOverlay>
+        )}
 
         {result && (
           <ResultSection ref={resultRef}>
