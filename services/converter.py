@@ -249,22 +249,31 @@ class YouTubeAudioConverter:
             tuple: (video_path, video_info) or (None, video_info) if get_info_only=True
         """
         try:
-            # Try pytubefix first (more updated fork)
+            # Try pytubefix first (more updated fork, supports PoToken via WEB client)
             try:
-                from pytubefix import YouTube
-                logger.debug("Using pytubefix (updated fork)")
+                from pytubefix import YouTube  # type: ignore
+                logger.debug("Using pytubefix (updated fork, WEB client with PoToken)")
+                client_type = "WEB"
+                is_pytubefix = True
             except ImportError:
-                # Fallback to regular pytube
-                from pytube import YouTube
+                # Fallback to regular pytube (no PoToken support)
+                from pytube import YouTube  # type: ignore
                 logger.debug("Using pytube (standard)")
+                client_type = None
+                is_pytubefix = False
         except ImportError:
             raise Exception("pytube not available. Please install: pip install pytubefix")
         
         logger.info("Using pytube downloader...")
         
         try:
-            # Create YouTube object with bypass_age_gate=True for age-restricted videos
-            yt = YouTube(youtube_url, use_oauth=False, allow_oauth_cache=True)
+            # Create YouTube object.
+            # For pytubefix we explicitly use the WEB client, which internally
+            # handles PoToken generation via nodejs as per library docs.
+            if is_pytubefix and client_type:
+                yt = YouTube(youtube_url, client_type)  # type: ignore[arg-type]
+            else:
+                yt = YouTube(youtube_url)
             
             # Extract video info
             video_info = {
@@ -318,8 +327,17 @@ class YouTubeAudioConverter:
             return output_path, video_info
             
         except Exception as e:
-            logger.error(f"pytube download failed: {str(e)}")
-            raise Exception(f"pytube download failed: {str(e)}")
+            error_text = str(e)
+            logger.error(f"pytube download failed: {error_text}")
+
+            # Hide low-level bot-detection / PoToken details from end users.
+            lowered = error_text.lower()
+            if "detected as a bot" in lowered or "po_token" in lowered or "po token" in lowered:
+                raise Exception(
+                    "Temporary YouTube download error. This video cannot be fetched right now; please try again later."
+                )
+
+            raise Exception(f"pytube download failed: {error_text}")
     
     
     def convert_to_audio(self, video_path: str, audio_format: str, output_path: str = None) -> str:
