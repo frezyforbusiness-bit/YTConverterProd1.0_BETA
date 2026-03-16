@@ -255,6 +255,8 @@ const OverlayText = styled.p`
 
 const ResultSection = styled.section`
   margin-top: ${({ theme }) => theme.spacing['2xl']};
+  display: flex;
+  flex-direction: column;
 `;
 
 const ResultTrackName = styled.h2`
@@ -352,19 +354,9 @@ const SuggestedChangeDesc = styled.p`
   line-height: 1.5;
 `;
 
-const BackLink = styled.button`
-  background: none;
-  border: none;
-  color: ${({ theme }) => theme.colors.accent.primary};
-  font-family: ${({ theme }) => theme.typography.fonts.body};
-  font-size: ${({ theme }) => theme.typography.sizes.small};
-  cursor: pointer;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  padding: 0;
-
-  &:hover {
-    text-decoration: underline;
-  }
+const BackLink = styled(Button)`
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  align-self: center;
 `;
 
 export const MixMasterAnalyzer: React.FC = () => {
@@ -452,10 +444,16 @@ export const MixMasterAnalyzer: React.FC = () => {
   const handleAnalyzeAnother = useCallback(() => {
     setResult(null);
     setProgress(0);
+    setSelectedFile(null);
+    setMixType(null);
+    setGenre(null);
+    setContentType(null);
+    setActiveTab('upload');
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, []);
 
   useEffect(() => {
-    if (result) resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (result) resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [result]);
 
   const openFilePicker = useCallback(() => {
@@ -521,142 +519,144 @@ export const MixMasterAnalyzer: React.FC = () => {
           </HeaderSubtitle>
         </Header>
 
-        <Card>
-          <TabContainer>
-            <Tab $active={activeTab === 'upload'} onClick={() => setActiveTab('upload')}>
-              Upload File
-            </Tab>
-            <Tab $active={activeTab === 'youtube'} onClick={() => setActiveTab('youtube')}>
-              YouTube URL
-            </Tab>
-          </TabContainer>
+        {!result && (
+          <Card>
+            <TabContainer>
+              <Tab $active={activeTab === 'upload'} onClick={() => setActiveTab('upload')}>
+                Upload File
+              </Tab>
+              <Tab $active={activeTab === 'youtube'} onClick={() => setActiveTab('youtube')}>
+                YouTube URL
+              </Tab>
+            </TabContainer>
 
-          {activeTab === 'upload' ? (
-            <>
-              <HiddenFileInput
-                ref={fileInputRef}
-                type="file"
-                accept={ACCEPT_AUDIO}
-                onChange={handleFileChange}
-              />
-              <DragDropArea
-                $isDragging={isDragging}
-                onClick={openFilePicker}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <p style={{ fontSize: theme.typography.sizes.h3, marginBottom: theme.spacing.md }}>
-                  📁 Drag &amp; Drop Audio File
-                </p>
-                <p style={{ color: theme.colors.text.secondary, marginBottom: theme.spacing.lg }}>
-                  Or click to browse (MP3, WAV, FLAC, M4A, OGG). Ideal for bounced mixes, masters and reference tracks.
-                </p>
-                <Button type="button" variant="secondary" onClick={(e) => { e.stopPropagation(); openFilePicker(); }}>
-                  Choose File
-                </Button>
+            {activeTab === 'upload' ? (
+              <>
+                <HiddenFileInput
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPT_AUDIO}
+                  onChange={handleFileChange}
+                />
+                <DragDropArea
+                  $isDragging={isDragging}
+                  onClick={openFilePicker}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  <p style={{ fontSize: theme.typography.sizes.h3, marginBottom: theme.spacing.md }}>
+                    📁 Drag &amp; Drop Audio File
+                  </p>
+                  <p style={{ color: theme.colors.text.secondary, marginBottom: theme.spacing.lg }}>
+                    Or click to browse (MP3, WAV, FLAC, M4A, OGG). Ideal for bounced mixes, masters and reference tracks.
+                  </p>
+                  <Button type="button" variant="secondary" onClick={(e) => { e.stopPropagation(); openFilePicker(); }}>
+                    Choose File
+                  </Button>
+                  {selectedFile && (
+                    <SelectedFile>✓ Selected: {selectedFile.name}</SelectedFile>
+                  )}
+                </DragDropArea>
                 {selectedFile && (
-                  <SelectedFile>✓ Selected: {selectedFile.name}</SelectedFile>
-                )}
-              </DragDropArea>
-              {selectedFile && (
-                <QuestionGroup>
-                  <QuestionBlock ref={question1Ref}>
-                    <QuestionLabel>Is your track mastered?</QuestionLabel>
-                    <BigChoiceRow>
-                      <BigChoiceButton
-                        type="button"
-                        $active={mixType === 'master'}
-                        onClick={() => setMixType('master')}
-                      >
-                        ✓ Yes, it&apos;s mastered
-                      </BigChoiceButton>
-                      <BigChoiceButton
-                        type="button"
-                        $active={mixType === 'mix'}
-                        onClick={() => setMixType('mix')}
-                      >
-                        ✕ No, it&apos;s still a mix
-                      </BigChoiceButton>
-                    </BigChoiceRow>
-                  </QuestionBlock>
-
-                  {mixType != null && (
-                    <QuestionBlock ref={question2Ref}>
-                      <QuestionLabel>Genre</QuestionLabel>
-                      <ChipRow>
-                        <Chip type="button" $active={genre === 'trap'} onClick={() => setGenre('trap')}>
-                          Trap / Drill
-                        </Chip>
-                        <Chip type="button" $active={genre === 'club'} onClick={() => setGenre('club')}>
-                          House / Techno
-                        </Chip>
-                        <Chip type="button" $active={genre === 'pop'} onClick={() => setGenre('pop')}>
-                          Pop / R&amp;B
-                        </Chip>
-                        <Chip type="button" $active={genre === 'other'} onClick={() => setGenre('other')}>
-                          Other
-                        </Chip>
-                      </ChipRow>
-                    </QuestionBlock>
-                  )}
-
-                  {genre != null && (
-                    <QuestionBlock ref={question3Ref}>
-                      <QuestionLabel>What&apos;s inside?</QuestionLabel>
-                      <ChipRow>
-                        <Chip type="button" $active={contentType === 'beat'} onClick={() => setContentType('beat')}>
-                          Instrumental / Beat only
-                        </Chip>
-                        <Chip type="button" $active={contentType === 'song'} onClick={() => setContentType('song')}>
-                          Full song with vocals
-                        </Chip>
-                      </ChipRow>
-                    </QuestionBlock>
-                  )}
-
-                  {allAnswered && !result && (
-                    <AnalyzeRow>
-                      {analyzing ? (
-                        <ProgressBar
-                          progress={progress}
-                          label="Analyzing your track..."
-                          pulsing
-                          shimmer
-                        />
-                      ) : (
-                        <Button
+                  <QuestionGroup>
+                    <QuestionBlock ref={question1Ref}>
+                      <QuestionLabel>Is your track mastered?</QuestionLabel>
+                      <BigChoiceRow>
+                        <BigChoiceButton
                           type="button"
-                          variant="primary"
-                          size="lg"
-                          onClick={handleAnalyze}
+                          $active={mixType === 'master'}
+                          onClick={() => setMixType('master')}
                         >
-                          Analyze
-                        </Button>
-                      )}
-                    </AnalyzeRow>
-                  )}
-                </QuestionGroup>
-              )}
-            </>
-          ) : (
-            <div>
-              <Input
-                label="YouTube URL"
-                type="url"
-                placeholder="https://www.youtube.com/watch?v=..."
-                value={youtubeUrl}
-                onChange={(e) => setYoutubeUrl(e.target.value)}
-                fullWidth
-              />
-              <div style={{ marginTop: theme.spacing.lg }}>
-                <Button variant="primary" size="lg" fullWidth>
-                  Analyze Track
-                </Button>
+                          ✓ Yes, it&apos;s mastered
+                        </BigChoiceButton>
+                        <BigChoiceButton
+                          type="button"
+                          $active={mixType === 'mix'}
+                          onClick={() => setMixType('mix')}
+                        >
+                          ✕ No, it&apos;s still a mix
+                        </BigChoiceButton>
+                      </BigChoiceRow>
+                    </QuestionBlock>
+
+                    {mixType != null && (
+                      <QuestionBlock ref={question2Ref}>
+                        <QuestionLabel>Genre</QuestionLabel>
+                        <ChipRow>
+                          <Chip type="button" $active={genre === 'trap'} onClick={() => setGenre('trap')}>
+                            Trap / Drill
+                          </Chip>
+                          <Chip type="button" $active={genre === 'club'} onClick={() => setGenre('club')}>
+                            House / Techno
+                          </Chip>
+                          <Chip type="button" $active={genre === 'pop'} onClick={() => setGenre('pop')}>
+                            Pop / R&amp;B
+                          </Chip>
+                          <Chip type="button" $active={genre === 'other'} onClick={() => setGenre('other')}>
+                            Other
+                          </Chip>
+                        </ChipRow>
+                      </QuestionBlock>
+                    )}
+
+                    {genre != null && (
+                      <QuestionBlock ref={question3Ref}>
+                        <QuestionLabel>What&apos;s inside?</QuestionLabel>
+                        <ChipRow>
+                          <Chip type="button" $active={contentType === 'beat'} onClick={() => setContentType('beat')}>
+                            Instrumental / Beat only
+                          </Chip>
+                          <Chip type="button" $active={contentType === 'song'} onClick={() => setContentType('song')}>
+                            Full song with vocals
+                          </Chip>
+                        </ChipRow>
+                      </QuestionBlock>
+                    )}
+
+                    {allAnswered && !result && (
+                      <AnalyzeRow>
+                        {analyzing ? (
+                          <ProgressBar
+                            progress={progress}
+                            label="Analyzing your track..."
+                            pulsing
+                            shimmer
+                          />
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="primary"
+                            size="lg"
+                            onClick={handleAnalyze}
+                          >
+                            Analyze
+                          </Button>
+                        )}
+                      </AnalyzeRow>
+                    )}
+                  </QuestionGroup>
+                )}
+              </>
+            ) : (
+              <div>
+                <Input
+                  label="YouTube URL"
+                  type="url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  fullWidth
+                />
+                <div style={{ marginTop: theme.spacing.lg }}>
+                  <Button variant="primary" size="lg" fullWidth>
+                    Analyze Track
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
-        </Card>
+            )}
+          </Card>
+        )}
 
         {analyzing && !result && (
           <FullscreenOverlay aria-modal="true" role="dialog">
@@ -678,10 +678,7 @@ export const MixMasterAnalyzer: React.FC = () => {
 
         {result && (
           <ResultSection ref={resultRef}>
-            <BackLink type="button" onClick={handleAnalyzeAnother}>
-              ← Analyze another track
-            </BackLink>
-            <ResultTrackName>🎵 {result.trackName}</ResultTrackName>
+            <ResultTrackName>🎵 Here are your analysis results</ResultTrackName>
 
             <ReportCard>
               <ReportCardTitle>Check</ReportCardTitle>
@@ -768,6 +765,10 @@ export const MixMasterAnalyzer: React.FC = () => {
                 </SuggestedChangeItem>
               ))}
             </ReportCard>
+
+            <BackLink variant="secondary" size="lg" onClick={handleAnalyzeAnother}>
+              Analyze another track
+            </BackLink>
           </ResultSection>
         )}
       </AnalyzerContainer>
