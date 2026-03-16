@@ -210,12 +210,11 @@ class YouTubeAudioConverter:
     
     def download_video(self, youtube_url: str, get_info_only: bool = False):
         """
-        Downloads YouTube video as temporary file or extracts info only
+        Downloads YouTube video as temporary file or extracts info only.
         
-        Optimized implementation using pytube:
-        - Fast and lightweight
-        - No complex fallback logic
-        - Clear error messages for REST API
+        Strategy:
+        - First try yt-dlp (very robust, frequently updated)
+        - Fallback to pytubefix/pytube if yt-dlp is unavailable or fails
         
         Args:
             youtube_url: YouTube video URL
@@ -233,9 +232,84 @@ class YouTubeAudioConverter:
         # Validate URL first
         self.validate_youtube_url(youtube_url)
         
-        # Use pytube as the only downloader (optimized and faster)
-        logger.info("Using pytube downloader...")
+        # Prefer yt-dlp, fallback to pytube if not available
+        try:
+            logger.info("Trying yt-dlp downloader...")
+            return self._download_with_ytdlp(youtube_url, get_info_only)
+        except Exception as e:
+            logger.warning(f"yt-dlp download failed, falling back to pytube: {e}")
+        
+        logger.info("Using pytube downloader as fallback...")
         return self._download_with_pytube(youtube_url, get_info_only)
+
+    def _download_with_ytdlp(self, youtube_url: str, get_info_only: bool = False):
+        """
+        Primary downloader using yt-dlp Python API.
+        """
+        try:
+            import yt_dlp  # type: ignore
+        except ImportError:
+            raise Exception("yt-dlp not available. Please install: pip install yt-dlp")
+
+        logger.info("Using yt-dlp downloader...")
+
+        ydl_opts = {
+            "format": "bestaudio/best",
+            "outtmpl": os.path.join(self.temp_dir, "%(id)s.%(ext)s"),
+            "quiet": True,
+            "no_warnings": True,
+            "noplaylist": True,
+        }
+
+        file_record = {"filepath": None}
+
+        def _hook(d):
+            if d.get("status") == "finished":
+                file_record["filepath"] = d.get("filename")
+
+        if not get_info_only:
+            ydl_opts["progress_hooks"] = [_hook]
+
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(youtube_url, download=not get_info_only)
+        except Exception as e:
+            error_text = str(e)
+            logger.error(f"yt-dlp download failed: {error_text}")
+            raise Exception(
+                "We couldn’t download this video from YouTube right now. "
+                "Please try again later or with a different link."
+            )
+
+        if get_info_only:
+            video_path = None
+        else:
+            video_path = file_record["filepath"]
+            if not video_path:
+                # Fallback: infer from id/ext
+                vid_id = info.get("id")
+                ext = info.get("ext") or "webm"
+                if vid_id:
+                    candidate = os.path.join(self.temp_dir, f"{vid_id}.{ext}")
+                    if os.path.exists(candidate):
+                        video_path = candidate
+
+        video_info = {
+            "id": info.get("id"),
+            "title": info.get("title"),
+            "duration": info.get("duration"),
+            "uploader": info.get("uploader"),
+            "upload_date": info.get("upload_date"),
+            "description": info.get("description"),
+            "thumbnail": info.get("thumbnail"),
+            "view_count": info.get("view_count"),
+        }
+
+        if not get_info_only:
+            if not video_path or not os.path.exists(video_path):
+                raise FileNotFoundError("Video file not found after yt-dlp download")
+
+        return video_path, video_info
     
     def _download_with_pytube(self, youtube_url: str, get_info_only: bool = False):
         """
