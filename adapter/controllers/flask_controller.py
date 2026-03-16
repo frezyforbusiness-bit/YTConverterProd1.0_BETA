@@ -532,22 +532,30 @@ class FlaskController:
         url_stripped = (url or "").strip()
         url_lower = url_stripped.lower()
 
-        # Direct YouTube video URL: return as-is
+        # Direct YouTube video URL: normalize to a clean watch URL where possible
         if "youtube.com" in url_lower or "youtu.be" in url_lower or "youtube-nocookie.com" in url_lower:
-            # Handle URLs of single videos inside a playlist:
-            # keep only the video id and drop the playlist part.
             from urllib.parse import urlparse, parse_qs, urlunparse, urlencode
 
             parsed = urlparse(url_stripped)
             qs = parse_qs(parsed.query)
 
-            if "v" in qs:
-                # Build clean watch URL without playlist params
-                clean_query = urlencode({"v": qs["v"][0]})
+            video_id = None
+
+            # Standard watch URLs: ?v=ID&list=...
+            if "v" in qs and qs["v"]:
+                video_id = qs["v"][0]
+            else:
+                # Short URLs like https://youtu.be/ID?list=...
+                if parsed.netloc.endswith("youtu.be") and parsed.path:
+                    # path is like "/ID"
+                    video_id = parsed.path.lstrip("/").split("/")[0] or None
+
+            if video_id:
+                clean_query = urlencode({"v": video_id})
                 clean_parsed = parsed._replace(path="/watch", query=clean_query)
                 return urlunparse(clean_parsed)
 
-            # Pure playlist URLs are still not supported
+            # Pure playlist URLs (no video id) are still not supported
             if "list=" in url_lower or "/playlist" in url_lower:
                 raise ValueError("Playlist URLs are not supported yet. Please provide a single track link.")
 
