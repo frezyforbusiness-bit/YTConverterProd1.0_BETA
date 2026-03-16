@@ -154,7 +154,7 @@ const MobileNavLink = styled(Link)<{ $isActive: boolean }>`
 
 const navItems = [
   { path: '/', label: 'Converter' },
-  { path: '/mixmaster', label: 'Mix Master' },
+  { path: '/mixmaster', label: 'Mix Master Analyzer' },
   { path: '/about', label: 'About' },
 ];
 

@@ -1,6 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 
+type FaqContext = 'converter' | 'mixmaster_analyzer' | 'default';
+
+interface FooterProps {
+  faqContext?: FaqContext;
+}
+
 const FooterContainer = styled.footer`
   margin-top: ${({ theme }) => theme.spacing['3xl']};
   padding: ${({ theme }) => `${theme.spacing['2xl']} ${theme.spacing.xl}`};
@@ -57,7 +63,44 @@ const BottomRow = styled.div`
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-export const Footer: React.FC = () => {
+const defaultFaqs = [
+  {
+    question: 'Can I use Spotify links?',
+    answer:
+      "Yes. Paste a single Spotify track URL and we'll search the cleanest audio/lyrics version on YouTube.",
+  },
+  {
+    question: 'Are playlists supported?',
+    answer: 'Not yet. For now convert one track at a time for best reliability.',
+  },
+  {
+    question: 'Is this anonymous?',
+    answer:
+      'Yes. No user accounts are created; only admin analytics are tracked to keep the service healthy.',
+  },
+];
+
+const mixmasterAnalyzerFaqs = [
+  {
+    question: 'Che tipo di analisi fa Mix Master Analyzer?',
+    answer:
+      'Analizza loudness (LUFS), true peak, dynamic range, stereo field e un profilo tonale di massima per aiutarti a capire come si comporta il tuo mix o master.',
+  },
+  {
+    question: 'È una funzione BETA?',
+    answer:
+      'Sì, Mix Master Analyzer è in BETA: i risultati sono indicazioni utili per prendere decisioni più rapide, ma non sostituiscono il lavoro di un mixing o mastering engineer professionista.',
+  },
+  {
+    question: 'Quali formati posso caricare?',
+    answer:
+      'Puoi caricare file audio comuni come MP3, WAV, FLAC, M4A e OGG. Per risultati più affidabili è preferibile usare esportazioni in alta qualità.',
+  },
+];
+
+export const Footer: React.FC<FooterProps> = ({ faqContext = 'default' }) => {
+  const faqs = faqContext === 'mixmaster_analyzer' ? mixmasterAnalyzerFaqs : defaultFaqs;
+
   return (
     <FooterContainer>
       <FooterInner>
@@ -68,24 +111,12 @@ export const Footer: React.FC = () => {
 
         <Column>
           <ColumnTitle>FAQ</ColumnTitle>
-          <FaqItem>
-            <FaqQuestion>Can I use Spotify links?</FaqQuestion>
-            <FaqAnswer>
-              Yes. Paste a single Spotify track URL and we&apos;ll search the cleanest audio/lyrics version on YouTube.
-            </FaqAnswer>
-          </FaqItem>
-          <FaqItem>
-            <FaqQuestion>Are playlists supported?</FaqQuestion>
-            <FaqAnswer>
-              Not yet. For now convert one track at a time for best reliability.
-            </FaqAnswer>
-          </FaqItem>
-          <FaqItem>
-            <FaqQuestion>Is this anonymous?</FaqQuestion>
-            <FaqAnswer>
-              Yes. No user accounts are created; only admin analytics are tracked to keep the service healthy.
-            </FaqAnswer>
-          </FaqItem>
+          {faqs.map((item) => (
+            <FaqItem key={item.question}>
+              <FaqQuestion>{item.question}</FaqQuestion>
+              <FaqAnswer>{item.answer}</FaqAnswer>
+            </FaqItem>
+          ))}
         </Column>
 
         <Column>

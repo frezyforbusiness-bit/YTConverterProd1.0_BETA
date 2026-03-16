@@ -60,6 +60,22 @@ const HeaderSubtitleBase = styled.p`
 
 const HeaderSubtitle = motion(HeaderSubtitleBase);
 
+const BetaBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.sm}`};
+  margin-left: ${({ theme }) => theme.spacing.sm};
+  border-radius: 999px;
+  border: 1px solid ${({ theme }) => theme.colors.accent.primary};
+  background: rgba(129, 140, 248, 0.12);
+  font-family: ${({ theme }) => theme.typography.fonts.accent};
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.accent.primary};
+`;
+
 const TabContainer = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.md};
@@ -459,8 +475,10 @@ export const MixMasterAnalyzer: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Mix &amp; Master Analyzer – upload an audio file or paste a YouTube URL, then answer a few questions and run
-            the analysis.
+            Mix &amp; Master Analyzer
+            <BetaBadge>BETA</BetaBadge>
+            {' '}
+            – upload an audio file or paste a YouTube URL, then answer a few questions and run the analysis.
           </HeaderSubtitle>
         </Header>
 

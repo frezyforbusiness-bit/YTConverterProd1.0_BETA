@@ -1,5 +1,6 @@
 import React, { type ReactNode } from 'react';
 import styled from 'styled-components';
+import { useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 
@@ -20,11 +21,16 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const location = useLocation();
+
+  const faqContext =
+    location.pathname.startsWith('/mixmaster/analyzer') ? 'mixmaster_analyzer' : 'default';
+
   return (
     <LayoutContainer>
       <Navbar />
       <MainContent>{children}</MainContent>
-      <Footer />
+      <Footer faqContext={faqContext} />
     </LayoutContainer>
   );
 };
