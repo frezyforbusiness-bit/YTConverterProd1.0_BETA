@@ -259,7 +259,23 @@ class YouTubeAudioConverter:
             "quiet": True,
             "no_warnings": True,
             "noplaylist": True,
+            "retries": 3,
+            "fragment_retries": 3,
+            "extractor_retries": 3,
+            "socket_timeout": 20,
+            # Keep multiple clients to reduce transient YouTube extraction failures.
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["web", "android", "tv"],
+                }
+            },
         }
+
+        if self.cookies_path and os.path.exists(self.cookies_path):
+            ydl_opts["cookiefile"] = self.cookies_path
+            logger.info(f"yt-dlp cookiefile enabled: {self.cookies_path}")
+        else:
+            logger.warning("yt-dlp is running without cookiefile (higher bot-detection risk)")
 
         file_record = {"filepath": None}
 
@@ -270,16 +286,47 @@ class YouTubeAudioConverter:
         if not get_info_only:
             ydl_opts["progress_hooks"] = [_hook]
 
+        def _is_bot_detection_error(text: str) -> bool:
+            lowered = text.lower()
+            patterns = (
+                "sign in to confirm",
+                "not a bot",
+                "captcha",
+                "http error 429",
+                "too many requests",
+            )
+            return any(p in lowered for p in patterns)
+
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(youtube_url, download=not get_info_only)
         except Exception as e:
             error_text = str(e)
             logger.error(f"yt-dlp download failed: {error_text}")
-            raise Exception(
-                "We couldn’t download this video from YouTube right now. "
-                "Please try again later or with a different link."
-            )
+
+            # Retry once with a stricter YouTube client profile when bot detection is triggered.
+            if _is_bot_detection_error(error_text):
+                logger.warning("Bot-detection pattern found, retrying yt-dlp once with fallback client profile...")
+                retry_opts = dict(ydl_opts)
+                retry_opts["extractor_args"] = {
+                    "youtube": {
+                        "player_client": ["tv", "android"],
+                    }
+                }
+                try:
+                    with yt_dlp.YoutubeDL(retry_opts) as retry_ydl:
+                        info = retry_ydl.extract_info(youtube_url, download=not get_info_only)
+                except Exception as retry_error:
+                    logger.error(f"yt-dlp retry after bot-detection failed: {retry_error}")
+                    raise Exception(
+                        "YouTube requested additional verification (bot protection). "
+                        "Please refresh cookies and try again."
+                    )
+            else:
+                raise Exception(
+                    "We couldn’t download this video from YouTube right now. "
+                    "Please try again later or with a different link."
+                )
 
         if get_info_only:
             video_path = None

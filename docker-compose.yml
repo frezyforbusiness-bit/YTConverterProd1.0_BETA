@@ -1,0 +1,13 @@
+services:
+  ytconverter:
+    build:
+      context: ./YTConverterProd1.0_BETA
+      dockerfile: Dockerfile
+    container_name: ytconverter
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-5000}:${PORT:-5000}"
+    restart: unless-stopped
+    volumes:
+      - ./YTConverterProd1.0_BETA/temp:/app/temp
