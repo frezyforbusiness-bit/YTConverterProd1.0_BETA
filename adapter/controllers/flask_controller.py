@@ -133,7 +133,9 @@ class FlaskController:
                 if ext and ext not in allowed_ext:
                     return jsonify({"error": "Unsupported file type for analysis"}), 400
 
-                temp_dir = os.environ.get('TEMP_DIR') or os.path.join(os.path.dirname(__file__), '../../temp')
+                temp_dir_env = os.environ.get('TEMP_DIR')
+                temp_dir_raw = temp_dir_env or os.path.join(os.path.dirname(__file__), '../../temp')
+                temp_dir = os.path.abspath(os.path.normpath(temp_dir_raw))
                 os.makedirs(temp_dir, exist_ok=True)
 
                 temp_path = os.path.join(temp_dir, f"analyze_{threading.get_ident()}_{uploaded.filename}")

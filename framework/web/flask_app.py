@@ -53,7 +53,9 @@ def create_app() -> Flask:
     })
     
     # Configuration
-    TEMP_DIR = os.environ.get('TEMP_DIR') or os.path.join(os.path.dirname(__file__), '../../temp')
+    temp_dir_env = os.environ.get('TEMP_DIR')
+    temp_dir_raw = temp_dir_env or os.path.join(os.path.dirname(__file__), '../../temp')
+    TEMP_DIR = os.path.abspath(os.path.normpath(temp_dir_raw))
     TASK_TIMEOUT = int(os.environ.get('TASK_TIMEOUT', 1800))
     CLEANUP_INTERVAL = int(os.environ.get('CLEANUP_INTERVAL', 3600))
     FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
