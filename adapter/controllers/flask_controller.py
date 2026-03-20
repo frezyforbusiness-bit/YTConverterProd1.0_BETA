@@ -19,7 +19,7 @@ from domain.entities.task import Task
 from adapter.gateways.task_gateway import TaskGateway
 from adapter.gateways.auth_gateway import AuthGateway
 from adapter.gateways.spotify_gateway import SpotifyGateway
-from utils.validators import validate_convert_request
+from utils.validators import validate_convert_request, normalize_youtube_url
 from utils.logger import setup_logger, log_error_with_traceback
 
 logger = setup_logger(__name__)
@@ -539,6 +539,11 @@ class FlaskController:
 
         # Direct YouTube video URL: normalize to a clean watch URL where possible
         if "youtube.com" in url_lower or "youtu.be" in url_lower or "youtube-nocookie.com" in url_lower:
+            normalized = normalize_youtube_url(url_stripped)
+            if normalized != url_stripped:
+                logger.info(f"Normalized YouTube URL: {url_stripped} -> {normalized}")
+                return normalized
+
             from urllib.parse import urlparse, parse_qs, urlunparse, urlencode
 
             parsed = urlparse(url_stripped)

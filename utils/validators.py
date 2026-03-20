@@ -5,6 +5,7 @@ Handles URL validation, format validation, and request validation
 
 import re
 from typing import Dict, Tuple, Optional
+from urllib.parse import urlparse, parse_qs
 
 
 # Supported audio formats
@@ -33,6 +34,63 @@ def validate_youtube_url(url: str) -> Tuple[bool, Optional[str]]:
         return False, "Invalid YouTube URL format"
 
     return True, None
+
+
+def normalize_youtube_url(url: str) -> str:
+    """
+    Normalize YouTube URLs to canonical watch form.
+
+    Example:
+    - https://youtu.be/VIDEO_ID -> https://www.youtube.com/watch?v=VIDEO_ID
+    - https://youtu.be/watch?v=VIDEO_ID -> https://www.youtube.com/watch?v=VIDEO_ID
+    """
+    if not url or not isinstance(url, str):
+        return url
+
+    url = url.strip()
+    parsed = urlparse(url)
+    netloc = (parsed.netloc or "").lower()
+    path = (parsed.path or "").strip("/")
+    query = parse_qs(parsed.query)
+
+    # If URL is missing scheme, parse again as https URL.
+    if not netloc and path:
+        reparsed = urlparse(f"https://{url}")
+        netloc = (reparsed.netloc or "").lower()
+        path = (reparsed.path or "").strip("/")
+        query = parse_qs(reparsed.query)
+
+    is_youtube_host = (
+        "youtube.com" in netloc
+        or "youtu.be" in netloc
+        or "youtube-nocookie.com" in netloc
+    )
+    if not is_youtube_host:
+        return url
+
+    video_id = None
+
+    # Standard ?v=VIDEO_ID takes precedence when available.
+    if query.get("v"):
+        video_id = query["v"][0]
+    elif "youtu.be" in netloc:
+        # Handle short URL form.
+        # For malformed youtu.be/watch?v=... we avoid using "watch" as ID.
+        first_path_segment = path.split("/")[0] if path else ""
+        if first_path_segment and first_path_segment != "watch":
+            video_id = first_path_segment
+    else:
+        # Handle /embed/VIDEO_ID and /v/VIDEO_ID forms.
+        if path.startswith("embed/"):
+            video_id = path.split("/", 1)[1].split("/")[0]
+        elif path.startswith("v/"):
+            video_id = path.split("/", 1)[1].split("/")[0]
+
+    # Ensure candidate looks like a YouTube video id.
+    if video_id and re.match(r"^[A-Za-z0-9_-]{11}$", video_id):
+        return f"https://www.youtube.com/watch?v={video_id}"
+
+    return url
 
 
 def validate_format(audio_format: str) -> Tuple[bool, Optional[str]]:
@@ -94,7 +152,7 @@ def validate_convert_request(data: Dict) -> Tuple[bool, Optional[str], Optional[
     if not youtube_url:
         return False, "Missing required field: youtube_url", None
 
-    youtube_url = str(youtube_url).strip()
+    youtube_url = normalize_youtube_url(str(youtube_url).strip())
 
     # Basic URL validation & supported sources check
     url_lower = youtube_url.lower()
