@@ -175,6 +175,73 @@ I cookie scadono dopo qualche settimana. Per aggiornarli:
 2. **Locale**: Sostituisci il file `cookies.txt`
 3. **Render**: Converti in Base64 e aggiorna la variabile `COOKIES_BASE64`
 
+## Refresh automatico + deploy (consigliato)
+
+Per evitare aggiornamenti manuali, usa gli script inclusi:
+
+- Linux/macOS/WSL: `scripts/shell/refresh_cookies_and_deploy.sh`
+- Windows: `scripts/windows/refresh_cookies_and_deploy.ps1`
+
+Questi script fanno in automatico:
+
+1. Estrazione cookie da browser (`--cookies-from-browser`)
+2. Validazione minima (`Netscape header` + cookie YouTube/Google)
+3. Conversione in Base64
+4. Aggiornamento atomico di `COOKIES_BASE64` in `/opt/ytconverter/.env` sul server
+5. Esecuzione release remoto (`/opt/ytconverter/scripts/shell/release_server.sh`)
+6. Health check finale
+
+### Esempio Linux/macOS/WSL
+
+```bash
+cd /home/fpiumatti/myProjects/YTConverter
+./scripts/shell/refresh_cookies_and_deploy.sh
+```
+
+Con variabili custom:
+
+```bash
+BROWSER=firefox SERVER_HOST=89.167.90.22 SERVER_USER=root ./scripts/shell/refresh_cookies_and_deploy.sh
+```
+
+### Esempio Windows PowerShell
+
+```powershell
+cd \\wsl.localhost\Ubuntu\home\fpiumatti\myProjects\YTConverter
+.\scripts\windows\refresh_cookies_and_deploy.ps1 -Browser chrome -ServerHost 89.167.90.22 -ServerUser root
+```
+
+## Scheduling
+
+### Cron (Linux/macOS/WSL)
+
+Esempio refresh ogni giorno alle 06:30:
+
+```bash
+crontab -e
+```
+
+Aggiungi:
+
+```cron
+30 6 * * * cd /home/fpiumatti/myProjects/YTConverter && /home/fpiumatti/myProjects/YTConverter/scripts/shell/refresh_cookies_and_deploy.sh >> /home/fpiumatti/myProjects/YTConverter/logs/cookie-refresh.log 2>&1
+```
+
+### Task Scheduler (Windows)
+
+1. Crea nuova attività pianificata (giornaliera)
+2. Programma/script: `powershell.exe`
+3. Argomenti:
+   `-ExecutionPolicy Bypass -File "\\wsl.localhost\Ubuntu\home\fpiumatti\myProjects\YTConverter\scripts\windows\refresh_cookies_and_deploy.ps1"`
+4. Imposta "Run whether user is logged on or not" se necessario
+
+## Troubleshooting rapido
+
+- `Sign in to confirm you’re not a bot`: cookie scaduti o account non loggato nel browser sorgente
+- `HTTP 400` con `--cookies`: formato newline non valido o file cookie corrotto
+- `COOKIES_BASE64 not set` nei log server: update `.env` non riuscito
+- `yt-dlp not found`: installa `yt-dlp` sulla macchina che esegue lo script di refresh
+
 ## Note
 
 - I cookie sono opzionali ma **fortemente consigliati**
