@@ -26,17 +26,14 @@ def main() -> int:
         print("CONVERSION_NOTIFY_ENABLED=false -> notifications disabled.")
         return 1
 
-    if not notifier.smtp_password:
-        print("Missing SMTP_PASSWORD in .env")
-        print("1) Open https://myaccount.google.com/apppasswords")
-        print("2) Create an app password for Mail")
-        print("3) Set SMTP_PASSWORD in .env (no spaces)")
-        print("4) Re-run: python scripts/test_conversion_email.py")
+    if not notifier.is_configured():
+        print("Email notifier is not configured.")
+        print("Railway (recommended): set RESEND_API_KEY in .env")
+        print("  https://resend.com/api-keys")
+        print("VPS/local: set SMTP_HOST, SMTP_USER, SMTP_PASSWORD")
         return 1
 
-    if not notifier.is_configured():
-        print("SMTP is not fully configured. Check SMTP_HOST/SMTP_USER/SMTP_PASSWORD.")
-        return 1
+    print(f"Provider: {notifier.provider_name()}")
 
     print(f"Sending test emails to: {notifier.to_email}")
 

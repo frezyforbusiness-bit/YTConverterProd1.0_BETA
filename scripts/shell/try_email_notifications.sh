@@ -9,8 +9,8 @@ if [ ! -f ".env" ]; then
   exit 1
 fi
 
-if ! grep -Eq '^SMTP_PASSWORD=.+$' .env; then
-  echo "Configure SMTP_PASSWORD in .env first."
+if ! grep -Eq '^RESEND_API_KEY=.+$' .env && ! grep -Eq '^SMTP_PASSWORD=.+$' .env; then
+  echo "Configure RESEND_API_KEY (Railway) or SMTP_PASSWORD (VPS) in .env first."
   echo "Guide: docs/CONVERSION_EMAIL_SETUP.md"
   exit 1
 fi

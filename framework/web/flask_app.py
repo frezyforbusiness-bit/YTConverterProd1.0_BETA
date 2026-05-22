@@ -153,11 +153,13 @@ def create_app() -> Flask:
     conversion_email_notifier = ConversionEmailNotifier()
     if conversion_email_notifier.is_configured():
         logger.info(
-            f"✓ Conversion email notifications enabled -> {conversion_email_notifier.to_email}"
+            f"✓ Conversion email notifications enabled -> {conversion_email_notifier.to_email} "
+            f"(provider={conversion_email_notifier.provider_name()})"
         )
     else:
         logger.warning(
-            "Conversion email notifications not configured (set SMTP_HOST/SMTP_USER/SMTP_PASSWORD)"
+            "Conversion email notifications not configured "
+            "(Railway: set RESEND_API_KEY; VPS: set SMTP_HOST/SMTP_USER/SMTP_PASSWORD)"
         )
     spotify_gateway = None
     if SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET:

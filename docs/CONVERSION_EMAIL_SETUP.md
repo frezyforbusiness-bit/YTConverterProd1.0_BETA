@@ -1,8 +1,32 @@
 # Conversion Email Notifications
 
+## Railway (Hobby): usa Resend, non SMTP
+
+Su Railway **Free/Hobby** le porte SMTP (587/465) sono bloccate → errore:
+`[Errno 101] Network is unreachable`
+
+Usa **Resend** (API HTTPS):
+
+1. Crea API key su https://resend.com/api-keys
+2. In Railway → Variables aggiungi:
+```env
+RESEND_API_KEY=re_xxxxxxxx
+RESEND_FROM=YTConverter <onboarding@resend.dev>
+CONVERSION_NOTIFY_EMAIL=info.producertools@gmail.com
+CONVERSION_NOTIFY_ENABLED=true
+EMAIL_PROVIDER=resend
+```
+3. Redeploy
+
+Per inviare da un dominio personalizzato, verifica il dominio su Resend e aggiorna `RESEND_FROM`.
+
+---
+
+## VPS / locale: SMTP Gmail
+
 ## Prova rapida (solo 2 passi)
 
-1. Apri `.env` e imposta `SMTP_PASSWORD` (Gmail App Password).
+1. Apri `.env` e imposta `SMTP_PASSWORD` (Gmail App Password), oppure `RESEND_API_KEY` su Railway.
 2. Esegui:
 
 ```bash

@@ -24,8 +24,8 @@ if [ ! -f "${LOCAL_ENV}" ]; then
   exit 1
 fi
 
-if ! grep -Eq '^SMTP_PASSWORD=.+$' "${LOCAL_ENV}"; then
-  echo "SMTP_PASSWORD missing in .env"
+if ! grep -Eq '^RESEND_API_KEY=.+$' "${LOCAL_ENV}" && ! grep -Eq '^SMTP_PASSWORD=.+$' "${LOCAL_ENV}"; then
+  echo "Configure RESEND_API_KEY or SMTP_PASSWORD in .env"
   exit 1
 fi
 
@@ -36,7 +36,7 @@ echo "============================================================"
 
 EMAIL_ENV_FILE="$(mktemp)"
 trap 'rm -f "${EMAIL_ENV_FILE}"' EXIT
-grep -E '^(CONVERSION_NOTIFY_|SMTP_)' "${LOCAL_ENV}" > "${EMAIL_ENV_FILE}"
+grep -E '^(CONVERSION_NOTIFY_|SMTP_|RESEND_|EMAIL_PROVIDER)' "${LOCAL_ENV}" > "${EMAIL_ENV_FILE}"
 
 echo ">>> [1/4] Upload email env vars..."
 scp ${SSH_OPTS} "${EMAIL_ENV_FILE}" "${SERVER_USER}@${SERVER_HOST}:/tmp/ytconverter-email-env.txt"

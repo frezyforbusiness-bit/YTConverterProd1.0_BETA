@@ -25,7 +25,7 @@ fi
 TMP_FILE="$(mktemp)"
 trap 'rm -f "${TMP_FILE}"' EXIT
 
-grep -E '^(CONVERSION_NOTIFY_|SMTP_)' "${LOCAL_ENV}" > "${TMP_FILE}" || true
+grep -E '^(CONVERSION_NOTIFY_|SMTP_|RESEND_|EMAIL_PROVIDER)' "${LOCAL_ENV}" > "${TMP_FILE}" || true
 if [ ! -s "${TMP_FILE}" ]; then
   echo "No email env vars found in local .env"
   exit 1
