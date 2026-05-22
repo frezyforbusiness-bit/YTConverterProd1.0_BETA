@@ -17,7 +17,7 @@ if [ ! -f "${LOCAL_ENV}" ]; then
   exit 1
 fi
 
-if ! rg -q '^SMTP_PASSWORD=.+$' "${LOCAL_ENV}"; then
+if ! grep -Eq '^SMTP_PASSWORD=.+$' "${LOCAL_ENV}"; then
   echo "SMTP_PASSWORD is empty in local .env. Configure it before deploy."
   exit 1
 fi
@@ -25,7 +25,7 @@ fi
 TMP_FILE="$(mktemp)"
 trap 'rm -f "${TMP_FILE}"' EXIT
 
-rg '^(CONVERSION_NOTIFY_|SMTP_)' "${LOCAL_ENV}" > "${TMP_FILE}" || true
+grep -E '^(CONVERSION_NOTIFY_|SMTP_)' "${LOCAL_ENV}" > "${TMP_FILE}" || true
 if [ ! -s "${TMP_FILE}" ]; then
   echo "No email env vars found in local .env"
   exit 1
@@ -49,7 +49,7 @@ while IFS= read -r line; do
   [ -n "${line}" ] || continue
   key="${line%%=*}"
   value="${line#*=}"
-  if rg -q "^${key}=" "${tmp_env}"; then
+  if grep -q "^${key}=" "${tmp_env}"; then
     awk -v k="${key}" -v v="${value}" '
       BEGIN { replaced = 0 }
       $0 ~ ("^" k "=") { print k "=" v; replaced = 1; next }

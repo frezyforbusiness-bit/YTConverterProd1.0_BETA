@@ -9,7 +9,7 @@ if [ ! -f ".env" ]; then
   exit 1
 fi
 
-if ! rg -q '^SMTP_PASSWORD=.+$' .env; then
+if ! grep -Eq '^SMTP_PASSWORD=.+$' .env; then
   echo "Configure SMTP_PASSWORD in .env first."
   echo "Guide: docs/CONVERSION_EMAIL_SETUP.md"
   exit 1
