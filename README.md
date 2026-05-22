@@ -62,6 +62,11 @@ Key environment variables:
 - `CLEANUP_INTERVAL`: Cleanup interval in seconds (default: 3600)
 - `COOKIES_FILE`: Path to YouTube cookies file (optional)
 - `LOG_LEVEL`: Logging level (DEBUG, INFO, WARNING, ERROR)
+- `CONVERSION_NOTIFY_ENABLED`: Enable conversion email alerts (default: true)
+- `CONVERSION_NOTIFY_EMAIL`: Alert recipient (default: info.producertools@gmail.com)
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`: SMTP credentials for alerts
+- `SMTP_FROM`: Sender address (defaults to `SMTP_USER`)
+- `SMTP_USE_TLS`: Use STARTTLS (default: true)
 
 ## Running Locally
 

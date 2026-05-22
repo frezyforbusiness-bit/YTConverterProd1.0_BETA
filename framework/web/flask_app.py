@@ -31,6 +31,7 @@ from services.task_manager import TaskManager
 from services.database import DatabaseManager
 from services.auth import AuthManager
 from services.statistics import StatisticsManager
+from services.conversion_email_notifier import ConversionEmailNotifier
 from utils.cleanup import CleanupScheduler
 from utils.logger import setup_logger
 
@@ -149,6 +150,15 @@ def create_app() -> Flask:
     mix_analyzer_service = MixAnalyzerService()
     task_manager = TaskManager(TASK_TIMEOUT)
     auth_manager = AuthManager()
+    conversion_email_notifier = ConversionEmailNotifier()
+    if conversion_email_notifier.is_configured():
+        logger.info(
+            f"✓ Conversion email notifications enabled -> {conversion_email_notifier.to_email}"
+        )
+    else:
+        logger.warning(
+            "Conversion email notifications not configured (set SMTP_HOST/SMTP_USER/SMTP_PASSWORD)"
+        )
     spotify_gateway = None
     if SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET:
         spotify_gateway = SpotifyGateway(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET)
@@ -204,7 +214,8 @@ def create_app() -> Flask:
         youtube_gateway=youtube_gateway,
         file_gateway=file_gateway,
         audio_analyzer=audio_analyzer,
-        conversion_repository=conversion_repository
+        conversion_repository=conversion_repository,
+        conversion_email_notifier=conversion_email_notifier,
     )
     
     get_status_use_case = GetStatusUseCase(task_gateway=task_gateway)

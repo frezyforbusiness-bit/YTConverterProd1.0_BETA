@@ -3,7 +3,7 @@ Convert Video Use Case - Application Business Rule
 Handles the business logic for converting YouTube videos to audio
 """
 
-from typing import Dict, Optional, Callable
+from typing import Dict, Optional, Callable, TYPE_CHECKING
 from domain.entities.video import Video
 from domain.entities.task import Task
 from domain.entities.conversion import Conversion
@@ -12,6 +12,9 @@ from adapter.gateways.youtube_gateway import YouTubeGateway
 from adapter.gateways.file_gateway import FileGateway
 from adapter.gateways.audio_analyzer_gateway import AudioAnalyzerGateway
 from utils.logger import setup_logger
+
+if TYPE_CHECKING:
+    from services.conversion_email_notifier import ConversionEmailNotifier
 
 logger = setup_logger(__name__)
 
@@ -24,12 +27,14 @@ class ConvertVideoUseCase:
         youtube_gateway: YouTubeGateway,
         file_gateway: FileGateway,
         audio_analyzer: AudioAnalyzerGateway,
-        conversion_repository: Optional[ConversionRepository] = None
+        conversion_repository: Optional[ConversionRepository] = None,
+        conversion_email_notifier: Optional["ConversionEmailNotifier"] = None,
     ):
         self.youtube_gateway = youtube_gateway
         self.file_gateway = file_gateway
         self.audio_analyzer = audio_analyzer
         self.conversion_repository = conversion_repository
+        self.conversion_email_notifier = conversion_email_notifier
     
     def execute(
         self,
@@ -134,6 +139,18 @@ class ConvertVideoUseCase:
                 )
             
             logger.info(f"Conversion completed for task {task.task_id}: {final_path}")
+
+            if self.conversion_email_notifier:
+                self.conversion_email_notifier.notify_success(
+                    task_id=task.task_id,
+                    source_url=task.youtube_url,
+                    audio_format=task.audio_format,
+                    video_title=video.title,
+                    video_id=video.id,
+                    bpm=bpm,
+                    musical_key=scale,
+                    file_path=final_path,
+                )
             
             return {
                 'success': True,
@@ -174,6 +191,14 @@ class ConvertVideoUseCase:
                     progress=0,
                     message='Error during conversion',
                     error=error_msg
+                )
+
+            if self.conversion_email_notifier:
+                self.conversion_email_notifier.notify_error(
+                    task_id=task.task_id,
+                    source_url=task.youtube_url,
+                    audio_format=task.audio_format,
+                    error_message=error_msg,
                 )
             
             raise
