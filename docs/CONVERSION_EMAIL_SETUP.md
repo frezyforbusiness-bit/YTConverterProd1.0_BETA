@@ -1,5 +1,30 @@
 # Conversion Email Notifications
 
+## Prova rapida (solo 2 passi)
+
+1. Apri `.env` e imposta `SMTP_PASSWORD` (Gmail App Password).
+2. Esegui:
+
+```bash
+chmod +x scripts/shell/try_email_notifications.sh
+./scripts/shell/try_email_notifications.sh
+```
+
+Se ricevi 2 email di test (success + error), avvia l'app e prova una conversione reale:
+
+```bash
+python start.py
+```
+
+Deploy automatico variabili email sul server:
+
+```bash
+chmod +x scripts/shell/deploy_email_env_to_server.sh
+./scripts/shell/deploy_email_env_to_server.sh
+```
+
+---
+
 The backend can send an email to `info.producertools@gmail.com` (or a custom recipient) whenever a conversion:
 
 - completes successfully (`done`)

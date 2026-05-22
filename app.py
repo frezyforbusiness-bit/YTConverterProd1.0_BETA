@@ -4,8 +4,15 @@ Main entry point using Clean Architecture pattern
 """
 
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
 from framework.web.flask_app import create_app
 from utils.logger import setup_logger
+
+# Load local .env before app initialization (docker/Railway inject env separately).
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 logger = setup_logger(__name__)
 
