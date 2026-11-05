@@ -41,8 +41,8 @@ export const theme = {
 
   typography: {
     fonts: {
-      heading: '"Arial Black", "Helvetica Neue", sans-serif',
-      body: 'system-ui, sans-serif',
+      heading: '"Manrope Variable", sans-serif',
+      body: '"Manrope Variable", sans-serif',
       accent: '"Courier New", monospace',
     },
     weights: {

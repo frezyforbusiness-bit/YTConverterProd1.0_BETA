@@ -91,14 +91,13 @@ export const MixMaster: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            A fresh perspective on your mix. Explore loudness, dynamics and tonal balance before your next release.
+            Loudness, dynamics and tonal balance. A clearer picture of your mix.
           </HeaderSubtitle>
         </Header>
 
         <CtaCard>
           <CtaText>
-            Upload your track or paste a YouTube link, answer a few quick questions (mix or master, genre, beat or full
-            song), and get a tailored analysis report.
+            Your track. A few details. A tailored report.
           </CtaText>
           <GoButton variant="primary" size="lg" onClick={() => navigate('/mixmaster/analyzer')}>
             Go to Analyzer →
@@ -109,22 +108,19 @@ export const MixMaster: React.FC = () => {
           <InfoCard>
             <InfoTitle>Loudness &amp; dynamics</InfoTitle>
             <InfoText>
-              Understand how loud your track really is in LUFS and how much dynamic range you are leaving. Perfect for
-              comparing rough mixes to reference masters.
+              Measure LUFS and dynamic range. Compare your mix to a reference.
             </InfoText>
           </InfoCard>
           <InfoCard>
             <InfoTitle>Tonal balance</InfoTitle>
             <InfoText>
-              Spot if your low end, mids or highs are out of control. Use the analyzer to quickly see whether your mix
-              is too dark, too bright or right in the pocket.
+              See where your lows, mids and highs sit.
             </InfoText>
           </InfoCard>
           <InfoCard>
             <InfoTitle>Reference ready</InfoTitle>
             <InfoText>
-              Upload released tracks from your favorite artists and compare them to your own mix to guide EQ, compression
-              and limiting decisions.
+              Use a released track to guide your next decision.
             </InfoText>
           </InfoCard>
         </AnalysisInfo>

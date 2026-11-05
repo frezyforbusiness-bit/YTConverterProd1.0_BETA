@@ -17,11 +17,6 @@ const AboutContainer = styled.div`
 
 const Title = PageTitle;
 
-const Highlight = styled.span`
-  color: ${({ theme }) => theme.colors.text.primary};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
-`;
-
 const InfoBlocks = styled.div`
   margin-top: ${({ theme }) => theme.spacing['2xl']};
   display: flex;
@@ -71,14 +66,14 @@ const services = [
   {
     title: 'Audio Converter',
     description:
-      'Turn YouTube or Spotify links into clean audio files with optional BPM & key detection for DJs and producers.',
+      'Audio from a link, with optional BPM & key detection.',
     icon: '01 /',
     path: '/',
   },
   {
     title: 'Mix & Master Analyzer',
     description:
-      'Analyze your mix for LUFS, dynamics and tonal balance. Designed to give you quick, actionable feedback on your tracks.',
+      'Loudness, dynamics and tonal balance. Know your mix.',
     icon: '02 /',
     path: '/mixmaster',
     badge: 'BETA',
@@ -105,40 +100,12 @@ export const About: React.FC = () => {
 
           <InfoBlocks>
             <InfoBlock>
-              <InfoBlockTitle>What is Producer Tools</InfoBlockTitle>
-              <InfoBlockText>
-                <Highlight>Producer Tools</Highlight> is a digital toolkit designed to change the way music producers work
-                every day. The goal is simple: let technology quietly handle the boring parts so producers can stay
-                focused on the music.
-              </InfoBlockText>
+              <InfoBlockTitle>Less between you and the music</InfoBlockTitle>
+              <InfoBlockText>Simple tools for converting audio and understanding your mix. Built to keep your session moving.</InfoBlockText>
             </InfoBlock>
-
             <InfoBlock>
-              <InfoBlockTitle>Built from real studio needs</InfoBlockTitle>
-              <InfoBlockText>
-                Every tool starts from real studio needs: smarter sample management, idea generation, automation of
-                repetitive steps and utilities built to speed up creative decisions. The focus never changes:{' '}
-                <Highlight>less technical friction, more room for ideas</Highlight>.
-              </InfoBlockText>
-            </InfoBlock>
-
-            <InfoBlock>
-              <InfoBlockTitle>The long-term vision</InfoBlockTitle>
-              <InfoBlockText>
-                The vision behind <Highlight>Producer Tools</Highlight> is to build a modern toolbox for the contemporary producer:
-                tools that are easy to understand, fast to use and solid enough to live inside professional workflows,
-                from the bedroom studio to high–end mix rooms.
-              </InfoBlockText>
-            </InfoBlock>
-
-            <InfoBlock>
-              <InfoBlockTitle>From idea to final mix</InfoBlockTitle>
-              <InfoBlockText>
-                Starting from the <Highlight>Audio Converter</Highlight> and the analyzers, Producer Tools aims to become a suite
-                that follows producers through every stage of the process: from the first idea, to organizing sounds,
-                all the way to the final mix. Tools are built around one rule: if it doesn&apos;t make your workflow
-                smoother, it doesn&apos;t ship.
-              </InfoBlockText>
+              <InfoBlockTitle>Made for the process</InfoBlockTitle>
+              <InfoBlockText>From a saved link to a final bounce. Fewer steps, more room to create.</InfoBlockText>
             </InfoBlock>
           </InfoBlocks>
         </motion.div>

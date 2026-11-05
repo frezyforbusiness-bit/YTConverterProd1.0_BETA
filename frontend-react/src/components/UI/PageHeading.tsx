@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 export const PageTitle = motion(styled.h1`
   font-family: ${({ theme }) => theme.typography.fonts.heading};
   font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.02;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.055em;
   text-align: left;
   color: ${({ theme }) => theme.colors.text.primary};
   margin: 24px 0;

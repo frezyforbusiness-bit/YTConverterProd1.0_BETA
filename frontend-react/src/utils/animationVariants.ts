@@ -55,10 +55,10 @@ export const buttonVariants = {
     scale: 1,
   },
   hover: {
-    scale: 1.05,
+    scale: 1.012,
   },
   tap: {
-    scale: 0.98,
+    scale: 0.985,
   },
 };
 

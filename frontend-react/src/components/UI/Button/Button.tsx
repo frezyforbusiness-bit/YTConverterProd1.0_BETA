@@ -46,7 +46,7 @@ const BaseButton = styled.button<{
   }};
   width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
   font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-weight: ${({ theme }) => theme.typography.weights.bold};
+  font-weight: 600;
   font-size: ${({ $size, theme }) => {
     switch ($size) {
       case 'sm':
@@ -203,6 +203,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <MotionButton
+      aria-busy={loading}
       ref={buttonRef}
       $variant={variant}
       $size={size}

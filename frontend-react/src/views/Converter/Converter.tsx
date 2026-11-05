@@ -26,9 +26,9 @@ const Workspace = styled.div`
 `;
 const Intro = styled.section`
   padding-top: 20px;
-  h1 { font-size: clamp(3.5rem, 6.5vw, 6rem); line-height: .96; letter-spacing: -.065em; font-weight: 800; margin: 28px 0; }
-  h1 em { color: #b83d1f; font-family: Georgia, serif; font-weight: 400; }
-  p { max-width: 390px; color: #606157; line-height: 1.7; }
+  h1 { font-family: ${({ theme }) => theme.typography.fonts.heading}; font-size: clamp(3.5rem, 6.1vw, 5.7rem); line-height: 1.02; letter-spacing: -.065em; font-weight: 500; margin: 28px 0; animation: studio-reveal .95s cubic-bezier(.16, 1, .3, 1) both; }
+  h1 em { color: #b83d1f; font-family: "Newsreader Variable", Georgia, serif; font-weight: 400; letter-spacing: -.055em; }
+  p { max-width: 340px; color: #606157; line-height: 1.7; animation: studio-reveal .9s cubic-bezier(.16, 1, .3, 1) .12s both; }
   @media(max-width: 900px) { padding-top: 0; h1 { margin: 16px 0; } }
   @media(max-width: 640px) { h1 { font-size: 3rem; } p { font-size: .875rem; line-height: 1.6; } }
 `;
@@ -55,7 +55,9 @@ const NextTool = styled(Link)`
   display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 40px;
   text-decoration: none; border: 1px solid #cdcbbf; padding: 28px;
   small { font: 11px monospace; color: #606157; } h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin-top: 8px; letter-spacing: -.04em; }
-  > span { font-size: 32px; color: #b83d1f; } &:hover { background: #eae7de; }
+  transition: background .3s ease;
+  > span { color: #b83d1f; transition: transform .5s cubic-bezier(.16, 1, .3, 1); }
+  @media (hover: hover) { &:hover { background: #eae7de; } &:hover > span { transform: translate(4px, -4px); } }
 `;
 
 const AnalysisModeSection = styled.div`
@@ -95,6 +97,7 @@ const ModeToggleButton = styled.button<{ $active?: boolean }>`
 `;
 
 const ConverterCard = styled(Card)`
+  animation: studio-panel .95s cubic-bezier(.16, 1, .3, 1) .15s both;
   margin-bottom: ${({ theme }) => theme.spacing.xl};
   @media (max-width: 640px) { padding: 20px; input, select { padding: 12px; min-height: 48px; } }
 `;
@@ -307,9 +310,9 @@ export const Converter: React.FC = React.memo(() => {
       <ConverterContainer>
         <Workspace>
         <Intro>
-          <Eyebrow>Independent utilities for music makers</Eyebrow>
+          <Eyebrow>Tools for the music-minded</Eyebrow>
           <h1>Good music.<br />Less <em>friction.</em></h1>
-          <p>From the link you saved to the track in your session. Convert your audio. Find its tempo and key. Keep creating.</p>
+          <p>Convert your audio. Find its tempo and key. Stay in the flow.</p>
           <StudioArtwork />
         </Intro>
         <ConverterCard>
@@ -351,7 +354,7 @@ export const Converter: React.FC = React.memo(() => {
                 onClick={() => !loading && setAnalyzeBpmKey(false)}
               >
                 Fast convert
-                <span>Just the audio, ready to download.</span>
+                <span>Audio only.</span>
               </ModeToggleButton>
               <ModeToggleButton
                 type="button"
@@ -361,7 +364,7 @@ export const Converter: React.FC = React.memo(() => {
                 onClick={() => !loading && setAnalyzeBpmKey(true)}
               >
                 Convert & analyze
-                <span>Audio with BPM & key detection.</span>
+                <span>Audio, BPM & key.</span>
               </ModeToggleButton>
             </ModeToggleRow>
           </AnalysisModeSection>
@@ -407,7 +410,7 @@ export const Converter: React.FC = React.memo(() => {
           </AnimatePresence>
         </ConverterCard>
         </Workspace>
-        <FormatStrip><span>Six formats. Your workflow.</span><strong>MP3</strong><strong>WAV</strong><strong>FLAC</strong><strong>OGG</strong><strong>AAC</strong><strong>Opus</strong></FormatStrip>
+        <FormatStrip><span>Export formats</span><strong>MP3</strong><strong>WAV</strong><strong>FLAC</strong><strong>OGG</strong><strong>AAC</strong><strong>Opus</strong></FormatStrip>
         <NextTool to="/mixmaster/analyzer"><div><small>TOOL / 02 — MIX &amp; MASTER ANALYZER</small><h2>Get to know your sound.</h2></div><span aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 19 19 5M5 5h14v14" /></svg></span></NextTool>
         <ConversionInfo>
           <details>

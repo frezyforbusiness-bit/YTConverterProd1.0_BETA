@@ -19,7 +19,7 @@ const FooterInner = styled.div`
   max-width: 1216px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1.6fr 1fr;
+  grid-template-columns: 1fr 1.5fr;
   @media (max-width: 760px) { grid-template-columns: 1fr; }
   gap: ${({ theme }) => theme.spacing.xl};
 `;
@@ -72,11 +72,11 @@ const defaultFaqs = [
   {
     question: 'Can I use Spotify links?',
     answer:
-      "Yes. Paste a single Spotify track URL and we'll search the cleanest audio/lyrics version on YouTube.",
+      "Yes. Spotify tracks are matched to an audio version on YouTube.",
   },
   {
     question: 'Are playlists supported?',
-    answer: 'Not yet. For now convert one track at a time for best reliability.',
+    answer: 'Single tracks only, for now.',
   },
   {
     question: 'Is this anonymous?',
@@ -89,17 +89,17 @@ const mixmasterAnalyzerFaqs = [
   {
     question: 'What does Mix Master Analyzer check?',
     answer:
-      'It runs a quick technical check on your track: loudness (LUFS), true peak, dynamic range, stereo field and a rough tonal profile so you can understand how your mix or master is behaving.',
+      'LUFS, true peak, dynamics, stereo field and tonal balance.',
   },
   {
     question: 'Is this a BETA feature?',
     answer:
-      'Yes. Mix Master Analyzer is in BETA – results are guidance to speed up your decisions, not a replacement for a professional mixing or mastering engineer.',
+      'Yes. Results offer technical guidance, not a replacement for a mastering engineer.',
   },
   {
     question: 'Which formats can I upload?',
     answer:
-      'You can upload common audio formats like MP3, WAV, FLAC, M4A and OGG. For more reliable analysis, prefer high–quality bounces.',
+      'MP3, WAV, FLAC, M4A and OGG. Use a high-quality bounce for best results.',
   },
 ];
 
@@ -111,7 +111,7 @@ export const Footer: React.FC<FooterProps> = ({ faqContext = 'default' }) => {
       <FooterInner>
         <Column>
           <ColumnTitle>Producer Tools</ColumnTitle>
-          <p>Less friction. More music. Independent tools for the moments between finding a track and making it yours.</p>
+          <p>Independent audio tools. Made for the process.</p>
         </Column>
 
         <Column>
@@ -124,14 +124,9 @@ export const Footer: React.FC<FooterProps> = ({ faqContext = 'default' }) => {
           ))}
         </Column>
 
-        <Column>
-          <ColumnTitle>Tips</ColumnTitle>
-          <p>Use high quality headphones, check levels before playing out, and always test your files in your DJ software.</p>
-        </Column>
 
         <BottomRow>
           <span>© {new Date().getFullYear()} Producer Tools</span>
-          <span>Made for the process.</span>
         </BottomRow>
       </FooterInner>
     </FooterContainer>

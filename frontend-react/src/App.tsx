@@ -1,4 +1,5 @@
 import React from 'react';
+import { MotionConfig } from 'framer-motion';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -38,6 +39,7 @@ const AppContent: React.FC = () => {
 
 function App() {
   return (
+    <MotionConfig reducedMotion="user">
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
@@ -45,6 +47,7 @@ function App() {
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
+    </MotionConfig>
   );
 }
 

@@ -480,10 +480,7 @@ export const MixMasterAnalyzer: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Mix &amp; Master Analyzer
-            <BetaBadge>BETA</BetaBadge>
-            {' '}
-            – upload an audio file or paste a YouTube URL, then answer a few questions and run the analysis.
+            Upload a track. Find your next move. <BetaBadge>BETA</BetaBadge>
           </HeaderSubtitle>
         </Header>
 
@@ -517,7 +514,7 @@ export const MixMasterAnalyzer: React.FC = () => {
                     Drop your track here
                   </p>
                   <p style={{ color: theme.colors.text.secondary, marginBottom: theme.spacing.lg }}>
-                    Or click to browse (MP3, WAV, FLAC, M4A, OGG). Ideal for bounced mixes, masters and reference tracks.
+                    MP3, WAV, FLAC, M4A or OGG.
                   </p>
                   <Button type="button" variant="secondary" onClick={(e) => { e.stopPropagation(); openFilePicker(); }}>
                     Choose File

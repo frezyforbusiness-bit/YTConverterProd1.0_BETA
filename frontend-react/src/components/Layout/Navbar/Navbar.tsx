@@ -30,7 +30,7 @@ const NavContent = styled.div`
 const LogoBase = styled(Link)`
   font-family: ${({ theme }) => theme.typography.fonts.heading};
   font-size: ${({ theme }) => theme.typography.sizes.h3};
-  font-weight: ${({ theme }) => theme.typography.weights.black};
+  font-weight: 650;
   text-decoration: none;
   color: #252620;
   &::before { content: ""; width: 24px; height: 24px; background: repeating-linear-gradient(90deg, #b83d1f 0 3px, transparent 3px 6px); transform: skewY(-15deg); }
@@ -219,7 +219,7 @@ export const Navbar: React.FC = () => {
         <NavContent>
           <Logo
             to="/"
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.95 }}
           >
             Producer Tools
