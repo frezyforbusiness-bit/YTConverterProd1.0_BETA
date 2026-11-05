@@ -15,7 +15,7 @@ export const useTheme = () => {
 };
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [mode, setMode] = useState<ColorMode>(() =>
-    document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+    document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
   );
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = mode;
