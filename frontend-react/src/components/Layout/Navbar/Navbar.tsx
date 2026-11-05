@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
+import { useTheme } from '../../../context/ThemeContext';
 
 const NavbarBase = styled.nav`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(242, 240, 233, .96);
+  background: var(--color-bg-primary);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid #cdcbbf;
+  border-bottom: 1px solid var(--color-border);
   z-index: ${({ theme }) => theme.zIndex.fixed};
   padding: ${({ theme }) => `${theme.spacing.sm} 0`};
 `;
@@ -22,6 +23,8 @@ const NavContent = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 ${({ theme }) => theme.spacing.xl};
+  gap: 12px;
+  @media(max-width: 640px) { padding: 0 16px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -32,8 +35,8 @@ const LogoBase = styled(Link)`
   font-size: ${({ theme }) => theme.typography.sizes.h3};
   font-weight: 650;
   text-decoration: none;
-  color: #252620;
-  &::before { content: ""; width: 24px; height: 24px; background: repeating-linear-gradient(90deg, #b83d1f 0 3px, transparent 3px 6px); transform: skewY(-15deg); }
+  color: var(--color-text-primary);
+  &::before { content: ""; width: 24px; height: 24px; background: repeating-linear-gradient(90deg, var(--color-accent) 0 3px, transparent 3px 6px); transform: skewY(-15deg); }
   text-transform: none;
   letter-spacing: -1px;
   display: flex;
@@ -80,7 +83,7 @@ const UnderlineBase = styled.div`
   left: 0;
   right: 0;
   height: 2px;
-  background: #b83d1f;
+  background: var(--color-accent);
   border-radius: 2px;
 `;
 
@@ -120,7 +123,7 @@ const MobileMenuBase = styled.div`
   top: 72px;
   left: 0;
   right: 0;
-  background: #f2f0e9;
+  background: var(--color-bg-primary);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid ${({ theme }) => theme.colors.accent.border};
   padding: ${({ theme }) => theme.spacing.lg};
@@ -155,6 +158,18 @@ const MobileNavLink = styled(Link)<{ $isActive: boolean }>`
   }
 `;
 
+const NavActions = styled.div`
+  display: flex; align-items: center; gap: 8px;
+`;
+const ThemeToggle = styled.button`
+  width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center;
+  border: 1px solid var(--color-border); border-radius: 50%;
+  color: var(--color-text-primary); background: transparent; cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+  &:hover { background: var(--color-bg-elevated); border-color: var(--color-accent); }
+  svg { width: 19px; height: 19px; }
+`;
+
 const navItems = [
   { path: '/', label: '01 / Converter' },
   { path: '/mixmaster', label: '02 / Analyzer' },
@@ -163,6 +178,7 @@ const navItems = [
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
+  const { mode, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -225,6 +241,7 @@ export const Navbar: React.FC = () => {
             Producer Tools
           </Logo>
 
+          <NavActions>
           <NavLinks>
             {navItems.map((item) => {
               const isActive = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
@@ -247,6 +264,17 @@ export const Navbar: React.FC = () => {
             })}
           </NavLinks>
 
+          <ThemeToggle
+            type="button"
+            onClick={toggleTheme}
+            aria-label="Dark mode"
+            aria-pressed={mode === 'dark'}
+            title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+              {mode === 'dark' ? <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></> : <path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z" />}
+            </svg>
+          </ThemeToggle>
           <HamburgerButton
             onClick={toggleMobileMenu}
             variants={hamburgerVariants}
@@ -259,6 +287,7 @@ export const Navbar: React.FC = () => {
             <HamburgerLine variants={line2Variants} />
             <HamburgerLine variants={line3Variants} />
           </HamburgerButton>
+          </NavActions>
         </NavContent>
       </NavbarContainer>
 

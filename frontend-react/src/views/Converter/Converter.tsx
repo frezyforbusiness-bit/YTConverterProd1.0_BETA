@@ -27,37 +27,37 @@ const Workspace = styled.div`
 const Intro = styled.section`
   padding-top: 20px;
   h1 { font-family: ${({ theme }) => theme.typography.fonts.heading}; font-size: clamp(3.5rem, 6.1vw, 5.7rem); line-height: 1.02; letter-spacing: -.065em; font-weight: 500; margin: 28px 0; animation: studio-reveal .95s cubic-bezier(.16, 1, .3, 1) both; }
-  h1 em { color: #b83d1f; font-family: "Newsreader Variable", Georgia, serif; font-weight: 400; letter-spacing: -.055em; }
-  p { max-width: 340px; color: #606157; line-height: 1.7; animation: studio-reveal .9s cubic-bezier(.16, 1, .3, 1) .12s both; }
+  h1 em { color: var(--color-accent); font-family: "Newsreader Variable", Georgia, serif; font-weight: 400; letter-spacing: -.055em; }
+  p { max-width: 340px; color: var(--color-text-secondary); line-height: 1.7; animation: studio-reveal .9s cubic-bezier(.16, 1, .3, 1) .12s both; }
   @media(max-width: 900px) { padding-top: 0; h1 { margin: 16px 0; } }
   @media(max-width: 640px) { h1 { font-size: 3rem; } p { font-size: .875rem; line-height: 1.6; } }
 `;
 const Eyebrow = styled.div`
   font: 11px 'Courier New', monospace; letter-spacing: .1em; text-transform: uppercase;
   display: flex; align-items: center; gap: 10px;
-  &::before { content: ''; width: 7px; height: 7px; background: #b83d1f; border-radius: 50%; }
+  &::before { content: ''; width: 7px; height: 7px; background: var(--color-accent); border-radius: 50%; }
 `;
 const PanelHeading = styled.div`
-  display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #d6d3c8;
+  display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border);
   margin-bottom: 28px; padding-bottom: 20px;
   h2 { font-size: 20px; letter-spacing: -.04em; }
-  span { font: 10px monospace; color: #6d6e63; }
+  span { font: 10px monospace; color: var(--color-text-muted); }
   @media(max-width: 640px) { margin-bottom: 20px; padding-bottom: 16px; }
 `;
 const FormatStrip = styled.div`
-  border-top: 1px solid #cdcbbf; border-bottom: 1px solid #cdcbbf; padding: 22px 0;
+  border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: 22px 0;
   margin-top: 36px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
-  span { font: 10px monospace; text-transform: uppercase; letter-spacing: .08em; color: #606157; }
+  span { font: 10px monospace; text-transform: uppercase; letter-spacing: .08em; color: var(--color-text-secondary); }
   strong { font-size: 18px; letter-spacing: -.03em; }
   @media(max-width: 640px) { display: grid; grid-template-columns: repeat(3, 1fr); span { grid-column: 1 / -1; } }
 `;
 const NextTool = styled(Link)`
   display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 40px;
-  text-decoration: none; border: 1px solid #cdcbbf; padding: 28px;
-  small { font: 11px monospace; color: #606157; } h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin-top: 8px; letter-spacing: -.04em; }
+  text-decoration: none; border: 1px solid var(--color-border); padding: 28px;
+  small { font: 11px monospace; color: var(--color-text-secondary); } h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin-top: 8px; letter-spacing: -.04em; }
   transition: background .3s ease;
-  > span { color: #b83d1f; transition: transform .5s cubic-bezier(.16, 1, .3, 1); }
-  @media (hover: hover) { &:hover { background: #eae7de; } &:hover > span { transform: translate(4px, -4px); } }
+  > span { color: var(--color-accent); transition: transform .5s cubic-bezier(.16, 1, .3, 1); }
+  @media (hover: hover) { &:hover { background: var(--color-bg-secondary); } &:hover > span { transform: translate(4px, -4px); } }
 `;
 
 const AnalysisModeSection = styled.div`
@@ -82,7 +82,7 @@ const ModeToggleButton = styled.button<{ $active?: boolean }>`
   border: 1px solid
     ${({ theme, $active }) => ($active ? theme.colors.accent.primary : theme.colors.accent.border)};
   background: ${({ theme, $active }) =>
-    $active ? '#f3e6dc' : theme.colors.background.card};
+    $active ? 'var(--color-accent-soft)' : theme.colors.background.card};
   color: ${({ theme }) => theme.colors.text.primary};
   font-family: ${({ theme }) => theme.typography.fonts.body};
   font-size: ${({ theme }) => theme.typography.sizes.small};

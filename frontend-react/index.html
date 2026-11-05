@@ -2,6 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem('producer-tools-theme') === 'dark' ? 'dark' : 'light';
+      } catch { document.documentElement.dataset.theme = 'light'; }
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon-studio.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Producer Tools - Professional audio tools for music producers. Convert YouTube videos to audio and analyze your tracks." />

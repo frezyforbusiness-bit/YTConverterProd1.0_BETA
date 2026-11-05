@@ -11,7 +11,7 @@ const FooterContainer = styled.footer`
   margin-top: ${({ theme }) => theme.spacing['3xl']};
   padding: ${({ theme }) => `${theme.spacing['2xl']} ${theme.spacing.xl}`};
   border-top: 1px solid ${({ theme }) => theme.colors.accent.border};
-  background: #e8e5db;
+  background: var(--color-footer);
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 

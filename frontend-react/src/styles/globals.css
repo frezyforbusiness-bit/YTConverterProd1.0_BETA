@@ -11,10 +11,47 @@
   --color-text-primary: #252620;
   --color-text-secondary: #606157;
   --color-accent: #b83d1f;
+  --color-accent-secondary: #c64726;
+  --color-bg-card: #faf9f5;
+  --color-bg-elevated: #e3dfd3;
+  --color-text-muted: #6d6e63;
+  --color-border: rgba(41, 40, 35, .2);
+  --color-focus: rgba(184, 61, 31, .2);
+  --color-accent-soft: #f3e6dc;
+  --color-footer: #e8e5db;
+  --color-artwork: #dad8c9;
+  --color-artwork-grid: #2526200a;
+  --color-success: #337052;
+  --color-error: #b73528;
+  --color-warning: #886012;
+  --color-info: #386384;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg-primary: #171815;
+  --color-bg-secondary: #23251f;
+  --color-bg-card: #1e201b;
+  --color-bg-elevated: #30332b;
+  --color-text-primary: #f0eee5;
+  --color-text-secondary: #babcb0;
+  --color-text-muted: #a5a89b;
+  --color-accent: #ef997b;
+  --color-accent-secondary: #f5ad91;
+  --color-border: rgba(224, 226, 207, .2);
+  --color-focus: rgba(239, 153, 123, .25);
+  --color-accent-soft: #382923;
+  --color-footer: #121410;
+  --color-artwork: #34382c;
+  --color-artwork-grid: #f0eee508;
+  --color-success: #8bc6a5;
+  --color-error: #f1998f;
+  --color-warning: #dec47d;
+  --color-info: #94bdd8;
 }
 
 html {
-  background: #f2f0e9;
+  background: var(--color-bg-primary);
   color-scheme: light;
   scroll-behavior: smooth;
 }
@@ -22,10 +59,10 @@ html {
 body {
   font-family: "Manrope Variable", sans-serif;
   line-height: 1.55;
-  background: #f2f0e9;
+  background: var(--color-bg-primary);
 
   min-height: 100vh;
-  color: #252620;
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -45,15 +82,15 @@ body {
 
 /* Focus styles for accessibility */
 :focus-visible {
-  outline: 2px solid #b83d1f;
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 /* Selection styles */
 ::selection {
-  background-color: #ded9c8;
-  color: #252620;
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
 }
 
 /* Scrollbar styles */
@@ -62,7 +99,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #eae7de;
+  background: var(--color-bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -101,7 +138,7 @@ body {
 }
 
 
-#root { min-height: 100vh; background: #f2f0e9; }
+#root { min-height: 100vh; background: var(--color-bg-primary); }
 button, input, select { font: inherit; }
 button, a, input, select, summary { -webkit-tap-highlight-color: transparent; }
 

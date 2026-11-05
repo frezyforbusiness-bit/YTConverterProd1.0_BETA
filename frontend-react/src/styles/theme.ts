@@ -7,35 +7,35 @@ export const theme = {
   colors: {
     // Background & Surfaces
     background: {
-      primary: '#f2f0e9',
-      secondary: '#eae7de',
-      card: '#faf9f5',
-      elevated: '#e3dfd3',
+      primary: 'var(--color-bg-primary)',
+      secondary: 'var(--color-bg-secondary)',
+      card: 'var(--color-bg-card)',
+      elevated: 'var(--color-bg-elevated)',
       gradient: 'linear-gradient(135deg, #f2f0e9, #faf9f5)',
     },
 
     // Accent Colors
     accent: {
-      primary: '#b83d1f', // vivid purple
-      secondary: '#c64726', // indigo
-      border: 'rgba(41, 40, 35, 0.2)',
-      focusRing: 'rgba(184, 61, 31, 0.2)',
+      primary: 'var(--color-accent)',
+      secondary: 'var(--color-accent-secondary)',
+      border: 'var(--color-border)',
+      focusRing: 'var(--color-focus)',
     },
 
     // Text Colors
     text: {
-      primary: '#252620',
-      secondary: '#606157',
-      muted: '#6d6e63',
+      primary: 'var(--color-text-primary)',
+      secondary: 'var(--color-text-secondary)',
+      muted: 'var(--color-text-muted)',
       gradient: 'linear-gradient(135deg, #e5e7eb 0%, #b83d1f 45%, #c64726 90%)',
     },
 
     // Status Colors
     status: {
-      success: '#337052',
-      error: '#b73528',
-      warning: '#886012',
-      info: '#386384',
+      success: 'var(--color-success)',
+      error: 'var(--color-error)',
+      warning: 'var(--color-warning)',
+      info: 'var(--color-info)',
     },
   },
 

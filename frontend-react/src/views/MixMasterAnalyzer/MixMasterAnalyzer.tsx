@@ -185,7 +185,7 @@ const AnalyzeRow = styled.div`
 const FullscreenOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: #eae7de;
+  background: var(--color-bg-secondary);
   backdrop-filter: blur(16px);
   display: flex;
   align-items: center;

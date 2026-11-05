@@ -68,9 +68,9 @@ const Badge = styled.span`
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
   letter-spacing: 1px;
   text-transform: uppercase;
-  background: ${({ theme }) => theme.colors.accent.primary}22;
+  background: var(--color-accent-soft);
   color: ${({ theme }) => theme.colors.accent.primary};
-  border: 1px solid ${({ theme }) => theme.colors.accent.primary}55;
+  border: 1px solid ${({ theme }) => theme.colors.accent.border};
 `;
 
 const IconContainerBase = styled.div`
