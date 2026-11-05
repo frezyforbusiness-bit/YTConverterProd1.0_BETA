@@ -8,7 +8,7 @@ const LayoutContainer = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: 80px; /* Navbar height */
+  padding-top: 72px; /* Navbar height */
 `;
 
 const MainContent = styled.main`

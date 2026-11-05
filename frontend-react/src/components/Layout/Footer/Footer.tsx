@@ -11,15 +11,16 @@ const FooterContainer = styled.footer`
   margin-top: ${({ theme }) => theme.spacing['3xl']};
   padding: ${({ theme }) => `${theme.spacing['2xl']} ${theme.spacing.xl}`};
   border-top: 1px solid ${({ theme }) => theme.colors.accent.border};
-  background: radial-gradient(circle at top, #020617 0%, #020617 40%, #000 100%);
+  background: #e8e5db;
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const FooterInner = styled.div`
-  max-width: 960px;
+  max-width: 1216px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr 1.6fr 1fr;
+  @media (max-width: 760px) { grid-template-columns: 1fr; }
   gap: ${({ theme }) => theme.spacing.xl};
 `;
 
@@ -37,16 +38,20 @@ const ColumnTitle = styled.h4`
   color: ${({ theme }) => theme.colors.text.primary};
 `;
 
-const FaqItem = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+const FaqItem = styled.details`
+  padding: 12px 0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.accent.border};
 `;
 
-const FaqQuestion = styled.div`
+const FaqQuestion = styled.summary`
+  cursor: pointer;
+  min-height: 24px;
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
   margin-bottom: 2px;
 `;
 
 const FaqAnswer = styled.div`
+  padding-top: 8px;
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
@@ -106,7 +111,7 @@ export const Footer: React.FC<FooterProps> = ({ faqContext = 'default' }) => {
       <FooterInner>
         <Column>
           <ColumnTitle>Producer Tools</ColumnTitle>
-          <p>Street-ready tools for DJs and producers. Fast YouTube &amp; Spotify conversions with BPM &amp; key analysis.</p>
+          <p>Less friction. More music. Independent tools for the moments between finding a track and making it yours.</p>
         </Column>
 
         <Column>
@@ -126,7 +131,7 @@ export const Footer: React.FC<FooterProps> = ({ faqContext = 'default' }) => {
 
         <BottomRow>
           <span>© {new Date().getFullYear()} Producer Tools</span>
-          <span>Built for the underground, safe for the mainstream.</span>
+          <span>Made for the process.</span>
         </BottomRow>
       </FooterInner>
     </FooterContainer>

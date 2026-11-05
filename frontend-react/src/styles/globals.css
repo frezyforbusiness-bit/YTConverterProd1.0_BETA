@@ -1,9 +1,3 @@
-/**
- * Global Styles - Reset & Base
- */
-
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@400;600;700&display=swap');
-
 * {
   margin: 0;
   padding: 0;
@@ -20,15 +14,18 @@
 }
 
 html {
+  background: #f2f0e9;
+  color-scheme: light;
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Rajdhani', sans-serif;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
-  background-attachment: fixed;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.55;
+  background: #f2f0e9;
+
   min-height: 100vh;
-  color: #f5f5f5;
+  color: #252620;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -48,15 +45,15 @@ body {
 
 /* Focus styles for accessibility */
 :focus-visible {
-  outline: 2px solid rgba(154, 154, 154, 0.4);
+  outline: 2px solid #b83d1f;
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 /* Selection styles */
 ::selection {
-  background-color: rgba(154, 154, 154, 0.3);
-  color: #f5f5f5;
+  background-color: #ded9c8;
+  color: #252620;
 }
 
 /* Scrollbar styles */
@@ -103,3 +100,9 @@ body {
   }
 }
 
+
+#root { min-height: 100vh; background: #f2f0e9; }
+button, input, select { font: inherit; }
+button, a, input, select, summary { -webkit-tap-highlight-color: transparent; }
+
+a { color: inherit; }

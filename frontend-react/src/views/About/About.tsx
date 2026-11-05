@@ -1,3 +1,4 @@
+import { PageTitle } from '../../components/UI/PageHeading';
 import React from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
@@ -9,35 +10,12 @@ import { useNavigate } from 'react-router-dom';
 const AboutContainer = styled.div`
   max-width: 1000px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: 32px 24px 48px;
   overflow: visible;
+  @media (max-width: 640px) { padding: 16px 16px 32px; }
 `;
 
-const TitleBase = styled.h1`
-  font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-size: ${({ theme }) => theme.typography.sizes.h1};
-  font-weight: ${({ theme }) => theme.typography.weights.black};
-  background: ${({ theme }) => theme.colors.text.gradient};
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  text-align: center;
-  white-space: nowrap;
-  animation: float 3s ease-in-out infinite;
-
-  @media (max-width: 1024px) {
-    font-size: ${({ theme }) => theme.typography.sizes.h2};
-  }
-
-  @media (max-width: 768px) {
-    white-space: normal;
-  }
-`;
-
-const Title = motion(TitleBase);
+const Title = PageTitle;
 
 const Highlight = styled.span`
   color: ${({ theme }) => theme.colors.text.primary};
@@ -55,7 +33,7 @@ const InfoBlock = styled.div`
   background: ${({ theme }) => theme.colors.background.secondary};
   border-radius: ${({ theme }) => theme.borderRadius.large};
   padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.xl}`};
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: none;
   border: 1px solid rgba(148, 163, 184, 0.15);
 `;
 
@@ -94,14 +72,14 @@ const services = [
     title: 'Audio Converter',
     description:
       'Turn YouTube or Spotify links into clean audio files with optional BPM & key detection for DJs and producers.',
-    icon: '🎵',
+    icon: '01 /',
     path: '/',
   },
   {
     title: 'Mix & Master Analyzer',
     description:
       'Analyze your mix for LUFS, dynamics and tonal balance. Designed to give you quick, actionable feedback on your tracks.',
-    icon: '🎚️',
+    icon: '02 /',
     path: '/mixmaster',
     badge: 'BETA',
   },
@@ -122,7 +100,7 @@ export const About: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            🎵 Producer Tools
+            Built around the music.
           </Title>
 
           <InfoBlocks>

@@ -39,7 +39,7 @@ const BaseButton = styled.button<{
       case 'sm':
         return `${theme.spacing.sm} ${theme.spacing.md}`;
       case 'lg':
-        return `${theme.spacing.lg} ${theme.spacing.xl}`;
+        return `${theme.spacing.md} ${theme.spacing.xl}`;
       default:
         return `${theme.spacing.md} ${theme.spacing.lg}`;
     }
@@ -57,9 +57,10 @@ const BaseButton = styled.button<{
         return theme.typography.sizes.body;
     }
   }};
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  border: 2px solid;
+  text-transform: none;
+  letter-spacing: 0;
+  min-height: 48px;
+  border: 1px solid;
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   overflow: hidden;
@@ -80,15 +81,15 @@ const BaseButton = styled.button<{
     switch ($variant) {
       case 'primary':
         return `
-          background: linear-gradient(135deg, #404040 0%, #1a1a1a 100%);
-          border-color: #606060;
-          color: ${theme.colors.text.primary};
-          box-shadow: ${theme.shadows.md};
+          background: #b83d1f;
+          border-color: #b83d1f;
+          color: #fffaf1;
+          box-shadow: none;
           
           &:hover {
-            background: linear-gradient(135deg, #505050 0%, #2a2a2a 100%);
+            background: #963018;
             border-color: ${theme.colors.accent.primary};
-            box-shadow: ${theme.shadows.lg}, ${theme.shadows.glow};
+            box-shadow: none;
           }
         `;
       case 'secondary':
@@ -155,6 +156,8 @@ const LoadingSpinnerBase = styled.div`
 
 const LoadingSpinner = motion(LoadingSpinnerBase);
 
+const MotionButton = motion(BaseButton);
+
 export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
@@ -197,7 +200,6 @@ export const Button: React.FC<ButtonProps> = ({
     onClick?.(e);
   };
 
-  const MotionButton = motion(BaseButton);
 
   return (
     <MotionButton

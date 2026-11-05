@@ -1,3 +1,5 @@
+import { StudioArtwork } from '../../components/UI/StudioArtwork';
+import { Link } from 'react-router-dom';
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
@@ -10,56 +12,55 @@ import { converterService, type TaskStatus } from '../../services/converter.serv
 import { usePolling } from '../../hooks/usePolling';
 
 const ConverterContainer = styled.div`
-  max-width: 1000px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: 48px 32px 48px;
   overflow: visible;
+  @media (max-width: 640px) { padding: 16px 16px 32px; }
 `;
 
-const HeroTitleBase = styled.h1`
-  font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-size: ${({ theme }) => theme.typography.sizes.h1};
-  font-weight: ${({ theme }) => theme.typography.weights.black};
-  background: ${({ theme }) => theme.colors.text.gradient};
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  animation: float 3s ease-in-out infinite;
-  text-align: center;
-  white-space: nowrap;
-
-  @media (max-width: 1024px) {
-    font-size: ${({ theme }) => theme.typography.sizes.h2};
-  }
-
-  @media (max-width: 768px) {
-    white-space: normal;
-  }
+const Workspace = styled.div`
+  display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; align-items: start;
+  @media(max-width: 1000px) { gap: 40px; }
+  @media(max-width: 900px) { grid-template-columns: 1fr; gap: 28px; }
 `;
-
-const HeroTitle = motion(HeroTitleBase);
-
-const HeroSubtitleBase = styled.p`
-  font-family: ${({ theme }) => theme.typography.fonts.accent};
-  font-size: ${({ theme }) => theme.typography.sizes.body};
-  color: ${({ theme }) => theme.colors.text.secondary};
-  font-weight: ${({ theme }) => theme.typography.weights.regular};
-  max-width: 600px;
-  margin: 0 auto ${({ theme }) => theme.spacing.md};
-  text-align: center;
+const Intro = styled.section`
+  padding-top: 20px;
+  h1 { font-size: clamp(3.5rem, 6.5vw, 6rem); line-height: .96; letter-spacing: -.065em; font-weight: 800; margin: 28px 0; }
+  h1 em { color: #b83d1f; font-family: Georgia, serif; font-weight: 400; }
+  p { max-width: 390px; color: #606157; line-height: 1.7; }
+  @media(max-width: 900px) { padding-top: 0; h1 { margin: 16px 0; } }
+  @media(max-width: 640px) { h1 { font-size: 3rem; } p { font-size: .875rem; line-height: 1.6; } }
 `;
-
-const HeroSubtitle = motion(HeroSubtitleBase);
+const Eyebrow = styled.div`
+  font: 11px 'Courier New', monospace; letter-spacing: .1em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 10px;
+  &::before { content: ''; width: 7px; height: 7px; background: #b83d1f; border-radius: 50%; }
+`;
+const PanelHeading = styled.div`
+  display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #d6d3c8;
+  margin-bottom: 28px; padding-bottom: 20px;
+  h2 { font-size: 20px; letter-spacing: -.04em; }
+  span { font: 10px monospace; color: #6d6e63; }
+  @media(max-width: 640px) { margin-bottom: 20px; padding-bottom: 16px; }
+`;
+const FormatStrip = styled.div`
+  border-top: 1px solid #cdcbbf; border-bottom: 1px solid #cdcbbf; padding: 22px 0;
+  margin-top: 36px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  span { font: 10px monospace; text-transform: uppercase; letter-spacing: .08em; color: #606157; }
+  strong { font-size: 18px; letter-spacing: -.03em; }
+  @media(max-width: 640px) { display: grid; grid-template-columns: repeat(3, 1fr); span { grid-column: 1 / -1; } }
+`;
+const NextTool = styled(Link)`
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 40px;
+  text-decoration: none; border: 1px solid #cdcbbf; padding: 28px;
+  small { font: 11px monospace; color: #606157; } h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin-top: 8px; letter-spacing: -.04em; }
+  > span { font-size: 32px; color: #b83d1f; } &:hover { background: #eae7de; }
+`;
 
 const AnalysisModeSection = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.lg}`};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  border: 1px solid ${({ theme }) => theme.colors.accent.border};
-  background: ${({ theme }) => theme.colors.background.secondary};
+  padding: 0;
 `;
 
 const ModeToggleRow = styled.div`
@@ -67,16 +68,19 @@ const ModeToggleRow = styled.div`
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacing.sm};
   margin-top: ${({ theme }) => theme.spacing.sm};
+  @media(max-width: 640px) { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; button { min-width: 0; padding: 12px; font-size: .8125rem; } }
 `;
 
 const ModeToggleButton = styled.button<{ $active?: boolean }>`
-  flex: 1 1 160px;
+  flex: 1 1 170px;
+  min-height: 76px;
+  span { display: block; margin-top: 4px; font-size: .8125rem; color: ${({ theme }) => theme.colors.text.secondary}; }
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
   border: 1px solid
     ${({ theme, $active }) => ($active ? theme.colors.accent.primary : theme.colors.accent.border)};
   background: ${({ theme, $active }) =>
-    $active ? 'rgba(148, 163, 184, 0.12)' : theme.colors.background.card};
+    $active ? '#f3e6dc' : theme.colors.background.card};
   color: ${({ theme }) => theme.colors.text.primary};
   font-family: ${({ theme }) => theme.typography.fonts.body};
   font-size: ${({ theme }) => theme.typography.sizes.small};
@@ -92,16 +96,17 @@ const ModeToggleButton = styled.button<{ $active?: boolean }>`
 
 const ConverterCard = styled(Card)`
   margin-bottom: ${({ theme }) => theme.spacing.xl};
+  @media (max-width: 640px) { padding: 20px; input, select { padding: 12px; min-height: 48px; } }
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: 20px;
 `;
 
 const Select = styled.select`
   width: 100%;
   padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.lg}`};
-  border: 2px solid ${({ theme }) => theme.colors.accent.border};
+  border: 1px solid ${({ theme }) => theme.colors.accent.border};
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   font-size: ${({ theme }) => theme.typography.sizes.body};
   font-family: ${({ theme }) => theme.typography.fonts.body};
@@ -117,15 +122,12 @@ const Select = styled.select`
   }
 `;
 
-const InfoBox = styled.div`
-  background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
-  padding: ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  border-left: 5px solid ${({ theme }) => theme.colors.accent.primary};
-  font-size: ${({ theme }) => theme.typography.sizes.small};
-  color: ${({ theme }) => theme.colors.text.secondary};
-  font-family: ${({ theme }) => theme.typography.fonts.body};
+const InfoBox = styled.details`
+  margin-bottom: 20px;
+  color: ${({ theme }) => theme.colors.text.muted};
+  font-size: .8125rem;
+  summary { cursor: pointer; padding: 8px 0; }
+  p { padding-top: 8px; line-height: 1.6; }
 `;
 
 const StyledLabel = styled.label`
@@ -135,8 +137,8 @@ const StyledLabel = styled.label`
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
   font-size: ${({ theme }) => theme.typography.sizes.body};
   color: ${({ theme }) => theme.colors.text.secondary};
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  text-transform: none;
+  letter-spacing: 0;
 `;
 
 const MessageBase = styled.div<{ $type: 'success' | 'error' }>`
@@ -167,12 +169,14 @@ const ConversionInfo = styled.div`
   font-size: ${({ theme }) => theme.typography.sizes.small};
   color: ${({ theme }) => theme.colors.text.secondary};
   line-height: 1.7;
+  details { border-top: 1px solid ${({ theme }) => theme.colors.accent.border}; }
+  summary { padding: 16px 0; cursor: pointer; color: ${({ theme }) => theme.colors.text.primary}; font-weight: 600; }
 
   h3 {
     font-family: ${({ theme }) => theme.typography.fonts.accent};
     font-size: ${({ theme }) => theme.typography.sizes.body};
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    text-transform: none;
+    letter-spacing: 0;
     color: ${({ theme }) => theme.colors.text.primary};
     margin: 0 0 ${({ theme }) => theme.spacing.sm};
   }
@@ -185,11 +189,12 @@ const ConversionInfo = styled.div`
   }
 
   li {
-    background: ${({ theme }) => theme.colors.background.secondary};
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    background: transparent;
+    border-bottom: 1px solid ${({ theme }) => theme.colors.accent.border};
+    border-radius: 0;
     padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
     margin-bottom: ${({ theme }) => theme.spacing.xs};
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    box-shadow: none;
     display: flex;
     align-items: baseline;
     gap: ${({ theme }) => theme.spacing.sm};
@@ -197,7 +202,8 @@ const ConversionInfo = styled.div`
 
   li span.label {
     display: inline-block;
-    min-width: 70px;
+    min-width: 96px;
+    flex: 0 0 96px;
     font-weight: ${({ theme }) => theme.typography.weights.semibold};
     color: ${({ theme }) => theme.colors.text.primary};
   }
@@ -208,7 +214,7 @@ const ConversionInfo = styled.div`
     border-radius: 999px;
     border: 1px solid ${({ theme }) => theme.colors.accent.primary};
     font-size: 0.7rem;
-    text-transform: uppercase;
+    text-transform: none;
     letter-spacing: 0.08em;
     margin-left: auto;
     color: ${({ theme }) => theme.colors.accent.primary};
@@ -299,28 +305,20 @@ export const Converter: React.FC = React.memo(() => {
   return (
     <PageTransition>
       <ConverterContainer>
-        <HeroTitle
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          🎵 Producer Tools
-        </HeroTitle>
-        <HeroSubtitle
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Audio Converter – turn any YouTube or Spotify track into a clean audio file in the format you need. Enable BPM
-          &amp; key analysis when you want truly DJ‑ready files.
-        </HeroSubtitle>
-
+        <Workspace>
+        <Intro>
+          <Eyebrow>Independent utilities for music makers</Eyebrow>
+          <h1>Good music.<br />Less <em>friction.</em></h1>
+          <p>From the link you saved to the track in your session. Convert your audio. Find its tempo and key. Keep creating.</p>
+          <StudioArtwork />
+        </Intro>
         <ConverterCard>
+          <PanelHeading><h2>Audio converter</h2><span>TOOL / 01</span></PanelHeading>
           <FormGroup>
             <Input
-              label="Source URL"
+              label="01 — Your source"
               type="url"
-              placeholder="YouTube or Spotify track URL"
+              placeholder="Paste a YouTube or Spotify link"
               value={youtubeUrl}
               onChange={handleUrlChange}
               disabled={loading}
@@ -329,10 +327,10 @@ export const Converter: React.FC = React.memo(() => {
           </FormGroup>
 
           <FormGroup>
-            <StyledLabel>
-              Audio Format
+            <StyledLabel htmlFor="audio-format">
+              02 — Output format
             </StyledLabel>
-            <Select value={format} onChange={(e) => setFormat(e.target.value)} disabled={loading}>
+            <Select id="audio-format" value={format} onChange={(e) => setFormat(e.target.value)} disabled={loading}>
               <option value="mp3">MP3</option>
               <option value="wav">WAV (Recommended for Production)</option>
               <option value="flac">FLAC (Lossless)</option>
@@ -343,34 +341,34 @@ export const Converter: React.FC = React.memo(() => {
           </FormGroup>
 
           <AnalysisModeSection>
-            <StyledLabel>Select the mode you prefer</StyledLabel>
-            <ModeToggleRow>
+            <StyledLabel as="div" id="conversion-mode-label">03 — Processing</StyledLabel>
+            <ModeToggleRow role="group" aria-labelledby="conversion-mode-label">
               <ModeToggleButton
                 type="button"
                 $active={!analyzeBpmKey}
+                aria-pressed={!analyzeBpmKey}
+                disabled={loading}
                 onClick={() => !loading && setAnalyzeBpmKey(false)}
               >
-                ⚡ Fast Convert
-                <br />
-                <span>Best when you just need a quick audio file.</span>
+                Fast convert
+                <span>Just the audio, ready to download.</span>
               </ModeToggleButton>
               <ModeToggleButton
                 type="button"
                 $active={analyzeBpmKey}
+                aria-pressed={analyzeBpmKey}
+                disabled={loading}
                 onClick={() => !loading && setAnalyzeBpmKey(true)}
               >
-                🎹 Convert & Analyze
-                <br />
-                <span>Includes automatic BPM & key detection for DJs/producers.</span>
+                Convert & analyze
+                <span>Audio with BPM & key detection.</span>
               </ModeToggleButton>
             </ModeToggleRow>
           </AnalysisModeSection>
 
           <InfoBox>
-            <strong>Supported links</strong>
-            : You can paste a single YouTube video URL or a single Spotify track URL. Playlists are
-            not supported yet. The converter always tries to pick an audio/lyrics version on
-            YouTube, not the official videoclip.
+            <summary>YouTube &amp; Spotify · Single tracks only</summary>
+            <p>Playlists are not supported yet. Spotify links are matched to an audio or lyrics version on YouTube; the converter prefers these over official videoclips.</p>
           </InfoBox>
 
           <Button
@@ -381,7 +379,7 @@ export const Converter: React.FC = React.memo(() => {
             onClick={handleConvert}
             disabled={loading || !youtubeUrl.trim()}
           >
-            {analyzeBpmKey ? '🚀 Convert & Analyze' : '🚀 Convert'}
+            {analyzeBpmKey ? 'Convert & analyze →' : 'Convert audio →'}
           </Button>
 
           {status && (
@@ -408,24 +406,12 @@ export const Converter: React.FC = React.memo(() => {
             )}
           </AnimatePresence>
         </ConverterCard>
+        </Workspace>
+        <FormatStrip><span>Six formats. Your workflow.</span><strong>MP3</strong><strong>WAV</strong><strong>FLAC</strong><strong>OGG</strong><strong>AAC</strong><strong>Opus</strong></FormatStrip>
+        <NextTool to="/mixmaster/analyzer"><div><small>TOOL / 02 — MIX &amp; MASTER ANALYZER</small><h2>Get to know your sound.</h2></div><span aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 19 19 5M5 5h14v14" /></svg></span></NextTool>
         <ConversionInfo>
-          <h3>Built for music producers</h3>
-          <ol>
-            <li>
-              <span className="label">1.</span>
-              <span>Paste a YouTube or Spotify track URL above.</span>
-            </li>
-            <li>
-              <span className="label">2.</span>
-              <span>Choose your preferred audio format and (optionally) enable BPM &amp; key detection.</span>
-            </li>
-            <li>
-              <span className="label">3.</span>
-              <span>Hit convert – the system will process the audio and start the download automatically.</span>
-            </li>
-          </ol>
-
-          <h3>Professional audio formats</h3>
+          <details>
+          <summary>Audio format guide</summary>
           <ul>
             <li>
               <span className="label">MP3</span>
@@ -453,7 +439,9 @@ export const Converter: React.FC = React.memo(() => {
             </li>
           </ul>
 
-          <h3>Features</h3>
+          </details>
+          <details>
+          <summary>What’s included</summary>
           <ul>
             <li>
               <span className="label">Automatic BPM</span>
@@ -476,6 +464,7 @@ export const Converter: React.FC = React.memo(() => {
               <span>Playlists are not supported yet – convert one track at a time for maximum stability.</span>
             </li>
           </ul>
+          </details>
         </ConversionInfo>
       </ConverterContainer>
     </PageTransition>

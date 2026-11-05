@@ -8,9 +8,9 @@ const NavbarBase = styled.nav`
   top: 0;
   left: 0;
   right: 0;
-  background: radial-gradient(circle at top left, #020617 0%, #020617 30%, #000 100%);
+  background: rgba(242, 240, 233, .96);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  border-bottom: 1px solid #cdcbbf;
   z-index: ${({ theme }) => theme.zIndex.fixed};
   padding: ${({ theme }) => `${theme.spacing.sm} 0`};
 `;
@@ -18,6 +18,7 @@ const NavbarBase = styled.nav`
 const NavbarContainer = motion(NavbarBase);
 
 const NavContent = styled.div`
+  min-height: 56px;
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 ${({ theme }) => theme.spacing.xl};
@@ -31,12 +32,10 @@ const LogoBase = styled(Link)`
   font-size: ${({ theme }) => theme.typography.sizes.h3};
   font-weight: ${({ theme }) => theme.typography.weights.black};
   text-decoration: none;
-  background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #a855f7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  color: #252620;
+  &::before { content: ""; width: 24px; height: 24px; background: repeating-linear-gradient(90deg, #b83d1f 0 3px, transparent 3px 6px); transform: skewY(-15deg); }
+  text-transform: none;
+  letter-spacing: -1px;
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
@@ -62,8 +61,8 @@ const NavLink = styled(Link)<{ $isActive: boolean }>`
   color: ${({ theme, $isActive }) =>
     $isActive ? theme.colors.text.primary : theme.colors.text.muted};
   text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  text-transform: none;
+  letter-spacing: 0;
   padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
   transition:
     color ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easing.smooth},
@@ -81,7 +80,7 @@ const UnderlineBase = styled.div`
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #38bdf8, #6366f1);
+  background: #b83d1f;
   border-radius: 2px;
 `;
 
@@ -94,6 +93,10 @@ const HamburgerButtonBase = styled.button`
   background: transparent;
   border: none;
   cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  align-items: center;
+  justify-content: center;
   padding: ${({ theme }) => theme.spacing.sm};
   
   @media (max-width: 1023px) {
@@ -114,10 +117,10 @@ const HamburgerLine = motion(HamburgerLineBase);
 
 const MobileMenuBase = styled.div`
   position: fixed;
-  top: 60px;
+  top: 72px;
   left: 0;
   right: 0;
-  background: rgba(10, 10, 10, 0.95);
+  background: #f2f0e9;
   backdrop-filter: blur(10px);
   border-bottom: 1px solid ${({ theme }) => theme.colors.accent.border};
   padding: ${({ theme }) => theme.spacing.lg};
@@ -140,8 +143,8 @@ const MobileNavLink = styled(Link)<{ $isActive: boolean }>`
   color: ${({ theme, $isActive }) =>
     $isActive ? theme.colors.text.primary : theme.colors.text.secondary};
   text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  text-transform: none;
+  letter-spacing: 0;
   padding: ${({ theme }) => theme.spacing.md};
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   transition: all ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easing.smooth};
@@ -153,9 +156,9 @@ const MobileNavLink = styled(Link)<{ $isActive: boolean }>`
 `;
 
 const navItems = [
-  { path: '/', label: 'Converter' },
-  { path: '/mixmaster', label: 'Mix Master Analyzer' },
-  { path: '/about', label: 'About' },
+  { path: '/', label: '01 / Converter' },
+  { path: '/mixmaster', label: '02 / Analyzer' },
+  { path: '/about', label: 'The studio' },
 ];
 
 export const Navbar: React.FC = () => {
@@ -219,12 +222,12 @@ export const Navbar: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            PT
+            Producer Tools
           </Logo>
 
           <NavLinks>
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
               return (
                 <NavLink key={item.path} to={item.path} $isActive={isActive}>
                   {item.label}
@@ -249,6 +252,8 @@ export const Navbar: React.FC = () => {
             variants={hamburgerVariants}
             animate={mobileMenuOpen ? 'open' : 'closed'}
             aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
           >
             <HamburgerLine variants={line1Variants} />
             <HamburgerLine variants={line2Variants} />
@@ -260,13 +265,14 @@ export const Navbar: React.FC = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <MobileMenu
+            id="mobile-navigation"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
           >
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
               return (
                 <MobileNavLink
                   key={item.path}

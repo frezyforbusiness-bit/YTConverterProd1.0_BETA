@@ -30,12 +30,12 @@ const CardBase = styled.div<{ $variant: string; $hover: boolean }>`
       case 'interactive':
         return theme.shadows.md;
       default:
-        return theme.shadows.sm;
+        return theme.shadows.none;
     }
   }};
   transition: all ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easing.smooth};
   cursor: ${({ $hover, onClick }) => ($hover || onClick ? 'pointer' : 'default')};
-  will-change: transform;
+  @media (max-width: 640px) { padding: 20px; }
   
   ${({ $hover, $variant, theme, onClick }) => {
     if (($hover || onClick) && $variant === 'interactive') {

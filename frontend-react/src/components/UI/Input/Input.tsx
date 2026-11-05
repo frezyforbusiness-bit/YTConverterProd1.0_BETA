@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, type InputHTMLAttributes } from 'react';
+import React, { useState, useId, useRef, useEffect, useCallback, type InputHTMLAttributes } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 
@@ -15,7 +15,7 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>
 
 const InputWrapper = styled.div<{ $fullWidth: boolean }>`
   width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: 0;
 `;
 
 const LabelBase = styled.label<{ $hasValue: boolean; $error: boolean }>`
@@ -25,8 +25,8 @@ const LabelBase = styled.label<{ $hasValue: boolean; $error: boolean }>`
   color: ${({ theme, $error }) => ($error ? theme.colors.status.error : theme.colors.text.secondary)};
   font-size: ${({ theme }) => theme.typography.sizes.body};
   font-family: ${({ theme }) => theme.typography.fonts.body};
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  text-transform: none;
+  letter-spacing: 0;
 `;
 
 const Label = LabelBase;
@@ -62,7 +62,7 @@ const InputBase = styled.input<{ $hasIconLeft: boolean; $hasIconRight: boolean; 
     }
     return padding;
   }};
-  border: 2px solid;
+  border: 1px solid;
   border-color: ${({ theme, $error, $success }) => {
     if ($error) return theme.colors.status.error;
     if ($success) return theme.colors.status.success;
@@ -71,7 +71,7 @@ const InputBase = styled.input<{ $hasIconLeft: boolean; $hasIconRight: boolean; 
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   font-size: ${({ theme }) => theme.typography.sizes.body};
   font-family: ${({ theme }) => theme.typography.fonts.body};
-  background: ${({ theme }) => theme.colors.background.secondary};
+  background: ${({ theme }) => theme.colors.background.card};
   color: ${({ theme }) => theme.colors.text.primary};
   transition: all ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easing.smooth};
   
@@ -92,7 +92,7 @@ const InputBase = styled.input<{ $hasIconLeft: boolean; $hasIconRight: boolean; 
   
   &::placeholder {
     color: ${({ theme }) => theme.colors.text.muted};
-    opacity: 0.5;
+    opacity: 1;
   }
   
   &:disabled {
@@ -166,6 +166,8 @@ export const Input: React.FC<InputProps> = React.memo(({
   onBlur,
   ...props
 }) => {
+  const generatedId = useId();
+  const inputId = props.id ?? generatedId;
   const inputRef = useRef<HTMLInputElement>(null);
   const isControlled = value !== undefined;
   const [internalValue, setInternalValue] = useState(isControlled ? '' : value || '');
@@ -219,6 +221,7 @@ export const Input: React.FC<InputProps> = React.memo(({
     <InputWrapper $fullWidth={fullWidth}>
       {label && (
         <Label
+          htmlFor={inputId}
           $hasValue={hasValue}
           $error={!!error}
         >
@@ -230,6 +233,7 @@ export const Input: React.FC<InputProps> = React.memo(({
         
         <InputBase
           ref={inputRef}
+          id={inputId}
           $hasIconLeft={hasIconLeft}
           $hasIconRight={hasIconRight}
           $error={!!error}

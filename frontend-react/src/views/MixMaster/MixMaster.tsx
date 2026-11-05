@@ -1,6 +1,6 @@
+import { PageTitle, PageSubtitle } from '../../components/UI/PageHeading';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import { PageTransition } from '../../components/common/PageTransition';
 import { Card } from '../../components/UI/Card';
@@ -9,55 +9,23 @@ import { Button } from '../../components/UI/Button';
 const MixMasterContainer = styled.div`
   max-width: 1000px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: 32px 24px 48px;
   overflow: visible;
+  @media (max-width: 640px) { padding: 16px 16px 32px; }
 `;
 
 const Header = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
-const HeaderTitleBase = styled.h1`
-  font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-size: ${({ theme }) => theme.typography.sizes.h1};
-  font-weight: ${({ theme }) => theme.typography.weights.black};
-  background: ${({ theme }) => theme.colors.text.gradient};
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  text-align: center;
-  white-space: nowrap;
-  animation: float 3s ease-in-out infinite;
+const HeaderTitle = PageTitle;
 
-  @media (max-width: 1024px) {
-    font-size: ${({ theme }) => theme.typography.sizes.h2};
-  }
-
-  @media (max-width: 768px) {
-    white-space: normal;
-  }
-`;
-
-const HeaderTitle = motion(HeaderTitleBase);
-
-const HeaderSubtitleBase = styled.p`
-  font-family: ${({ theme }) => theme.typography.fonts.accent};
-  font-size: ${({ theme }) => theme.typography.sizes.body};
-  color: ${({ theme }) => theme.colors.text.secondary};
-  font-weight: ${({ theme }) => theme.typography.weights.regular};
-  max-width: 600px;
-  margin: 0 auto ${({ theme }) => theme.spacing.md};
-  text-align: center;
-`;
-
-const HeaderSubtitle = motion(HeaderSubtitleBase);
+const HeaderSubtitle = PageSubtitle;
 
 const CtaCard = styled(Card)`
-  text-align: center;
-  padding: ${({ theme }) => theme.spacing['3xl']};
+  text-align: left;
+  padding: 48px 32px;
+  @media (max-width: 640px) { padding: 24px 16px; }
 `;
 
 const CtaText = styled.p`
@@ -83,7 +51,7 @@ const InfoCard = styled.div`
   background: ${({ theme }) => theme.colors.background.secondary};
   border-radius: ${({ theme }) => theme.borderRadius.large};
   padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.xl}`};
-  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.45);
+  box-shadow: none;
   border: 1px solid rgba(148, 163, 184, 0.16);
 `;
 
@@ -116,15 +84,14 @@ export const MixMaster: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            🎵 Producer Tools
+            Hear the whole picture.
           </HeaderTitle>
           <HeaderSubtitle
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Mix &amp; Master Analyzer – upload an audio file or paste a YouTube URL, then run an analysis to understand
-            loudness, dynamics and tonal balance of your track.
+            A fresh perspective on your mix. Explore loudness, dynamics and tonal balance before your next release.
           </HeaderSubtitle>
         </Header>
 

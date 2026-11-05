@@ -1,5 +1,5 @@
+import { PageTitle, PageSubtitle } from '../../components/UI/PageHeading';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
 import { PageTransition } from '../../components/common/PageTransition';
@@ -14,51 +14,18 @@ const ACCEPT_AUDIO = 'audio/*,.mp3,.wav,.flac,.m4a,.aac,.ogg';
 const AnalyzerContainer = styled.div`
   max-width: 1000px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: 32px 24px 48px;
   overflow: visible;
+  @media (max-width: 640px) { padding: 16px 16px 32px; }
 `;
 
 const Header = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
-const HeaderTitleBase = styled.h1`
-  font-family: ${({ theme }) => theme.typography.fonts.heading};
-  font-size: ${({ theme }) => theme.typography.sizes.h1};
-  font-weight: ${({ theme }) => theme.typography.weights.black};
-  background: ${({ theme }) => theme.colors.text.gradient};
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  text-align: center;
-  white-space: nowrap;
-  animation: float 3s ease-in-out infinite;
+const HeaderTitle = PageTitle;
 
-  @media (max-width: 1024px) {
-    font-size: ${({ theme }) => theme.typography.sizes.h2};
-  }
-
-  @media (max-width: 768px) {
-    white-space: normal;
-  }
-`;
-
-const HeaderTitle = motion(HeaderTitleBase);
-
-const HeaderSubtitleBase = styled.p`
-  font-family: ${({ theme }) => theme.typography.fonts.accent};
-  font-size: ${({ theme }) => theme.typography.sizes.body};
-  color: ${({ theme }) => theme.colors.text.secondary};
-  font-weight: ${({ theme }) => theme.typography.weights.regular};
-  max-width: 600px;
-  margin: 0 auto ${({ theme }) => theme.spacing.md};
-  text-align: center;
-`;
-
-const HeaderSubtitle = motion(HeaderSubtitleBase);
+const HeaderSubtitle = PageSubtitle;
 
 const BetaBadge = styled.span`
   display: inline-flex;
@@ -68,7 +35,7 @@ const BetaBadge = styled.span`
   margin-left: ${({ theme }) => theme.spacing.sm};
   border-radius: 999px;
   border: 1px solid ${({ theme }) => theme.colors.accent.primary};
-  background: rgba(129, 140, 248, 0.12);
+  background: rgba(184, 61, 31, 0.08);
   font-family: ${({ theme }) => theme.typography.fonts.accent};
   font-size: ${({ theme }) => theme.typography.sizes.small};
   letter-spacing: 0.12em;
@@ -111,7 +78,8 @@ const HiddenFileInput = styled.input`
 const DragDropArea = styled.div<{ $isDragging?: boolean }>`
   border: 2px dashed ${({ theme, $isDragging }) => ($isDragging ? theme.colors.accent.primary : theme.colors.accent.border)};
   border-radius: ${({ theme }) => theme.borderRadius.large};
-  padding: ${({ theme }) => theme.spacing['3xl']};
+  padding: 48px 32px;
+  @media (max-width: 640px) { padding: 24px 16px; }
   text-align: center;
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easing.smooth};
@@ -174,7 +142,7 @@ const BigChoiceButton = styled.button<{ $active?: boolean }>`
   border: 1px solid
     ${({ theme, $active }) => ($active ? theme.colors.accent.primary : theme.colors.accent.border)};
   background: ${({ theme, $active }) =>
-    $active ? 'rgba(148, 163, 184, 0.12)' : theme.colors.background.card};
+    $active ? 'rgba(184, 61, 31, 0.08)' : theme.colors.background.card};
   color: ${({ theme }) => theme.colors.text.primary};
   font-family: ${({ theme }) => theme.typography.fonts.accent};
   font-size: ${({ theme }) => theme.typography.sizes.body};
@@ -197,7 +165,7 @@ const Chip = styled.button<{ $active?: boolean }>`
   border: 1px solid
     ${({ theme, $active }) => ($active ? theme.colors.accent.primary : theme.colors.accent.border)};
   background: ${({ theme, $active }) =>
-    $active ? 'rgba(148, 163, 184, 0.08)' : theme.colors.background.card};
+    $active ? 'rgba(184, 61, 31, 0.08)' : theme.colors.background.card};
   color: ${({ theme }) => theme.colors.text.primary};
   font-family: ${({ theme }) => theme.typography.fonts.body};
   font-size: ${({ theme }) => theme.typography.sizes.small};
@@ -217,7 +185,7 @@ const AnalyzeRow = styled.div`
 const FullscreenOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.98), rgba(0, 0, 0, 0.98));
+  background: #eae7de;
   backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
@@ -232,7 +200,7 @@ const OverlayContent = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius.large};
   background: ${({ theme }) => theme.colors.background.secondary};
   border: 1px solid ${({ theme }) => theme.colors.accent.border};
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+  box-shadow: none;
   text-align: center;
 `;
 
@@ -505,7 +473,7 @@ export const MixMasterAnalyzer: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            🎵 Producer Tools
+            Mix &amp; Master Analyzer
           </HeaderTitle>
           <HeaderSubtitle
             initial={{ opacity: 0, y: 20 }}
@@ -546,7 +514,7 @@ export const MixMasterAnalyzer: React.FC = () => {
                   onDrop={handleDrop}
                 >
                   <p style={{ fontSize: theme.typography.sizes.h3, marginBottom: theme.spacing.md }}>
-                    📁 Drag &amp; Drop Audio File
+                    Drop your track here
                   </p>
                   <p style={{ color: theme.colors.text.secondary, marginBottom: theme.spacing.lg }}>
                     Or click to browse (MP3, WAV, FLAC, M4A, OGG). Ideal for bounced mixes, masters and reference tracks.
@@ -678,7 +646,7 @@ export const MixMasterAnalyzer: React.FC = () => {
 
         {result && (
           <ResultSection ref={resultRef}>
-            <ResultTrackName>🎵 Here are your analysis results</ResultTrackName>
+            <ResultTrackName>Your track, in detail</ResultTrackName>
 
             <ReportCard>
               <ReportCardTitle>Check</ReportCardTitle>

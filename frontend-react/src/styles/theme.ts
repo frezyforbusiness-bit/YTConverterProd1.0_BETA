@@ -1,49 +1,49 @@
 /**
  * Design System - Theme Tokens
- * Producer Tools 2.0 - Modern Dark Theme
+ * Producer Tools — Studio Edition
  */
 
 export const theme = {
   colors: {
     // Background & Surfaces
     background: {
-      primary: '#0a0a0a',
-      secondary: '#1a1a1a',
-      card: 'rgba(30, 30, 30, 0.95)',
-      elevated: 'rgba(40, 40, 40, 0.98)',
-      gradient: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+      primary: '#f2f0e9',
+      secondary: '#eae7de',
+      card: '#faf9f5',
+      elevated: '#e3dfd3',
+      gradient: 'linear-gradient(135deg, #f2f0e9, #faf9f5)',
     },
 
     // Accent Colors
     accent: {
-      primary: '#a855f7', // vivid purple
-      secondary: '#6366f1', // indigo
-      border: 'rgba(148, 163, 184, 0.35)',
-      focusRing: 'rgba(168, 85, 247, 0.4)',
+      primary: '#b83d1f', // vivid purple
+      secondary: '#c64726', // indigo
+      border: 'rgba(41, 40, 35, 0.2)',
+      focusRing: 'rgba(184, 61, 31, 0.2)',
     },
 
     // Text Colors
     text: {
-      primary: '#f9fafb',
-      secondary: '#e5e7eb',
-      muted: '#9ca3af',
-      gradient: 'linear-gradient(135deg, #e5e7eb 0%, #a855f7 45%, #6366f1 90%)',
+      primary: '#252620',
+      secondary: '#606157',
+      muted: '#6d6e63',
+      gradient: 'linear-gradient(135deg, #e5e7eb 0%, #b83d1f 45%, #c64726 90%)',
     },
 
     // Status Colors
     status: {
-      success: '#4ade80',
-      error: '#f87171',
-      warning: '#ffd93d',
-      info: '#60a5fa',
+      success: '#337052',
+      error: '#b73528',
+      warning: '#886012',
+      info: '#386384',
     },
   },
 
   typography: {
     fonts: {
-      heading: "'Orbitron', sans-serif",
-      body: "'Rajdhani', sans-serif",
-      accent: "'Exo 2', sans-serif",
+      heading: '"Arial Black", "Helvetica Neue", sans-serif',
+      body: 'system-ui, sans-serif',
+      accent: '"Courier New", monospace',
     },
     weights: {
       regular: 400,
@@ -55,8 +55,8 @@ export const theme = {
       h1: 'clamp(2.5rem, 5vw, 4rem)',
       h2: 'clamp(1.75rem, 4vw, 2.5rem)',
       h3: 'clamp(1.25rem, 3vw, 1.75rem)',
-      body: 'clamp(0.9rem, 2vw, 1.1rem)',
-      small: 'clamp(0.8rem, 1.5vw, 1rem)',
+      body: '1rem',
+      small: '0.875rem',
     },
   },
 
@@ -71,18 +71,18 @@ export const theme = {
   },
 
   borderRadius: {
-    small: '8px',
-    medium: '12px',
-    large: '16px',
-    xl: '24px',
+    small: '3px',
+    medium: '4px',
+    large: '6px',
+    xl: '8px',
     full: '9999px',
   },
 
   shadows: {
     none: 'none',
-    sm: '0 2px 8px rgba(0, 0, 0, 0.4)',
-    md: '0 4px 16px rgba(0, 0, 0, 0.5)',
-    lg: '0 8px 32px rgba(0, 0, 0, 0.6)',
+    sm: '0 4px 16px rgba(0, 0, 0, 0.12)',
+    md: '0 8px 24px rgba(0, 0, 0, 0.16)',
+    lg: '0 12px 32px rgba(0, 0, 0, 0.2)',
     xl: '0 16px 64px rgba(0, 0, 0, 0.7)',
     glow: '0 0 20px rgba(154, 154, 154, 0.2)',
   },
