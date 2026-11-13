@@ -9,10 +9,13 @@ env/
 ENV/
 .venv
 
-# Frontend - exclude source but keep dist will be copied separately
+# Frontend build artifacts / deps (dist comes from the Node build stage)
 frontend-react/node_modules/
 frontend-react/.vite/
-# Note: frontend-react/dist/ is excluded but will be copied from builder stage as frontend-react-dist
+frontend-react/dist/
+# Repo symlink must NOT overwrite the real frontend-react-dist from the builder
+frontend-react-dist
+frontend-react-dist/
 
 # Old frontend
 frontend/node_modules/

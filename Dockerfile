@@ -1,69 +1,44 @@
 # Multi-stage build for Railway deployment
 FROM node:20-alpine AS frontend-builder
 
-# Build React frontend
 WORKDIR /app/frontend-react
-COPY frontend-react/package*.json ./
-RUN npm ci --only=production=false
+COPY frontend-react/package.json frontend-react/package-lock.json ./
+RUN npm ci
 COPY frontend-react/ .
 
-# Set VITE_API_URL for build (empty = relative URLs, same domain)
-# In production, frontend and backend are on same domain, so use relative URLs
+# Empty = relative API URLs (frontend and backend on same domain)
 ARG VITE_API_URL=
 ENV VITE_API_URL=${VITE_API_URL}
 
-# Build frontend
 RUN npm run build
 
-# Python backend stage
+# ---------------------------------------------------------------------------
 FROM python:3.11-slim
 
-# System deps for ffmpeg + native libs required by librosa/soundfile/numpy
+# ffmpeg + native libs required by librosa / soundfile / numpy at runtime
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
-  ffmpeg \
-  libgomp1 \
-  libsndfile1 \
+    ffmpeg \
+    libgomp1 \
+    libsndfile1 \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
   pip install --no-cache-dir -r requirements.txt
 
-# Copy built frontend from builder stage
-COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
-
-# Copy application code
+# App source first. frontend-react-dist is excluded via .dockerignore so the
+# repo symlink cannot overwrite the real build output copied below.
 COPY . .
 
-# If frontend-react-dist is missing or empty, build frontend in Python stage
-RUN if [ ! -d "./frontend-react-dist" ] || [ -z "$(ls -A ./frontend-react-dist 2>/dev/null)" ]; then \
-  apt-get update && \
-  apt-get install -y --no-install-recommends curl ca-certificates gnupg && \
-  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
-  apt-get update && \
-  apt-get install -y --no-install-recommends nodejs && \
-  cd frontend-react && \
-  npm ci --only=production=false && \
-  npm run build && \
-  cd .. && \
-  mv frontend-react/dist frontend-react-dist && \
-  rm -rf frontend-react/node_modules frontend-react/.vite && \
-  apt-get purge -y curl ca-certificates gnupg && \
-  apt-get autoremove -y && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/*; \
-  fi
+# Built React assets from the Node stage (real directory, not the git symlink)
+COPY --from=frontend-builder /app/frontend-react/dist ./frontend-react-dist
 
-# Make start script executable
-RUN chmod +x scripts/shell/start_render.sh
+RUN test -f ./frontend-react-dist/index.html || (echo "ERROR: frontend-react-dist/index.html missing" && ls -la ./frontend-react-dist && exit 1)
 
-# Create temp directory
-RUN mkdir -p /app/temp
+RUN chmod +x scripts/shell/start_render.sh start_render.sh && mkdir -p /app/temp
 
 # Railway injects PORT at runtime; EXPOSE is documentation only.
 EXPOSE 5000
