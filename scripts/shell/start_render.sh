@@ -1,171 +1,62 @@
 #!/bin/bash
-# Script di startup universale per hosting cloud
-# Supporta: Render.com, Railway.app, Fly.io, DigitalOcean, Heroku, etc.
-# Gestisce completamente i cookie e avvia l'applicazione Python
+# Startup script for cloud hosts (Railway, Render, Fly, etc.).
+# Keep this fast: Railway returns 502 until the process listens on $PORT.
 
-# Disabilita buffering per vedere output in tempo reale
 export PYTHONUNBUFFERED=1
 
-# Non usare set -e perché i cookie sono opzionali e non devono bloccare l'avvio
-
 echo "============================================================"
-echo "🚀 Render Startup Script"
+echo "Startup"
 echo "============================================================"
-echo ""
 
-# ============================================================
-# GESTIONE COOKIE
-# ============================================================
 COOKIES_FILE_PATH="/tmp/cookies.txt"
 
-echo "📋 Cookie Configuration:"
-echo "   Checking for COOKIES_BASE64..."
-
-# Priorità: COOKIES_FILE > COOKIES_BASE64 > Nessun cookie
+echo "Cookie configuration:"
 if [ -n "$COOKIES_FILE" ] && [ -f "$COOKIES_FILE" ]; then
-    # COOKIES_FILE già impostato e file esiste
-    echo "   ✅ COOKIES_FILE already set: $COOKIES_FILE"
     export COOKIES_FILE="$COOKIES_FILE"
-    file_size=$(wc -c < "$COOKIES_FILE" 2>/dev/null || echo "0")
-    echo "   ✅ Cookie file size: $file_size bytes"
-    
+    echo "  COOKIES_FILE: $COOKIES_FILE ($(wc -c < "$COOKIES_FILE") bytes)"
 elif [ -n "$COOKIES_BASE64" ]; then
-    # Decodifica COOKIES_BASE64
-    echo "   📥 COOKIES_BASE64 found (length: ${#COOKIES_BASE64} chars)"
-    
-    # Strip whitespace and decode base64
-    printf '%s' "$COOKIES_BASE64" | tr -d '[:space:]' | base64 -d > "$COOKIES_FILE_PATH" 2>/dev/null
-    decode_status=$?
-    
-    if [ $decode_status -eq 0 ] && [ -s "$COOKIES_FILE_PATH" ]; then
-        # Ensure Unix line endings (LF instead of CRLF)
+    echo "  Decoding COOKIES_BASE64 (${#COOKIES_BASE64} chars)"
+    if printf '%s' "$COOKIES_BASE64" | tr -d '[:space:]' | base64 -d > "$COOKIES_FILE_PATH" 2>/dev/null \
+        && [ -s "$COOKIES_FILE_PATH" ]; then
         sed -i 's/\r$//' "$COOKIES_FILE_PATH" 2>/dev/null || true
-        
-        # Verify Netscape format
-        if head -n 1 "$COOKIES_FILE_PATH" | grep -q "^# Netscape"; then
-            echo "   ✅ Cookie file format verified (Netscape)"
-        else
-            echo "   ⚠️  Warning: Cookie file may not be in Netscape format"
-        fi
-        
-        # Count YouTube/Google cookies
-        youtube_count=$(grep -c "youtube.com\|google.com" "$COOKIES_FILE_PATH" 2>/dev/null || echo "0")
-        
         export COOKIES_FILE="$COOKIES_FILE_PATH"
-        file_size=$(wc -c < "$COOKIES_FILE_PATH")
-        
-        echo "   ✅ Cookies decoded successfully"
-        echo "   ✅ File: $COOKIES_FILE ($file_size bytes)"
-        echo "   ✅ YouTube/Google cookies: $youtube_count"
-        echo "   ✅ COOKIES_FILE exported: $COOKIES_FILE"
-        
-        # Verify file is readable
-        if [ -f "$COOKIES_FILE" ] && [ -r "$COOKIES_FILE" ]; then
-            echo "   ✅ Cookie file verified: exists and readable"
-        else
-            echo "   ❌ ERROR: Cookie file not accessible!"
-            unset COOKIES_FILE
-        fi
+        echo "  Cookies ready: $COOKIES_FILE ($(wc -c < "$COOKIES_FILE_PATH") bytes)"
     else
-        echo "   ❌ ERROR: Failed to decode COOKIES_BASE64 (status: $decode_status)"
-        if [ -f "$COOKIES_FILE_PATH" ]; then
-            echo "   ⚠️  File exists but is empty or invalid"
-            rm -f "$COOKIES_FILE_PATH"
-        else
-            echo "   ⚠️  File was not created"
-        fi
+        echo "  Failed to decode COOKIES_BASE64; continuing without cookies"
+        rm -f "$COOKIES_FILE_PATH"
         unset COOKIES_FILE
     fi
 else
-    echo "   ⚠️  No cookies configured (COOKIES_BASE64 not set)"
-    echo "   ℹ️  Proceeding without cookies - may encounter bot detection"
+    echo "  No cookies configured; continuing without cookies"
     unset COOKIES_FILE
 fi
 
-echo ""
-echo "============================================================"
-echo "🐍 Starting Python Application"
-echo "============================================================"
-echo ""
-
-# Verifica che Python sia disponibile
-if ! command -v python &> /dev/null; then
-    echo "❌ ERROR: Python not found!"
+if ! command -v python >/dev/null 2>&1; then
+    echo "ERROR: python not found"
     exit 1
 fi
 
-# Verifica che app.py esista
 if [ ! -f "app.py" ]; then
-    echo "❌ ERROR: app.py not found!"
-    exit 1
-fi
-
-# Mostra configurazione finale
-echo "📊 Final Configuration:"
-echo "   Python: $(python --version 2>&1)"
-echo "   Working directory: $(pwd)"
-if [ -n "$COOKIES_FILE" ]; then
-    echo "   Cookies: ✅ Enabled ($COOKIES_FILE)"
-else
-    echo "   Cookies: ❌ Disabled"
-fi
-echo ""
-
-# Avvia l'applicazione
-echo "🚀 Launching application..."
-echo ""
-
-# Verifica che tutto sia pronto
-if [ ! -f "app.py" ]; then
-    echo "❌ FATAL ERROR: app.py not found in $(pwd)"
-    echo "   Current directory contents:"
+    echo "ERROR: app.py not found in $(pwd)"
     ls -la
     exit 1
 fi
 
-# Verifica che Python possa importare le dipendenze
-echo "🔍 Verifying Python environment..."
-if ! python -c "import flask; import pytubefix; print('✅ All imports OK')" 2>&1; then
-    # Fallback check for pytube standard
-    if ! python -c "import flask; import pytube; print('✅ All imports OK (pytube standard)')" 2>&1; then
-        echo "❌ ERROR: Python dependencies not available"
-        echo "   Trying to install requirements..."
-        pip install -r requirements.txt || {
-            echo "❌ Failed to install requirements"
-            exit 1
-        }
-    fi
+echo "Python: $(python --version 2>&1)"
+echo "PORT: ${PORT:-5000}"
+echo "Working directory: $(pwd)"
+
+# Fail fast with a clear message if native audio deps are missing.
+if ! python -c "import flask; import librosa; import soundfile; print('imports ok')" 2>&1; then
+    echo "ERROR: required Python packages failed to import"
+    exit 1
 fi
 
-# Aggiorna pytubefix all'ultima versione (per compatibilità con YouTube)
-echo ""
-echo "🔄 Updating pytubefix to latest version..."
-echo "   Current version:"
-python -c "try:
-    import pytubefix
-    print(f'   {pytubefix.__version__}')
-except:
-    try:
-        import pytube
-        print(f'   {pytube.__version__} (pytube standard)')
-    except:
-        print('   Unknown')
-" 2>/dev/null || echo "   Unknown"
-echo "   Updating..."
-pip install --upgrade --no-cache-dir pytubefix 2>&1 | grep -E "(Successfully|Requirement already|up-to-date|ERROR)" || true
-echo "   ✅ pytubefix update check complete"
-
-# Initialize database if MySQL is configured
-if [ -n "$MYSQL_URL" ] || [ -n "$MYSQL_HOST" ]; then
-    echo ""
-    echo "🗄️  Initializing MySQL database..."
-    python scripts/init_database.py 2>&1 | grep -E "(successfully|failed|error|warning|✓|✓|Database)" || true
-    echo ""
+# Optional DB bootstrap. Never block app start on DB failure.
+if [ -n "$MYSQL_URL" ] || [ -n "$MYSQL_HOST" ] || [ -n "$DATABASE_URL" ]; then
+    echo "Initializing MySQL schema (best-effort)..."
+    python scripts/init_database.py || echo "WARNING: database init failed; continuing without DB"
 fi
 
-echo ""
-echo "✅ All checks passed, starting Flask application..."
-echo ""
-
+echo "Starting Flask on 0.0.0.0:${PORT:-5000}"
 exec python -u app.py
-

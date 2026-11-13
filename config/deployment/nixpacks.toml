@@ -1,8 +1,7 @@
-# Nixpacks configuration for Railway (alternative to Dockerfile)
-# Railway userà questo se non trova Dockerfile
+# Nixpacks fallback if Railway does not use the Dockerfile.
 
 [phases.setup]
-nixPkgs = ["python311", "ffmpeg"]
+nixPkgs = ["python311", "ffmpeg", "libsndfile", "libgomp"]
 
 [phases.install]
 cmds = [
@@ -10,5 +9,5 @@ cmds = [
 ]
 
 [start]
-cmd = "chmod +x start_render.sh && ./start_render.sh"
+cmd = "bash scripts/shell/start_render.sh"
 

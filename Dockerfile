@@ -18,10 +18,12 @@ RUN npm run build
 # Python backend stage
 FROM python:3.11-slim
 
-# Install system dependencies
+# System deps for ffmpeg + native libs required by librosa/soundfile/numpy
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
   ffmpeg \
+  libgomp1 \
+  libsndfile1 \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -63,7 +65,8 @@ RUN chmod +x scripts/shell/start_render.sh
 # Create temp directory
 RUN mkdir -p /app/temp
 
-EXPOSE ${PORT:-5000}
+# Railway injects PORT at runtime; EXPOSE is documentation only.
+EXPOSE 5000
 
 ENV PYTHONUNBUFFERED=1
 
